@@ -6,14 +6,14 @@
   "dependencies": {
     "npm": "^6.4.1",
     "vue": "^2.5.17",
-    "vue-hot-reload-api": "^2.3.0"
+    "vue-hot-reload-api": "^2.3.0",
+    "vue-router": "^3.0.1"
   },
   "devDependencies": {
     "@vue/component-compiler-utils": "^2.2.0",
     "babel-preset-env": "^1.7.0",
     "parcel-bundler": "^1.9.7",
     "typescript": "^3.0.3",
-    "vue-loader": "^15.4.1",
     "vue-template-compiler": "^2.5.17"
   },
   "scripts": {
