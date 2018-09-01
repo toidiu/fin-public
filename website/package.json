@@ -20,7 +20,7 @@
     "start": "parcel src/index.html",
     "watch": "parcel watch index.html",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build src/index.html --public-url ./"
+    "build": "parcel build src/index.html --public-url ./ --no-minify"
   },
   "author": "apoorv@toidiu.com",
   "license": "MIT"
