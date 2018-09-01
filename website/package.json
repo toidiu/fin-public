@@ -1,0 +1,27 @@
+{
+  "name": "finance",
+  "version": "0.1.0",
+  "description": "my finances",
+  "main": "src/index.js",
+  "dependencies": {
+    "npm": "^6.4.1",
+    "vue": "^2.5.17",
+    "vue-hot-reload-api": "^2.3.0"
+  },
+  "devDependencies": {
+    "@vue/component-compiler-utils": "^2.2.0",
+    "babel-preset-env": "^1.7.0",
+    "parcel-bundler": "^1.9.7",
+    "typescript": "^3.0.3",
+    "vue-loader": "^15.4.1",
+    "vue-template-compiler": "^2.5.17"
+  },
+  "scripts": {
+    "start": "parcel src/index.html",
+    "watch": "parcel watch index.html",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "parcel build src/index.html --public-url ./"
+  },
+  "author": "apoorv@toidiu.com",
+  "license": "MIT"
+}
