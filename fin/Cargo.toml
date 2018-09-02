@@ -1,0 +1,8 @@
+[package]
+name = "fin"
+version = "0.1.0"
+authors = ["toidiu <apoorv@toidiu.com>"]
+
+[dependencies]
+rocket = "0.3.16"
+rocket_codegen = "0.3.16"
