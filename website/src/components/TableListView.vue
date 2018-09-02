@@ -35,7 +35,6 @@
       const initialState: FinTableState = {
         columnsNames: ['ticker', 'fee', 'goal %', 'current %'],
         columns: ['name', 'fee', 'currentGoal', 'currentPercent'],
-        msg: '',
         tickerList : [
           { name: "vtx", fee: .25, currentGoal: 3, currentPercent: 2 },
           { name: "voe", fee: .05 },
