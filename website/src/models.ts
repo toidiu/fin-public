@@ -1,5 +1,5 @@
 
-export interface Ticker {
+export class Ticker {
   name: string;
   fee: integer;
   currentGoal: integer;
@@ -7,6 +7,6 @@ export interface Ticker {
 }
 
 export interface FinTableState {
-  msg: string;
   tickerList: [Ticker];
+  msg: string;
 }

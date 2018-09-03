@@ -28,17 +28,17 @@
 
 <script lang="ts">
 
-  import { FinTableState } from '../models';
+  import { Ticker, FinTableState } from '../models';
+  import axios from 'axios';
+
 
   export default {
     data () {
       const initialState: FinTableState = {
         columnsNames: ['ticker', 'fee', 'goal %', 'current %'],
         columns: ['name', 'fee', 'currentGoal', 'currentPercent'],
-        msg: '',
         tickerList : [
-          { name: "vtx", fee: .25, currentGoal: 3, currentPercent: 2 },
-          { name: "voe", fee: .05 },
+          { name: "_", fee: 0 , currentGoal: 0, currentPercent: 0 },
         ],
       };
 
@@ -50,6 +50,12 @@
     methods: {
       fetchData () {
         this.msg = "bla"
+
+        axios.get('http://localhost:8000/')
+        .then((resp) =>
+          this.tickerList = resp.data;
+        );
+
       }
     },
   }
