@@ -1,59 +1,42 @@
 <template>
 
-  <div id="table-wrapper">
-    <div id="table-scroll">
-
-      <table>
-        <thead>
-          <tr>
-            <th v-for="key in columnsNames">
-              {{ key }}
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr  v-for="entry in tickerList">
-            <td v-for="key in columns">
-              {{ entry[key] }}
-            </td>
-          </tr>
-        </tbody>
-
-      </table>
-    </div>
-  </div>
+    <fin-view :initialState="initialState" />
 
 </template>
 
 <script lang="ts">
 
+  import FinView from "./FinView.vue";
   import { Ticker, FinTableState } from '../models';
   import axios from 'axios';
 
 
   export default {
+    props: ['name', 'initialEnthusiasm'],
+    components: {
+      FinView,
+    },
     data () {
-      const initialState: FinTableState = {
-        columnsNames: ['ticker', 'fee', 'goal %', 'current %'],
-        columns: ['name', 'fee', 'currentGoal', 'currentPercent'],
-        tickerList : [
-          { name: "_", fee: 0 , currentGoal: 0, currentPercent: 0 },
-        ],
+      const d = {
+        initialState: {
+          columnsNames: ['ticker', 'fee', 'goal %', 'current %'],
+          columns: ['name', 'fee', 'currentGoal', 'currentPercent'],
+          tickerList : [
+            { name: "_", fee: 0 , currentGoal: 0, currentPercent: 0 },
+          ],
+        }
       };
 
-      return initialState;
+      return d;
     },
     created () {
       this.fetchData()
     },
     methods: {
       fetchData () {
-        this.msg = "bla"
-
         axios.get('http://localhost:8000/')
         .then((resp) =>
-          this.tickerList = resp.data;
+          this.initialState.tickerList = resp.data;
         );
 
       }
@@ -98,8 +81,7 @@
     position:relative;
   }
   #table-scroll {
-    height:150px;
-    width: 80%;
+    width: 100%;
     overflow:auto;
     margin-top:20px;
   }

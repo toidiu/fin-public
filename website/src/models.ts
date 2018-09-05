@@ -7,6 +7,5 @@ export class Ticker {
 }
 
 export interface FinTableState {
-  tickerList: [Ticker];
-  msg: string;
+  tickerList: Array<Ticker>;
 }
