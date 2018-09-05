@@ -12,22 +12,17 @@
 
 
   export default {
-    props: ['name', 'initialEnthusiasm'],
     components: {
       FinView,
     },
     data () {
-      const d = {
-        initialState: {
-          columnsNames: ['ticker', 'fee', 'goal %', 'current %'],
-          columns: ['name', 'fee', 'currentGoal', 'currentPercent'],
-          tickerList : [
-            { name: "_", fee: 0 , currentGoal: 0, currentPercent: 0 },
-          ],
+      return {
+        initialState: <FinTableState> {
+          columnsNames: ['symbol', 'fee', 'price', 'kind', 'desription'],
+          columns: ['symbol', 'fee', 'price', 'investment_kind', 'desription'],
+          tickerList : [],
         }
       };
-
-      return d;
     },
     created () {
       this.fetchData()
@@ -36,56 +31,10 @@
       fetchData () {
         axios.get('http://localhost:8000/')
         .then((resp) =>
-          this.initialState.tickerList = resp.data;
+          this.initialState.tickerList = resp.data as Array<Ticker>
         );
-
       }
     },
   }
+  
 </script>
-
-<style lang="css">
-
-  table {
-    border: 2px solid #42b983;
-    border-radius: 3px;
-    background-color: #fff;
-  }
-
-  th {
-    background-color: #42b983;
-    color: rgba(255, 255, 255, 0.66);
-    cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  td {
-    background-color: #f9f9f9;
-  }
-
-  th,
-  td {
-    min-width: 50px;
-    padding: 10px 20px;
-  }
-
-  th.active {
-    color: #fff;
-  }
-
-
-  #table-wrapper {
-    position:relative;
-  }
-  #table-scroll {
-    width: 100%;
-    overflow:auto;
-    margin-top:20px;
-  }
-  #table-wrapper table {
-    width:100%;
-  }
-</style>

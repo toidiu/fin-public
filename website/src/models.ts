@@ -1,11 +1,13 @@
 
-export class Ticker {
+export interface Ticker {
   name: string;
-  fee: integer;
-  currentGoal: integer;
-  currentPercent: integer;
+  fee: number;
+  currentGoal: number;
+  currentPercent: number;
 }
 
 export interface FinTableState {
   tickerList: Array<Ticker>;
+  columnsNames: Array<string>;
+  columns: Array<string>;
 }
