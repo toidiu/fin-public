@@ -18,8 +18,10 @@
     data () {
       return {
         initialState: <FinTableState> {
-          columnsNames: ['symbol', 'fee', 'price', 'kind', 'desription'],
-          columns: ['symbol', 'fee', 'price', 'investment_kind', 'desription'],
+          columnsNames: ['symbol', 'fee', 'price', 'kind', 'description',
+            'Goal %', 'current %', 'current $'],
+          columns: ['symbol', 'fee', 'price', 'investment_kind', 'description',
+            'goalPercent', 'currentPercent', 'currentValue'],
           tickerList : [],
         }
       };
@@ -31,10 +33,10 @@
       fetchData () {
         axios.get('http://localhost:8000/')
         .then((resp) =>
-          this.initialState.tickerList = resp.data as Array<Ticker>
+          this.initialState.tickerList = resp.data
         );
       }
     },
   }
-  
+
 </script>

@@ -35,6 +35,5 @@ import Vue from "vue";
 
 <style lang="css">
   #app {
-    color: #56b983;
   }
 </style>

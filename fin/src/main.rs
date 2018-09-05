@@ -12,26 +12,47 @@ use crate::ticker::*;
 
 #[get("/")]
 fn index() -> String {
-    let ticker = Ticker {
+    let ticker1 = Ticker {
         symbol: TickerSymbol("vti".to_owned()),
         fee: 0.3,
         price: 150.0,
         investment_kind: InvestmentKind::Stock,
-        description: "".to_owned(),
+        description: "des".to_owned(),
         // current_goal: 20,
         // current_percent: 55
     };
-    let ticker1 = Ticker {
+    let goal1 = TickerGoal {
+        symbol: TickerSymbol("vti".to_owned()),
+        goal_percent: 2.3,
+        current_percent: 3.4,
+        current_value: 22.0,
+    };
+    let ticker_goal1 = TickerStatus {
+        ticker: ticker1,
+        goal: goal1,
+    };
+
+    let ticker2 = Ticker {
         symbol: TickerSymbol("voe".to_owned()),
         fee: 0.5,
         price: 150.0,
-        investment_kind: InvestmentKind::Stock,
-        description: "".to_owned(),
+        investment_kind: InvestmentKind::Bond,
+        description: "dis".to_owned(),
         // current_goal: 9,
         // current_percent: 5
     };
+    let goal2 = TickerGoal {
+        symbol: TickerSymbol("voe".to_owned()),
+        goal_percent: 2.3,
+        current_percent: 3.4,
+        current_value: 22.0,
+    };
+    let ticker_goal2 = TickerStatus {
+        ticker: ticker2,
+        goal: goal2,
+    };
 
-    let ticker_list = vec![ticker, ticker1];
+    let ticker_list = vec![ticker_goal1, ticker_goal2];
     serde_json::to_string(&ticker_list).unwrap()
 }
 
@@ -57,8 +78,10 @@ fn main() {
 }
 
 mod ticker {
+    use serde::ser::{Serialize, Serializer, SerializeStruct};
+    use serde_json::Value;
 
-    #[derive(Serialize, Deserialize, Debug)]
+    #[derive(Serialize, Deserialize, Debug, Default)]
     pub struct TickerSymbol(pub String);
 
     #[derive(Serialize, Deserialize, Debug)]
@@ -72,12 +95,15 @@ mod ticker {
 
     #[derive(Serialize, Deserialize, Debug)]
     pub enum InvestmentKind {
+        #[serde(rename = "stock")]
         Stock,
+        #[serde(rename = "bond")]
         Bond,
     }
 
     #[derive(Serialize, Deserialize, Debug)]
     pub struct TickerGoal {
+        #[serde(skip)]
         pub symbol: TickerSymbol,
         #[serde(rename = "goalPercent")]
         pub goal_percent: f32,
@@ -89,8 +115,10 @@ mod ticker {
 
     #[derive(Serialize, Deserialize, Debug)]
     pub struct TickerStatus {
-        ticker: Ticker,
-        goal: TickerGoal,
+        #[serde(flatten)]
+        pub ticker: Ticker,
+        #[serde(flatten)]
+        pub goal: TickerGoal,
     }
 
 }
