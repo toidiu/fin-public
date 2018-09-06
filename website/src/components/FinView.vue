@@ -43,10 +43,7 @@
 
 <style lang="scss">
 
-  $font-stack: Helvetica, sans-serif;
-
   table {
-    font: 100% $font-stack;
     border: 1px solid #000;
     border-radius: 3px;
   }
