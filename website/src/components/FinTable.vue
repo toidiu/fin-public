@@ -18,8 +18,8 @@
     data () {
       return {
         initialState: <FinTableState> {
-          columnsNames: ['symbol', 'fee', 'price', 'kind', 'description',
-            'Goal %', 'current %', 'current $'],
+          columnsNames: ['Symbol', 'Fee', 'Price', 'Kind', 'Description',
+            'Goal %', 'Current %', 'Current $'],
           columns: ['symbol', 'fee', 'price', 'investment_kind', 'description',
             'goalPercent', 'currentPercent', 'currentValue'],
           tickerList : [],

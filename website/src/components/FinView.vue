@@ -41,15 +41,18 @@
   }
 </script>
 
-<style lang="css">
+<style lang="scss">
+
+  $font-stack: Helvetica, sans-serif;
 
   table {
-    border: 2px solid #000;
+    font: 100% $font-stack;
+    border: 1px solid #000;
     border-radius: 3px;
   }
 
   th {
-    color: #aa704e;
+    /* color: #aa704e; */
     background-color: #c9c9c9;
     /* color: rgba(255, 255, 255, 0.66); */
     /* cursor: pointer; */
@@ -57,11 +60,13 @@
     /* -moz-user-select: none; */
     /* -ms-user-select: none; */
     /* user-select: none; */
+    font-size: 13px;
   }
 
   td {
     background-color: #f9f9f9;
-    color: #0079bf;
+    /* color: #0079bf; */
+    font-size: 14px;
   }
 
   th,
@@ -69,7 +74,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    min-width: 30px;
+    /* min-width: 30px; */
     max-width: 60px;
     padding: 10px 10px;
   }
@@ -83,6 +88,6 @@
     margin-top:20px;
   }
   #table-wrapper table {
-    width:100%;
+    /* width:100%; */
   }
 </style>
