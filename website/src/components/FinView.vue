@@ -1,26 +1,57 @@
 <template>
 
-  <div id="table-wrapper">
-    <div id="table-scroll">
 
-      <table>
-        <thead>
-          <tr>
-            <th v-for="(key, idx) in initialState.columnsNames" v-bind:key="idx">
-              {{ key }}
-            </th>
-          </tr>
-        </thead>
+  <div>
 
-        <tbody>
-          <tr  v-for="(entry, idx) in initialState.tickerList" v-bind:key="entry + idx">
-            <td v-for="(key, jdx) in initialState.columns" v-bind:key="entry.symbol + jdx">
-              {{ entry[key] }}
-            </td>
-          </tr>
-        </tbody>
+    this is {{ initialState.portfolio.name }}
 
-      </table>
+    </br>
+
+    <div id="table-wrapper">
+      <div id="table-scroll">
+
+        <table>
+          <thead>
+            <tr>
+              <th v-for="(key, idx) in initialState.columnsNames" v-bind:key="idx">
+                {{ key }}
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr  v-for="(entry, idx) in initialState.portfolio.current_detail.stocks" v-bind:key="entry + idx">
+              <td v-bind:class=key v-for="(key, jdx) in initialState.columns" v-bind:key="entry.symbol + jdx">
+                {{ entry[key] }}
+              </td>
+            </tr>
+          </tbody>
+
+          <tbody>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td class="goalPercent">{{ initialState.portfolio.current_detail.current_stock_percent }}</td>
+              <td class="currentPercent">{{ initialState.portfolio.current_detail.current_stock_percent }}</td>
+              <td></td>
+            </tr>
+          </tbody>
+
+          <tbody>
+            <tr  v-for="(entry, idx) in initialState.portfolio.current_detail.bonds" v-bind:key="entry + idx">
+              <td v-bind:class=key v-for="(key, jdx) in initialState.columns" v-bind:key="entry.symbol + jdx">
+                {{ entry[key] }}
+              </td>
+            </tr>
+          </tbody>
+
+
+
+        </table>
+      </div>
     </div>
   </div>
 
@@ -63,7 +94,42 @@
   td {
     background-color: #f9f9f9;
     /* color: #0079bf; */
-    font-size: 14px;
+    font-size: 13px;
+  }
+
+  td {
+    &.goalPercent,
+    &.symbol, {
+
+      & {
+        font-weight: bold;
+      }
+
+    }
+  }
+
+  td {
+    &.fee,
+    &.currentPercent,
+    &.goalPercent, {
+
+      &::after {
+        content: "%";
+      }
+
+    }
+  }
+
+  td {
+    &.price,
+    &.currentValue, {
+
+      &::before {
+        content: "$";
+        margin: 0 -2px;
+      }
+
+    }
   }
 
   th,
@@ -71,9 +137,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    /* min-width: 30px; */
+    min-width: 40px;
     max-width: 60px;
     padding: 10px 10px;
+    text-align: center;
   }
 
   #table-wrapper {

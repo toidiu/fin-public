@@ -13,6 +13,7 @@
   "devDependencies": {
     "@vue/component-compiler-utils": "^2.2.0",
     "babel-preset-env": "^1.7.0",
+    "node-sass": "^4.9.3",
     "parcel-bundler": "^1.9.7",
     "typescript": "^3.0.3",
     "vue-template-compiler": "^2.5.17"

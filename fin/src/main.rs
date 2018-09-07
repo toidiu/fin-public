@@ -6,58 +6,17 @@
 extern crate serde_derive;
 
 use rocket::http::Method;
-use rocket_cors::{AllowedOrigins, AllowedHeaders};
-use crate::ticker::*;
-
+use rocket_cors::{AllowedHeaders, AllowedOrigins};
 
 #[get("/")]
 fn index() -> String {
-    let ticker1 = Ticker {
-        symbol: TickerSymbol("vti".to_owned()),
-        fee: 0.3,
-        price: 150.0,
-        investment_kind: InvestmentKind::Stock,
-        description: "des".to_owned(),
-        // current_goal: 20,
-        // current_percent: 55
-    };
-    let goal1 = TickerGoal {
-        symbol: TickerSymbol("vti".to_owned()),
-        goal_percent: 2.3,
-        current_percent: 3.4,
-        current_value: 22.0,
-    };
-    let ticker_goal1 = TickerStatus {
-        ticker: ticker1,
-        goal: goal1,
-    };
+    use crate::data::*;
 
-    let ticker2 = Ticker {
-        symbol: TickerSymbol("voe".to_owned()),
-        fee: 0.5,
-        price: 150.0,
-        investment_kind: InvestmentKind::Bond,
-        description: "dis".to_owned(),
-        // current_goal: 9,
-        // current_percent: 5
-    };
-    let goal2 = TickerGoal {
-        symbol: TickerSymbol("voe".to_owned()),
-        goal_percent: 2.3,
-        current_percent: 3.4,
-        current_value: 22.0,
-    };
-    let ticker_goal2 = TickerStatus {
-        ticker: ticker2,
-        goal: goal2,
-    };
-
-    let ticker_list = vec![ticker_goal1, ticker_goal2];
-    serde_json::to_string(&ticker_list).unwrap()
+    let d = get_data();
+    serde_json::to_string(&d).unwrap()
 }
 
 fn main() {
-
     let (allowed_origins, failed_origins) = AllowedOrigins::some(&["http://localhost:1234"]);
     assert!(failed_origins.is_empty());
 
@@ -74,12 +33,224 @@ fn main() {
         .mount("/", routes![index])
         .attach(options)
         .launch();
+}
+
+mod data {
+    use crate::portfolio::*;
+    use crate::ticker::*;
+
+    pub fn get_data() -> Portfolio {
+        let tg_vti = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("vti".to_owned()),
+                fee: 0.04,
+                price: 150.0,
+                kind: InvestmentKind::Stock,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("vti".to_owned()),
+                goal_percent: 20.0,
+                current_percent: 22.56,
+                current_value: 300.0,
+                current_quantity: 1,
+            },
+        };
+
+        let tg_vtv = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("vtv".to_owned()),
+                fee: 0.05,
+                price: 111.0,
+                kind: InvestmentKind::Stock,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("vtv".to_owned()),
+                goal_percent: 6.0,
+                current_percent: 8.35,
+                current_value: 111.0,
+                current_quantity: 1,
+            },
+        };
+
+        let tg_voe = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("voe".to_owned()),
+                fee: 0.07,
+                price: 115.0,
+                kind: InvestmentKind::Stock,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("voe".to_owned()),
+                goal_percent: 4.0,
+                current_percent: 8.65,
+                current_value: 115.0,
+                current_quantity: 1,
+            },
+        };
+
+        let tg_vbr = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("vbr".to_owned()),
+                fee: 0.07,
+                price: 142.0,
+                kind: InvestmentKind::Stock,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("vbr".to_owned()),
+                goal_percent: 3.0,
+                current_percent: 10.68,
+                current_value: 142.0,
+                current_quantity: 1,
+            },
+        };
+
+        let tg_vea = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("vea".to_owned()),
+                fee: 0.07,
+                price: 43.0,
+                kind: InvestmentKind::Stock,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("vea".to_owned()),
+                goal_percent: 15.0,
+                current_percent: 9.70,
+                current_value: 129.0,
+                current_quantity: 3,
+            },
+        };
+
+        let tg_vwo = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("vwo".to_owned()),
+                fee: 0.14,
+                price: 43.0,
+                kind: InvestmentKind::Stock,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("vwo".to_owned()),
+                goal_percent: 10.0,
+                current_percent: 6.47,
+                current_value: 86.0,
+                current_quantity: 2,
+            },
+        };
+
+        let tg_vtip = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("vtip".to_owned()),
+                fee: 0.06,
+                price: 49.0,
+                kind: InvestmentKind::Bond,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("vtip".to_owned()),
+                goal_percent: 3.0,
+                current_percent: 3.68,
+                current_value: 49.0,
+                current_quantity: 1,
+            },
+        };
+
+        let tg_agg = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("agg".to_owned()),
+                fee: 0.05,
+                price: 106.0,
+                kind: InvestmentKind::Bond,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("agg".to_owned()),
+                goal_percent: 4.0,
+                current_percent: 7.97,
+                current_value: 106.0,
+                current_quantity: 1,
+            },
+        };
+
+        let tg_mub = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("mub".to_owned()),
+                fee: 0.07,
+                price: 109.0,
+                kind: InvestmentKind::Bond,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("mub".to_owned()),
+                goal_percent: 14.0,
+                current_percent: 8.2,
+                current_value: 109.0,
+                current_quantity: 1,
+            },
+        };
+
+        let tg_bndx = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("bndx".to_owned()),
+                fee: 0.11,
+                price: 54.0,
+                kind: InvestmentKind::Bond,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("bndx".to_owned()),
+                goal_percent: 12.0,
+                current_percent: 8.12,
+                current_value: 108.0,
+                current_quantity: 2,
+            },
+        };
+
+        let tg_vwob = TickerStatus {
+            ticker: Ticker {
+                symbol: TickerSymbol("vwob".to_owned()),
+                fee: 0.32,
+                price: 75.0,
+                kind: InvestmentKind::Bond,
+                description: "des".to_owned(),
+            },
+            goal: TickerGoal {
+                symbol: TickerSymbol("vwob".to_owned()),
+                goal_percent: 9.0,
+                current_percent: 5.64,
+                current_value: 75.0,
+                current_quantity: 1,
+            },
+        };
+
+        let port = Portfolio {
+            name: "my portfolio".to_owned(),
+            started: 123,
+            current_detail: PortfolioDetails {
+                stocks: vec![tg_vti, tg_vtv, tg_voe, tg_vbr, tg_vea, tg_vwo],
+                bonds: vec![tg_vtip, tg_agg, tg_mub, tg_bndx, tg_vwob],
+                goal_stock_percent: 58.0,
+                current_stock_percent: 66.39,
+                deviation_percent: 5.0,
+            },
+            past_detail: vec![],
+        };
+
+        port
+
+        // vec![
+        //     tg_vti, tg_vtv, tg_voe, tg_vbr, tg_vea, tg_vwo, tg_vtip, tg_agg, tg_mub, tg_bndx,
+        //     tg_vwob,
+        // ]
+    }
 
 }
 
 mod ticker {
-    use serde::ser::{Serialize, Serializer, SerializeStruct};
-    use serde_json::Value;
 
     #[derive(Serialize, Deserialize, Debug, Default)]
     pub struct TickerSymbol(pub String);
@@ -89,7 +260,7 @@ mod ticker {
         pub symbol: TickerSymbol,
         pub fee: f32,
         pub price: f32,
-        pub investment_kind: InvestmentKind,
+        pub kind: InvestmentKind,
         pub description: String,
     }
 
@@ -111,6 +282,8 @@ mod ticker {
         pub current_percent: f32,
         #[serde(rename = "currentValue")]
         pub current_value: f32,
+        #[serde(rename = "currentQuantity")]
+        pub current_quantity: u32,
     }
 
     #[derive(Serialize, Deserialize, Debug)]
@@ -136,7 +309,8 @@ mod portfolio {
 
     #[derive(Serialize, Deserialize, Debug)]
     pub struct PortfolioDetails {
-        pub tickers: Vec<TickerStatus>,
+        pub stocks: Vec<TickerStatus>,
+        pub bonds: Vec<TickerStatus>,
         pub goal_stock_percent: f32,
         pub current_stock_percent: f32,
         pub deviation_percent: f32,
