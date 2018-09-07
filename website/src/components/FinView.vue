@@ -1,9 +1,10 @@
 <template>
 
   <div>
-    this is {{ initialState.portfolio.name }}
 
-    </br>
+    <h1>
+      {{ initialState.portfolio.name }}
+    </h1>
 
     <div id="table-wrapper">
       <div id="table-scroll">
