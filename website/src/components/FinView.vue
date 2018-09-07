@@ -1,8 +1,6 @@
 <template>
 
-
   <div>
-
     this is {{ initialState.portfolio.name }}
 
     </br>
@@ -65,10 +63,6 @@
     props: {
       initialState: Object
     },
-    data () {
-      return {
-      }
-    }
   }
 </script>
 

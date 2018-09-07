@@ -22,7 +22,15 @@
             'Goal %', 'C %', 'C $'],
           columns: ['symbol', 'kind', 'fee', 'price', 'currentQuantity',
             'goalPercent', 'currentPercent', 'currentValue'],
-          tickerList : [],
+          portfolio : {
+            current_detail: {
+              stocks: [],
+              bonds: [],
+              goal_stock_percent: 3;
+              current_stock_percent: 33;
+              deviation_percent: 22;
+            }
+          },
         }
       };
     },
@@ -33,7 +41,7 @@
       fetchData () {
         axios.get('http://localhost:8000/')
         .then((resp) =>
-          this.initialState.portfolio = resp.data
+            this.initialState.portfolio = resp.data
         );
       }
     },
