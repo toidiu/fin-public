@@ -32,7 +32,6 @@
               <td class="summary"></td>
               <td class="summary"></td>
               <td class="summary"></td>
-              <td class="summary"></td>
               <td class="summary goalPercent">{{ initialState.portfolio.current_detail.goal_stock_percent }}</td>
               <td class="summary currentPercent">{{ initialState.portfolio.current_detail.current_stock_percent }}</td>
               <td class="summary"></td>

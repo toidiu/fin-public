@@ -18,9 +18,9 @@
     data () {
       return {
         initialState: <FinTableState> {
-          columnsNames: ['Symbol', 'Kind', 'Fee', 'Price', 'Shares',
+          columnsNames: ['Symbol', 'Kind', 'Fee', 'Price',
             'Goal %', 'C %', 'C $'],
-          columns: ['symbol', 'kind', 'fee', 'price', 'currentQuantity',
+          columns: ['symbol', 'kind', 'fee', 'price',
             'goalPercent', 'currentPercent', 'currentValue'],
           portfolio : {
             current_detail: {

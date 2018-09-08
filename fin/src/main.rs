@@ -53,7 +53,7 @@ mod data {
                 goal_percent: 20.0,
                 current_percent: 22.56,
                 current_value: 300.0,
-                current_quantity: 1,
+                current_shares: 1,
             },
         };
 
@@ -70,7 +70,7 @@ mod data {
                 goal_percent: 6.0,
                 current_percent: 8.35,
                 current_value: 111.0,
-                current_quantity: 1,
+                current_shares: 1,
             },
         };
 
@@ -87,7 +87,7 @@ mod data {
                 goal_percent: 4.0,
                 current_percent: 8.65,
                 current_value: 115.0,
-                current_quantity: 1,
+                current_shares: 1,
             },
         };
 
@@ -104,7 +104,7 @@ mod data {
                 goal_percent: 3.0,
                 current_percent: 10.68,
                 current_value: 142.0,
-                current_quantity: 1,
+                current_shares: 1,
             },
         };
 
@@ -121,7 +121,7 @@ mod data {
                 goal_percent: 15.0,
                 current_percent: 9.70,
                 current_value: 129.0,
-                current_quantity: 3,
+                current_shares: 3,
             },
         };
 
@@ -138,7 +138,7 @@ mod data {
                 goal_percent: 10.0,
                 current_percent: 6.47,
                 current_value: 86.0,
-                current_quantity: 2,
+                current_shares: 2,
             },
         };
 
@@ -155,7 +155,7 @@ mod data {
                 goal_percent: 3.0,
                 current_percent: 3.68,
                 current_value: 49.0,
-                current_quantity: 1,
+                current_shares: 1,
             },
         };
 
@@ -172,7 +172,7 @@ mod data {
                 goal_percent: 4.0,
                 current_percent: 7.97,
                 current_value: 106.0,
-                current_quantity: 1,
+                current_shares: 1,
             },
         };
 
@@ -189,7 +189,7 @@ mod data {
                 goal_percent: 14.0,
                 current_percent: 8.2,
                 current_value: 109.0,
-                current_quantity: 1,
+                current_shares: 1,
             },
         };
 
@@ -206,7 +206,7 @@ mod data {
                 goal_percent: 12.0,
                 current_percent: 8.12,
                 current_value: 108.0,
-                current_quantity: 2,
+                current_shares: 2,
             },
         };
 
@@ -223,7 +223,7 @@ mod data {
                 goal_percent: 9.0,
                 current_percent: 5.64,
                 current_value: 75.0,
-                current_quantity: 1,
+                current_shares: 1,
             },
         };
 
@@ -282,8 +282,14 @@ mod ticker {
         pub current_percent: f32,
         #[serde(rename = "currentValue")]
         pub current_value: f32,
-        #[serde(rename = "currentQuantity")]
-        pub current_quantity: u32,
+
+
+        // either keep this here or maybe have another table that records
+        // the transactions we have made. we can then calculate what the
+        // current shares are based on that table. (table could be
+        // expensive)
+        #[serde(rename = "currentShares")]
+        pub current_shares: u32,
     }
 
     #[derive(Serialize, Deserialize, Debug)]
