@@ -28,14 +28,14 @@
 
           <tbody>
             <tr>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td class="goalPercent">{{ initialState.portfolio.current_detail.current_stock_percent }}</td>
-              <td class="currentPercent">{{ initialState.portfolio.current_detail.current_stock_percent }}</td>
-              <td></td>
+              <td class="summary"></td>
+              <td class="summary"></td>
+              <td class="summary"></td>
+              <td class="summary"></td>
+              <td class="summary"></td>
+              <td class="summary goalPercent">{{ initialState.portfolio.current_detail.goal_stock_percent }}</td>
+              <td class="summary currentPercent">{{ initialState.portfolio.current_detail.current_stock_percent }}</td>
+              <td class="summary"></td>
             </tr>
           </tbody>
 
@@ -103,10 +103,18 @@
     }
   }
 
+  td.summary, {
+    background-color: #d5d5d5;
+  }
+
   td {
     &.fee,
     &.currentPercent,
     &.goalPercent, {
+
+      &.summary {
+        color: red;
+      }
 
       &::after {
         content: "%";
