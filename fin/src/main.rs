@@ -2,6 +2,8 @@
 #![plugin(rocket_codegen)]
 #![feature(nll)]
 
+#![allow(unused)]
+
 #[macro_use]
 extern crate serde_derive;
 

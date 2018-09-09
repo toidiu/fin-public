@@ -1,7 +1,7 @@
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug, Default)]
 pub struct TickerSymbol(pub String);
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug)]
 pub enum InvestmentKind {
     #[serde(rename = "stock")]
     Stock,
@@ -9,7 +9,7 @@ pub enum InvestmentKind {
     Bond,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Ticker {
     pub symbol: TickerSymbol,
     pub fee: f32,
