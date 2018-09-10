@@ -31,6 +31,7 @@ struct PortfolioActual {
     // calculated
     pub actual_stock_percent: f32,
 }
+
 impl PortfolioActual {
     pub fn new(tickers: Vec<TickerActual>) -> Self {
         PortfolioActual {
@@ -115,4 +116,12 @@ pub fn get_data() -> Portfolio {
         past_detail: vec![],
     };
     p
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
 }

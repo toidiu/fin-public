@@ -1,7 +1,6 @@
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 #![feature(nll)]
-
 #![allow(unused)]
 
 #[macro_use]

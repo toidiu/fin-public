@@ -4,9 +4,94 @@ use crate::portfolio1::*;
 use crate::portfolio2;
 use crate::ticker::*;
 
+trait TickerDatabase {
+    fn get_ticker(symbol: &TickerSymbol) -> Ticker;
+    fn get_tickers() -> Vec<Ticker>;
+
+    fn is_stock(symbol: &TickerSymbol) -> bool {
+        let ticker = Self::get_ticker(&symbol);
+        InvestmentKind::Stock.eq(&ticker.kind)
+    }
+}
+
+struct DefaultTickerDatabase {}
+
+impl TickerDatabase for DefaultTickerDatabase {
+    fn get_ticker(symbol: &TickerSymbol) -> Ticker {
+        let tickers = get_tickers();
+        let d: Vec<Ticker> = tickers
+            .into_iter()
+            .filter(|x| x.symbol.eq(&symbol))
+            .collect();
+        d.first().unwrap().clone()
+    }
+
+    fn get_tickers() -> Vec<Ticker> {
+        let vti = Ticker {
+            symbol: TickerSymbol("vti".to_owned()),
+            fee: 0.04,
+            price: 150.0,
+            kind: InvestmentKind::Stock,
+        };
+        vec![vti]
+    }
+}
+
 pub fn is_stock(symbol: &TickerSymbol) -> bool {
     let ticker = get_ticker(&symbol);
     InvestmentKind::Stock.eq(&ticker.kind)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct Helper {}
+    impl Helper {
+        fn stock() -> Ticker {
+            Ticker {
+                symbol: TickerSymbol("vti".to_owned()),
+                fee: 0.04,
+                price: 150.0,
+                kind: InvestmentKind::Stock,
+            }
+        }
+        fn bond() -> Ticker {
+            Ticker {
+                symbol: TickerSymbol("mub".to_owned()),
+                fee: 0.04,
+                price: 150.0,
+                kind: InvestmentKind::Bond,
+            }
+        }
+    }
+    impl TickerDatabase for Helper {
+        fn get_ticker(symbol: &TickerSymbol) -> Ticker {
+            let tickers = Self::get_tickers();
+            let d: Vec<Ticker> = tickers
+                .into_iter()
+                .filter(|x| x.symbol.eq(&symbol))
+                .collect();
+            d.first().unwrap().clone()
+        }
+        fn get_tickers() -> Vec<Ticker> {
+            let stock = Self::stock();
+            let bond = Self::bond();
+            vec![stock, bond]
+        }
+    }
+
+    #[test]
+    fn pass_is_stock() {
+        let f = Helper::is_stock(&TickerSymbol("vti".to_owned()));
+        assert!(f);
+    }
+
+    #[test]
+    fn fail_is_stock() {
+        let f = Helper::is_stock(&TickerSymbol("mub".to_owned()));
+        assert!(!f);
+    }
 }
 
 pub fn get_goal() -> Vec<portfolio2::TickerGoal> {
@@ -137,9 +222,7 @@ pub fn get_ticker(symbol: &TickerSymbol) -> Ticker {
     let tickers = get_tickers();
     let d: Vec<Ticker> = tickers
         .into_iter()
-        .filter(|x|
-            x.symbol.eq(&symbol)
-        )
+        .filter(|x| x.symbol.eq(&symbol))
         .collect();
     d.first().unwrap().clone()
 }
