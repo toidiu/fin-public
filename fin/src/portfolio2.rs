@@ -35,7 +35,7 @@ struct PortfolioActual {
 impl PortfolioActual {
     pub fn new(tickers: Vec<TickerActual>) -> Self {
         PortfolioActual {
-            tickers: data::get_actual(),
+            tickers: tickers,
             total_value: 0.0,
             actual_stock_percent: 0.0,
         }.calculate_total()
@@ -50,6 +50,7 @@ impl PortfolioActual {
             .tickers
             .iter()
             .filter(|ref x| data::is_stock(&x.symbol))
+            // .filter(|ref x| self.is_stock(&x.symbol))
             .map(|x| x.actual_value)
             .sum();
         self.actual_stock_percent = (stock_value / self.total_value) * 100.0;
@@ -88,15 +89,15 @@ impl TickerActual {
     }
 }
 
-pub fn get_data() -> Portfolio {
+pub fn get_data<T: data::TickerDatabase>(db: T) -> Portfolio {
     let pg = PortfolioGoal {
-        tickers: data::get_goal(),
+        tickers: db.get_goal(),
         goal_stock_percent: 58.0,
         deviation_percent: 5.0,
     };
 
     let actual_tickers = {
-        let mut actual = data::get_actual();
+        let mut actual = db.get_actual();
         let total_value = actual.iter().map(|x| x.actual_value).sum();
         actual
             .into_iter()
@@ -116,12 +117,4 @@ pub fn get_data() -> Portfolio {
         past_detail: vec![],
     };
     p
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
 }

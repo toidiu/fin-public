@@ -17,7 +17,8 @@ mod ticker;
 fn index() -> String {
     use crate::data::*;
 
-    let d = portfolio2::get_data();
+    let db = data::DefaultTickerDatabase {};
+    let d = portfolio2::get_data(db);
     serde_json::to_string(&d).unwrap()
 }
 
