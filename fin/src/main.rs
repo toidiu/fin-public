@@ -59,15 +59,14 @@ mod logic {
         let db = data::DefaultTickerDatabase {};
         let port = portfolio2::get_data(db);
 
-        let is_stock_greater = port.is_stock_per_greater();
+        let is_stock_greater = port.determine_action();
         match is_stock_greater {
-            Action::BuyStock => (),
+            StockBondAction::BuyStock => (),
 
-            Action::BuyBond => (),
+            StockBondAction::BuyBond => (),
 
-            Action::BuyEither => (),
+            StockBondAction::BuyEither => (),
         };
-
 
         // calculate gTn%-aTn% for each ticker
         // buy the one with the largest difference

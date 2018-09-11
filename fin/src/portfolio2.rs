@@ -4,6 +4,27 @@ use crate::data;
 use crate::ticker::*;
 use std::num;
 
+pub enum StockBondAction {
+    BuyStock,
+    BuyBond,
+    BuyEither,
+}
+pub enum TickerAction {
+    Buy,
+    Sell,
+    Hold,
+}
+pub struct PortfolioDiff {
+    tickers: Vec<TickerDiff>,
+}
+pub struct TickerDiff {
+    symbol: TickerSymbol,
+    diff_percent: f32,
+    action: TickerAction,
+}
+
+// =================================
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
     pub name: String,
@@ -11,14 +32,8 @@ pub struct Portfolio {
     pub past_detail: Vec<PortfolioDetail>,
 }
 
-pub enum Action {
-    BuyStock,
-    BuyBond,
-    BuyEither,
-}
-
 impl Portfolio {
-    pub fn is_stock_per_greater(&self) -> Action {
+    pub fn determine_action(&self) -> StockBondAction {
         let actual_per = self.current_detail.actual.actual_stock_percent;
         let goal_per = self.current_detail.goal.goal_stock_percent;
         let deviation = self.current_detail.goal.deviation_percent;
@@ -26,14 +41,29 @@ impl Portfolio {
         let diff = goal_per - actual_per;
         if ((diff < 0.0) && diff.abs() > deviation) {
             // If gS%-aS% is - and abs val above q% then buy bonds
-            Action::BuyStock
+            StockBondAction::BuyStock
         } else if (diff > 0.0 && diff > deviation) {
             // If gS%-aS% is + and above q% then buy stocks
-            Action::BuyBond
+            StockBondAction::BuyBond
         } else {
             // else buy stock or bond
-            Action::BuyEither
+            StockBondAction::BuyEither
         }
+    }
+
+    pub fn calculate_ticker_diff(&self) -> PortfolioDiff {
+        let actual = &self.current_detail.actual;
+        let goal = &self.current_detail.goal;
+
+        FIXME calculate the difference between goal and actual ticker percentage.
+            maybe change TickerActual.tickers to a HashMap
+
+        let a = TickerDiff {
+            symbol: TickerSymbol("".to_owned()),
+            diff_percent: 33.3,
+            action: TickerAction::Buy,
+        };
+        PortfolioDiff { tickers: vec![a] }
     }
 }
 
