@@ -14,3 +14,8 @@ rocket_cors = "0.3.0"
 serde = "1.0.76"
 serde_derive = "1.0.76"
 serde_json = "1.0.26"
+
+# testing
+mock_derive = "0.7.0"
+
+
