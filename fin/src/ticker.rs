@@ -16,3 +16,9 @@ pub struct Ticker {
     pub price: f32,
     pub kind: InvestmentKind,
 }
+
+impl Ticker {
+    pub fn is_stock(&self) -> bool {
+        self.kind.eq(&InvestmentKind::Stock)
+    }
+}

@@ -1,7 +1,6 @@
 #![feature(plugin)]
 #![feature(proc_macro_gen)]
 #![feature(nll)]
-
 #![plugin(rocket_codegen)]
 #![allow(unused)]
 
@@ -11,6 +10,8 @@ extern crate serde_derive;
 use rocket::http::Method;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 
+use crate::data::*;
+
 mod data;
 mod portfolio1;
 mod portfolio2;
@@ -18,21 +19,16 @@ mod ticker;
 
 #[get("/")]
 fn index() -> String {
-    use crate::data::*;
-
     let d = portfolio1::get_data_portfolio1();
     serde_json::to_string(&d).unwrap()
 }
 
 #[get("/2")]
 fn two() -> String {
-    use crate::data::*;
-
     let db = data::DefaultTickerDatabase {};
     let d = portfolio2::get_data(db);
     serde_json::to_string(&d).unwrap()
 }
-
 
 fn main() {
     let (allowed_origins, failed_origins) = AllowedOrigins::some(&["http://localhost:1234"]);
@@ -53,3 +49,29 @@ fn main() {
         .launch();
 }
 
+mod logic {
+
+    use crate::data;
+    use crate::portfolio2;
+    use crate::portfolio2::*;
+
+    fn calculate() {
+        let db = data::DefaultTickerDatabase {};
+        let port = portfolio2::get_data(db);
+
+        let is_stock_greater = port.is_stock_per_greater();
+        match is_stock_greater {
+            Action::BuyStock => (),
+
+            Action::BuyBond => (),
+
+            Action::BuyEither => (),
+        };
+
+
+        // calculate gTn%-aTn% for each ticker
+        // buy the one with the largest difference
+        // if difference for all is within q% then buy cheapest first
+    }
+
+}

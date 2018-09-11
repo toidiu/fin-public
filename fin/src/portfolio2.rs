@@ -2,12 +2,39 @@
 
 use crate::data;
 use crate::ticker::*;
+use std::num;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
     pub name: String,
     pub current_detail: PortfolioDetail,
     pub past_detail: Vec<PortfolioDetail>,
+}
+
+pub enum Action {
+    BuyStock,
+    BuyBond,
+    BuyEither,
+}
+
+impl Portfolio {
+    pub fn is_stock_per_greater(&self) -> Action {
+        let actual_per = self.current_detail.actual.actual_stock_percent;
+        let goal_per = self.current_detail.goal.goal_stock_percent;
+        let deviation = self.current_detail.goal.deviation_percent;
+
+        let diff = goal_per - actual_per;
+        if ((diff < 0.0) && diff.abs() > deviation) {
+            // If gS%-aS% is - and abs val above q% then buy bonds
+            Action::BuyStock
+        } else if (diff > 0.0 && diff > deviation) {
+            // If gS%-aS% is + and above q% then buy stocks
+            Action::BuyBond
+        } else {
+            // else buy stock or bond
+            Action::BuyEither
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -18,22 +45,22 @@ pub struct PortfolioDetail {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PortfolioGoal {
-    pub tickers: Vec<TickerGoal>,
-    pub goal_stock_percent: f32,
-    pub deviation_percent: f32,
+    tickers: Vec<TickerGoal>,
+    goal_stock_percent: f32,
+    deviation_percent: f32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PortfolioActual {
-    pub tickers: Vec<TickerActual>,
+    tickers: Vec<TickerActual>,
     // calculated
-    pub total_value: f32,
+    total_value: f32,
     // calculated
-    pub actual_stock_percent: f32,
+    actual_stock_percent: f32,
 }
 
 impl PortfolioActual {
-    pub fn new<T: data::TickerDatabase>(tickers: Vec<TickerActual>, db: T) -> Self {
+    fn new<T: data::TickerDatabase>(tickers: Vec<TickerActual>, db: T) -> Self {
         PortfolioActual {
             tickers: tickers,
             total_value: 0.0,
@@ -49,7 +76,7 @@ impl PortfolioActual {
         let stock_value: f32 = self
             .tickers
             .iter()
-            .filter(|ref x| db.is_stock(&x.symbol))
+            .filter(|ref x| db.get_ticker(&x.symbol).is_stock())
             .map(|x| x.actual_value)
             .sum();
         self.actual_stock_percent = (stock_value / self.total_value) * 100.0;
@@ -73,15 +100,6 @@ pub struct TickerActual {
 }
 
 impl TickerActual {
-    // fn new(symbol: TickerSymbol, actual_value: f32, actual_shares: u32, total_value: f32) -> Self {
-    //     TickerActual {
-    //         symbol: symbol,
-    //         actual_value: actual_value,
-    //         actual_shares: actual_shares,
-    //         actual_percent: 0.0,
-    //     }.calculate_actual_percent(total_value)
-    // }
-
     pub fn update_actual_percent(mut self, total_value: f32) -> Self {
         self.actual_percent = (self.actual_value / total_value) * 100.0;
         self
