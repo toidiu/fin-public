@@ -15,9 +15,6 @@ pub enum TickerAction {
     Sell,
     Hold,
 }
-pub struct PortfolioDiff {
-    tickers: Vec<TickerDiff>,
-}
 pub struct TickerDiff {
     symbol: TickerSymbol,
     diff_percent: f32,
@@ -52,20 +49,34 @@ impl Portfolio {
         }
     }
 
-    pub fn calculate_ticker_diff(&self) -> PortfolioDiff {
+    pub fn calculate_ticker_diff(&self) -> Vec<TickerDiff> {
         let actual = &self.current_detail.actual;
-        let goal = &self.current_detail.goal.tickers;
+        let goal = &self.current_detail.goal;
 
-        // FIXME calculate the difference between goal and actual ticker percentage.
-        //     maybe change TickerActual.tickers to a HashMap
-        actual.tickers.iter().map(|x| x);
-
-        let a = TickerDiff {
-            symbol: TickerSymbol("".to_owned()),
-            diff_percent: 33.3,
-            action: TickerAction::Buy,
-        };
-        PortfolioDiff { tickers: vec![a] }
+        actual
+            .tickers
+            .iter()
+            .map(|x| {
+                let goal_per = goal
+                    .tickers
+                    .get(x.0)
+                    .expect(&format!("add ticker to db: {:?}", x.0))
+                    .goal_percent;
+                let diff = x.1.actual_percent - goal_per;
+                TickerDiff {
+                    symbol: x.0.clone(),
+                    diff_percent: diff,
+                    action: {
+                        if (diff < 0.0 && diff.abs() > goal.deviation_percent) {
+                            TickerAction::Sell
+                        } else if (diff > 0.0 && diff.abs() > goal.deviation_percent) {
+                            TickerAction::Buy
+                        } else {
+                            TickerAction::Hold
+                        }
+                    },
+                }
+            }).collect()
     }
 }
 
@@ -84,7 +95,7 @@ struct PortfolioGoal {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PortfolioActual {
-    tickers: Vec<TickerActual>,
+    tickers: HashMap<TickerSymbol, TickerActual>,
     // calculated
     total_value: f32,
     // calculated
@@ -93,23 +104,27 @@ struct PortfolioActual {
 
 impl PortfolioActual {
     fn new<T: data::TickerDatabase>(tickers: Vec<TickerActual>, db: T) -> Self {
+        let mut map = HashMap::new();
+        for x in tickers {
+            map.insert(x.symbol.clone(), x);
+        }
         PortfolioActual {
-            tickers: tickers,
+            tickers: map,
             total_value: 0.0,
             actual_stock_percent: 0.0,
         }.calculate_total()
         .calculate_stock_percent(db)
     }
     fn calculate_total(mut self) -> Self {
-        self.total_value = self.tickers.iter().map(|x| x.actual_value).sum();
+        self.total_value = self.tickers.iter().map(|x| x.1.actual_value).sum();
         self
     }
     fn calculate_stock_percent<T: data::TickerDatabase>(mut self, db: T) -> Self {
         let stock_value: f32 = self
             .tickers
             .iter()
-            .filter(|ref x| db.get_ticker(&x.symbol).is_stock())
-            .map(|x| x.actual_value)
+            .filter(|ref x| db.get_ticker(&x.1.symbol).is_stock())
+            .map(|x| x.1.actual_value)
             .sum();
         self.actual_stock_percent = (stock_value / self.total_value) * 100.0;
         self
