@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug, Default)]
+#[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug, Default)]
 pub struct TickerSymbol(pub String);
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug)]

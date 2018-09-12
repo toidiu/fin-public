@@ -2,6 +2,7 @@
 
 use crate::data;
 use crate::ticker::*;
+use std::collections::HashMap;
 use std::num;
 
 pub enum StockBondAction {
@@ -53,10 +54,11 @@ impl Portfolio {
 
     pub fn calculate_ticker_diff(&self) -> PortfolioDiff {
         let actual = &self.current_detail.actual;
-        let goal = &self.current_detail.goal;
+        let goal = &self.current_detail.goal.tickers;
 
-        FIXME calculate the difference between goal and actual ticker percentage.
-            maybe change TickerActual.tickers to a HashMap
+        // FIXME calculate the difference between goal and actual ticker percentage.
+        //     maybe change TickerActual.tickers to a HashMap
+        actual.tickers.iter().map(|x| x);
 
         let a = TickerDiff {
             symbol: TickerSymbol("".to_owned()),
@@ -75,7 +77,7 @@ pub struct PortfolioDetail {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PortfolioGoal {
-    tickers: Vec<TickerGoal>,
+    tickers: HashMap<TickerSymbol, TickerGoal>,
     goal_stock_percent: f32,
     deviation_percent: f32,
 }
@@ -145,10 +147,10 @@ pub fn get_data<T: data::TickerDatabase>(db: T) -> Portfolio {
 
     let actual_tickers = {
         let mut actual = db.get_actual();
-        let total_value = actual.iter().map(|x| x.actual_value).sum();
+        let total_value = actual.iter().map(|x| x.1.actual_value).sum();
         actual
             .into_iter()
-            .map(|x| x.update_actual_percent(total_value))
+            .map(|x| x.1.update_actual_percent(total_value))
             .collect()
     };
 
