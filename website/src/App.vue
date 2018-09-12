@@ -7,14 +7,14 @@
 </template>
 
 <script>
-  import FinTable from "./components/FinTable.vue";
+import FinTable from "./components/FinTable.vue";
 
-  export default {
-    name: 'app',
-    components: {
-      FinTable,
-    },
+export default {
+  name: "app",
+  components: {
+    FinTable
   }
+};
 </script>
 
 <style lang="css">

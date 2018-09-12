@@ -5,21 +5,23 @@
   "main": "src/index.js",
   "dependencies": {
     "axios": "^0.18.0",
-    "npm": "^6.4.1",
     "vue": "^2.5.17",
     "vue-hot-reload-api": "^2.3.0",
     "vue-router": "^3.0.1"
   },
   "devDependencies": {
     "@vue/component-compiler-utils": "^2.2.0",
-    "babel-preset-env": "^1.7.0",
     "node-sass": "^4.9.3",
     "parcel-bundler": "^1.9.7",
     "typescript": "^3.0.3",
     "vue-template-compiler": "^2.5.17"
   },
   "scripts": {
-    "start": "parcel src/index.html",
+
+    // & mean run them in parallel
+    "start": "npm run purdy & parcel src/index.html",
+    "purdy": "npx onchange 'src/**/*.{js,vue}' -- npx prettier 'src/**/*.{js,vue}' --write",
+
     "watch": "parcel watch index.html",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "parcel build src/index.html --public-url ./ --no-minify"

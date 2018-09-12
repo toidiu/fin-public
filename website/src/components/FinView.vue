@@ -56,104 +56,96 @@
 </template>
 
 <script lang="ts">
+import { FinTableState } from "../models";
 
-  import { FinTableState } from '../models';
-
-  export default {
-    props: {
-      initialState: Object
-    },
+export default {
+  props: {
+    initialState: Object
   }
+};
 </script>
 
 <style lang="scss">
+table {
+  border: 1px solid #000;
+  border-radius: 3px;
+}
 
-  table {
-    border: 1px solid #000;
-    border-radius: 3px;
-  }
+th {
+  /* color: #aa704e; */
+  background-color: #c9c9c9;
+  /* color: rgba(255, 255, 255, 0.66); */
+  /* cursor: pointer; */
+  /* -webkit-user-select: none; */
+  /* -moz-user-select: none; */
+  /* -ms-user-select: none; */
+  /* user-select: none; */
+  font-size: 13px;
+}
 
-  th {
-    /* color: #aa704e; */
-    background-color: #c9c9c9;
-    /* color: rgba(255, 255, 255, 0.66); */
-    /* cursor: pointer; */
-    /* -webkit-user-select: none; */
-    /* -moz-user-select: none; */
-    /* -ms-user-select: none; */
-    /* user-select: none; */
-    font-size: 13px;
-  }
+td {
+  background-color: #f9f9f9;
+  /* color: #0079bf; */
+  font-size: 13px;
+}
 
-  td {
-    background-color: #f9f9f9;
-    /* color: #0079bf; */
-    font-size: 13px;
-  }
-
-  td {
-    &.goalPercent,
-    &.symbol, {
-
-      & {
-        font-weight: bold;
-      }
-
+td {
+  &.goalPercent,
+  &.symbol {
+    & {
+      font-weight: bold;
     }
   }
+}
 
-  td.summary, {
-    background-color: #d5d5d5;
-  }
+td.summary {
+  background-color: #d5d5d5;
+}
 
-  td {
-    &.fee,
-    &.currentPercent,
-    &.goalPercent, {
+td {
+  &.fee,
+  &.currentPercent,
+  &.goalPercent {
+    &.summary {
+      color: red;
+    }
 
-      &.summary {
-        color: red;
-      }
-
-      &::after {
-        content: "%";
-      }
-
+    &::after {
+      content: "%";
     }
   }
+}
 
-  td {
-    &.price,
-    &.currentValue, {
-
-      &::before {
-        content: "$";
-        margin: 0 -2px;
-      }
-
+td {
+  &.price,
+  &.currentValue {
+    &::before {
+      content: "$";
+      margin: 0 -2px;
     }
   }
+}
 
-  th,
-  td {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 40px;
-    max-width: 60px;
-    padding: 10px 10px;
-    text-align: center;
-  }
+th,
+td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 40px;
+  max-width: 60px;
+  padding: 10px 10px;
+  text-align: center;
+}
 
-  #table-wrapper {
-    position:relative;
-  }
-  #table-scroll {
-    width: 100%;
-    overflow:auto;
-    margin-top:20px;
-  }
-  #table-wrapper table {
-    /* width:100%; */
-  }
+#table-wrapper {
+  position: relative;
+}
+#table-scroll {
+  width: 100%;
+  overflow: auto;
+  margin-top: 20px;
+}
+#table-wrapper table {
+  /* width:100%; */
+}
 </style>

@@ -71,7 +71,7 @@ mod logic {
         // calculate gTn%-aTn% for each ticker
         port.calculate_ticker_diff();
 
-        FIXME buy the one with the largest difference
+        // FIXME buy the one with the largest difference
         // if difference for all is within q% then buy cheapest first
     }
 
