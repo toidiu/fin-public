@@ -55,7 +55,7 @@ mod logic {
     use crate::portfolio2;
     use crate::portfolio2::*;
 
-    fn calculate() {
+    fn next_buy() {
         let db = data::DefaultTickerDatabase {};
         let port = portfolio2::get_data(db);
 
@@ -69,7 +69,9 @@ mod logic {
         };
 
         // calculate gTn%-aTn% for each ticker
-        // buy the one with the largest difference
+        port.calculate_ticker_diff();
+
+        FIXME buy the one with the largest difference
         // if difference for all is within q% then buy cheapest first
     }
 
