@@ -3,7 +3,7 @@
 use crate::data;
 use crate::ticker::*;
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::num;
 
 pub enum StockBondAction {
@@ -22,6 +22,32 @@ pub struct TickerDiff {
     symbol: TickerSymbol,
     diff_percent: f32,
     action: TickerAction,
+    // used to display the tickers in deterministic order each time
+    order: u32,
+}
+
+impl TickerDiff {
+    pub fn new(
+        actual_tic: &TickerActual,
+        goal_tic: &TickerGoal,
+        deviation_percent: f32,
+    ) -> TickerDiff {
+        let g_minus_a = goal_tic.goal_percent - actual_tic.actual_percent;
+        TickerDiff {
+            symbol: actual_tic.symbol.clone(),
+            diff_percent: g_minus_a,
+            action: {
+                if (g_minus_a < 0.0 && g_minus_a.abs() > deviation_percent) {
+                    TickerAction::Sell
+                } else if (g_minus_a > 0.0 && g_minus_a.abs() > deviation_percent) {
+                    TickerAction::Buy
+                } else {
+                    TickerAction::Hold
+                }
+            },
+            order: goal_tic.order,
+        }
+    }
 }
 
 // =================================
@@ -56,30 +82,16 @@ impl Portfolio {
         let actual = &self.current_detail.actual;
         let goal = &self.current_detail.goal;
 
-        actual
+        let mut v: Vec<TickerDiff> = actual
             .tickers
             .iter()
-            .map(|x| {
-                let goal_per = goal
-                    .tickers
-                    .get(x.0)
-                    .expect(&format!("add ticker to db: {:?}", x.0))
-                    .goal_percent;
-                let g_minus_a = goal_per - x.1.actual_percent;
-                TickerDiff {
-                    symbol: x.0.clone(),
-                    diff_percent: g_minus_a,
-                    action: {
-                        if (g_minus_a < 0.0 && g_minus_a.abs() > goal.deviation_percent) {
-                            TickerAction::Sell
-                        } else if (g_minus_a > 0.0 && g_minus_a.abs() > goal.deviation_percent) {
-                            TickerAction::Buy
-                        } else {
-                            TickerAction::Hold
-                        }
-                    },
-                }
-            }).collect()
+            .map(|symb_actual| {
+                let goal_tic = goal.tickers.get(symb_actual.0)
+                    .expect(&format!("add ticker to db: {:?}", symb_actual.0));
+                TickerDiff::new(symb_actual.1, goal_tic, goal.deviation_percent)
+            }).collect();
+        v.sort_by(|a, b| a.order.cmp(&b.order));
+        v
     }
 }
 
@@ -91,14 +103,14 @@ pub struct PortfolioDetail {
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PortfolioGoal {
-    tickers: HashMap<TickerSymbol, TickerGoal>,
+    tickers: BTreeMap<TickerSymbol, TickerGoal>,
     goal_stock_percent: f32,
     deviation_percent: f32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 struct PortfolioActual {
-    tickers: HashMap<TickerSymbol, TickerActual>,
+    tickers: BTreeMap<TickerSymbol, TickerActual>,
     // calculated
     total_value: f32,
     // calculated
@@ -107,7 +119,7 @@ struct PortfolioActual {
 
 impl PortfolioActual {
     fn new<T: data::TickerDatabase>(tickers: Vec<TickerActual>, db: T) -> Self {
-        let mut map = HashMap::new();
+        let mut map = BTreeMap::new();
         for x in tickers {
             map.insert(x.symbol.clone(), x);
         }
@@ -134,25 +146,11 @@ impl PortfolioActual {
     }
 }
 
-#[derive(Derivative, PartialEq, Serialize, Deserialize, Debug)]
-#[derivative(Eq)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TickerGoal {
     pub symbol: TickerSymbol,
-    #[derivative(PartialEq = "ignore")]
     pub goal_percent: f32,
     pub order: u32,
-}
-
-impl Ord for TickerGoal {
-    fn cmp(&self, other: &TickerGoal) -> Ordering {
-        self.order.cmp(&other.order)
-    }
-}
-
-impl PartialOrd for TickerGoal {
-    fn partial_cmp(&self, other: &TickerGoal) -> Option<Ordering> {
-        Some(self.cmp(&other))
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

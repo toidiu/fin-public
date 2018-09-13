@@ -83,7 +83,7 @@ mod logic {
 
         println!("{}", serde_json::to_string_pretty(&diff).unwrap());
         // println!("{:?}", port);
-        // FIXME buy the one with the largest difference
+        FIXME buy the one with the largest difference
         // if difference for all is within q% then buy cheapest first
     }
 
