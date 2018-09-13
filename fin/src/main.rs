@@ -3,6 +3,10 @@
 #![feature(nll)]
 #![plugin(rocket_codegen)]
 #![allow(unused)]
+#![feature(custom_attribute)]
+
+#[macro_use]
+extern crate derivative;
 
 #[macro_use]
 extern crate serde_derive;

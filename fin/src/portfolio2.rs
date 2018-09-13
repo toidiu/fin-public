@@ -2,6 +2,7 @@
 
 use crate::data;
 use crate::ticker::*;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::num;
 
@@ -133,10 +134,25 @@ impl PortfolioActual {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Derivative, PartialEq, Serialize, Deserialize, Debug)]
+#[derivative(Eq)]
 pub struct TickerGoal {
     pub symbol: TickerSymbol,
+    #[derivative(PartialEq = "ignore")]
     pub goal_percent: f32,
+    pub order: u32,
+}
+
+impl Ord for TickerGoal {
+    fn cmp(&self, other: &TickerGoal) -> Ordering {
+        self.order.cmp(&other.order)
+    }
+}
+
+impl PartialOrd for TickerGoal {
+    fn partial_cmp(&self, other: &TickerGoal) -> Option<Ordering> {
+        Some(self.cmp(&other))
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

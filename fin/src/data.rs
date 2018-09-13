@@ -118,46 +118,57 @@ impl TickerDatabase for DefaultTickerDatabase {
         let g_vti = portfolio2::TickerGoal {
             symbol: TickerSymbol("vti".to_owned()),
             goal_percent: 20.0,
+            order: 1,
         };
         let g_vtv = portfolio2::TickerGoal {
             symbol: TickerSymbol("vtv".to_owned()),
             goal_percent: 6.0,
+            order: 2,
         };
         let g_voe = portfolio2::TickerGoal {
             symbol: TickerSymbol("voe".to_owned()),
             goal_percent: 4.0,
+            order: 3,
         };
         let g_vbr = portfolio2::TickerGoal {
             symbol: TickerSymbol("vbr".to_owned()),
             goal_percent: 3.0,
+            order: 4,
         };
         let g_vea = portfolio2::TickerGoal {
             symbol: TickerSymbol("vea".to_owned()),
             goal_percent: 15.0,
+            order: 5,
         };
         let g_vwo = portfolio2::TickerGoal {
             symbol: TickerSymbol("vwo".to_owned()),
             goal_percent: 10.0,
+            order: 6,
         };
         let g_vtip = portfolio2::TickerGoal {
             symbol: TickerSymbol("vtip".to_owned()),
             goal_percent: 3.0,
+            order: 7,
         };
         let g_agg = portfolio2::TickerGoal {
             symbol: TickerSymbol("agg".to_owned()),
             goal_percent: 4.0,
+            order: 8,
         };
         let g_mub = portfolio2::TickerGoal {
             symbol: TickerSymbol("mub".to_owned()),
             goal_percent: 14.0,
+            order: 9,
         };
         let g_bndx = portfolio2::TickerGoal {
             symbol: TickerSymbol("bndx".to_owned()),
             goal_percent: 12.0,
+            order: 10,
         };
         let g_vwob = portfolio2::TickerGoal {
             symbol: TickerSymbol("vwob".to_owned()),
             goal_percent: 9.0,
+            order: 11,
         };
         let v = vec![
             g_vti, g_vtv, g_voe, g_vbr, g_vea, g_vwo, g_vtip, g_agg, g_mub, g_bndx, g_vwob,
