@@ -30,7 +30,7 @@ fn two() -> String {
     serde_json::to_string(&d).unwrap()
 }
 
-fn main() {
+fn start_server() {
     let (allowed_origins, failed_origins) = AllowedOrigins::some(&["http://localhost:1234"]);
     assert!(failed_origins.is_empty());
 
@@ -49,13 +49,19 @@ fn main() {
         .launch();
 }
 
+fn main() {
+    logic::next_buy();
+
+    // start_server();
+}
+
 mod logic {
 
     use crate::data;
     use crate::portfolio2;
     use crate::portfolio2::*;
 
-    fn next_buy() {
+    pub fn next_buy() {
         let db = data::DefaultTickerDatabase {};
         let port = portfolio2::get_data(db);
 
@@ -69,8 +75,10 @@ mod logic {
         };
 
         // calculate gTn%-aTn% for each ticker
-        port.calculate_ticker_diff();
+        let diff = port.calculate_ticker_diff();
 
+        println!("{}", serde_json::to_string_pretty(&diff).unwrap());
+        // println!("{:?}", port);
         // FIXME buy the one with the largest difference
         // if difference for all is within q% then buy cheapest first
     }

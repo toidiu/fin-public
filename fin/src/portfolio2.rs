@@ -10,11 +10,13 @@ pub enum StockBondAction {
     BuyBond,
     BuyEither,
 }
+#[derive(Serialize, Deserialize, Debug)]
 pub enum TickerAction {
     Buy,
     Sell,
     Hold,
 }
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TickerDiff {
     symbol: TickerSymbol,
     diff_percent: f32,
@@ -62,14 +64,14 @@ impl Portfolio {
                     .get(x.0)
                     .expect(&format!("add ticker to db: {:?}", x.0))
                     .goal_percent;
-                let diff = x.1.actual_percent - goal_per;
+                let g_minus_a = goal_per - x.1.actual_percent;
                 TickerDiff {
                     symbol: x.0.clone(),
-                    diff_percent: diff,
+                    diff_percent: g_minus_a,
                     action: {
-                        if (diff < 0.0 && diff.abs() > goal.deviation_percent) {
+                        if (g_minus_a < 0.0 && g_minus_a.abs() > goal.deviation_percent) {
                             TickerAction::Sell
-                        } else if (diff > 0.0 && diff.abs() > goal.deviation_percent) {
+                        } else if (g_minus_a > 0.0 && g_minus_a.abs() > goal.deviation_percent) {
                             TickerAction::Buy
                         } else {
                             TickerAction::Hold
