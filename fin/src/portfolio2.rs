@@ -17,6 +17,7 @@ lazy_static! {
     };
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum StockBondAction {
     BuyStock,
     BuyBond,
@@ -75,18 +76,27 @@ impl TickerDiff {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
     pub name: String,
-    pub current_detail: PortfolioDetail,
-    pub past_detail: Vec<PortfolioDetail>,
+    goal: PortfolioGoal,
+    actual: PortfolioActual,
+    pub meta: PortfolioMeta,
 }
 
 impl Portfolio {
-    pub fn determine_action(&self) -> StockBondAction {
-        let actual_per = self.current_detail.actual.actual_stock_percent;
-        let goal_per = self.current_detail.goal.goal_stock_percent;
-        let deviation = self.current_detail.goal.deviation_percent;
+    // calculate that stock % is met
+    pub fn update_portfolio(&mut self) {
+        self.calc_stock_diff();
+        self.calc_ticker_diff();
+        // self.calc_contains_buy();
+    }
+
+    // calculate stock difference and action
+    fn calc_stock_diff(&mut self) {
+        let actual_per = self.actual.actual_stock_percent;
+        let goal_per = self.goal.goal_stock_percent;
+        let deviation = self.goal.deviation_percent;
 
         let diff = goal_per - actual_per;
-        if ((diff < 0.0) && diff.abs() > deviation) {
+        self.meta.stock_action = if ((diff < 0.0) && diff.abs() > deviation) {
             // If gS%-aS% is - and abs val above q% then buy bonds
             StockBondAction::BuyStock
         } else if (diff > 0.0 && diff > deviation) {
@@ -95,32 +105,47 @@ impl Portfolio {
         } else {
             // else buy stock or bond
             StockBondAction::BuyEither
-        }
+        };
+        self.meta.stock_diff = diff;
     }
 
-    pub fn calculate_ticker_diff(&self) -> Vec<TickerDiff> {
-        let actual = &self.current_detail.actual;
-        let goal = &self.current_detail.goal;
+    // // filter if there is a Buy (difference is greater than deviation)
+    // fn calc_contains_buy(&mut self) {
+    //     self.meta.contains_buy = self
+    //         .meta
+    //         .ticker_diffs
+    //         .iter()
+    //         .filter(|x| matches!(x.action, TickerAction::Buy))
+    //         .collect::<Vec<&TickerDiff>>()
+    //         .is_empty();
+    // }
 
-        let mut v: Vec<TickerDiff> = actual
+    // calculate gTn%-aTn% for each ticker
+    fn calc_ticker_diff(&mut self) {
+        let mut v: Vec<TickerDiff> = self
+            .actual
             .tickers
             .iter()
             .map(|symb_actual| {
-                let goal_tic = goal
+                let goal_tic = self
+                    .goal
                     .tickers
                     .get(symb_actual.0)
                     .expect(&format!("add ticker to db: {:?}", symb_actual.0));
-                TickerDiff::new(symb_actual.1, goal_tic, goal.deviation_percent)
+                TickerDiff::new(symb_actual.1, goal_tic, self.goal.deviation_percent)
             }).collect();
         v.sort_by(|a, b| a.order.cmp(&b.order));
-        v
+        self.meta.ticker_diffs = v;
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct PortfolioDetail {
-    goal: PortfolioGoal,
-    actual: PortfolioActual,
+pub struct PortfolioMeta {
+    // calculated
+    pub ticker_diffs: Vec<TickerDiff>,
+    pub contains_buy: bool,
+    pub stock_diff: f32,
+    pub stock_action: StockBondAction,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -208,15 +233,17 @@ pub fn get_data<T: data::TickerDatabase>(db: &T) -> Portfolio {
     };
 
     let pa = PortfolioActual::new(actual_tickers, db);
+    let meta = PortfolioMeta {
+        ticker_diffs: vec![],
+        contains_buy: false,
+        stock_diff: 0.0,
+        stock_action: StockBondAction::BuyEither,
+    };
 
-    let pd = PortfolioDetail {
+    Portfolio {
+        name: "my portfolio".to_owned(),
         goal: pg,
         actual: pa,
-    };
-    let p = Portfolio {
-        name: "my portfolio".to_owned(),
-        current_detail: pd,
-        past_detail: vec![],
-    };
-    p
+        meta: meta,
+    }
 }

@@ -17,6 +17,8 @@ use rocket_cors::{AllowedHeaders, AllowedOrigins};
 
 use crate::data::*;
 
+#[macro_use]
+mod macros;
 mod data;
 mod portfolio1;
 mod portfolio2;
@@ -60,15 +62,6 @@ fn main() {
     // start_server();
 }
 
-macro_rules! matches(
-    ($e:expr, $p:pat) => (
-        match $e {
-            $p => true,
-            _ => false
-        }
-    )
-);
-
 mod logic {
 
     use crate::data;
@@ -78,35 +71,26 @@ mod logic {
 
     pub fn next_buy() {
         let db = data::DefaultTickerDatabase {};
-        let port = portfolio2::get_data(&db);
+        let mut port = portfolio2::get_data(&db);
 
-        let is_stock_greater = port.determine_action();
-        match is_stock_greater {
-            StockBondAction::BuyStock => (),
+        // update meta data based on ticker price and percent
+        port.update_portfolio();
 
-            StockBondAction::BuyBond => (),
-
-            StockBondAction::BuyEither => (),
-        };
-
-        // calculate gTn%-aTn% for each ticker
-        let diff = port.calculate_ticker_diff();
-
-        println!("{}", serde_json::to_string_pretty(&diff).unwrap());
-
-        FIXME also check that stock % is met
-
-        // filter if there is a Buy (difference is greater than deviation)
-        let contains_buy = diff
-            .iter()
-            .filter(|x| matches!(x.action, portfolio2::TickerAction::Buy))
-            .collect::<Vec<&TickerDiff>>()
-            .is_empty();
+        // println!("{}", serde_json::to_string_pretty(&diff).unwrap());
 
         let empty_diff = EMPTY_TICKER_DIFF.clone();
-        let action = if (contains_buy) {
+
+        // stock or bond
+        match port.meta.stock_action {
+            StockBondAction::BuyStock => (),
+            StockBondAction::BuyBond => (),
+            StockBondAction::BuyEither => (),
+        };
+        //      has buy or by cheapest
+
+        let action = if (port.meta.contains_buy) {
             // if no Buy then buy cheapest first
-            diff.into_iter().fold(empty_diff, |x, y| {
+            port.meta.ticker_diffs.into_iter().fold(empty_diff, |x, y| {
                 if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
                     y
                 } else if (db.get_ticker(&x.symbol).price <= db.get_ticker(&y.symbol).price) {
@@ -117,7 +101,7 @@ mod logic {
             })
         } else {
             // else buy the one with the largest difference
-            diff.into_iter().fold(empty_diff, |x, y| {
+            port.meta.ticker_diffs.into_iter().fold(empty_diff, |x, y| {
                 if (x.goal_minus_actual > y.goal_minus_actual) {
                     x
                 } else {
