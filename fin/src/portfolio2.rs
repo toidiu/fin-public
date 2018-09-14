@@ -19,9 +19,9 @@ pub enum TickerAction {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TickerDiff {
-    symbol: TickerSymbol,
-    diff_percent: f32,
-    action: TickerAction,
+    pub symbol: TickerSymbol,
+    pub goal_minus_actual: f32,
+    pub action: TickerAction,
     // used to display the tickers in deterministic order each time
     order: u32,
 }
@@ -35,7 +35,7 @@ impl TickerDiff {
         let g_minus_a = goal_tic.goal_percent - actual_tic.actual_percent;
         TickerDiff {
             symbol: actual_tic.symbol.clone(),
-            diff_percent: g_minus_a,
+            goal_minus_actual: g_minus_a,
             action: {
                 if (g_minus_a < 0.0 && g_minus_a.abs() > deviation_percent) {
                     TickerAction::Sell
@@ -46,6 +46,15 @@ impl TickerDiff {
                 }
             },
             order: goal_tic.order,
+        }
+    }
+
+    pub fn empty() -> TickerDiff {
+        TickerDiff {
+            symbol: TickerSymbol("".to_owned()),
+            goal_minus_actual: 0.0,
+            action: TickerAction::Hold,
+            order: 0,
         }
     }
 }
@@ -86,7 +95,9 @@ impl Portfolio {
             .tickers
             .iter()
             .map(|symb_actual| {
-                let goal_tic = goal.tickers.get(symb_actual.0)
+                let goal_tic = goal
+                    .tickers
+                    .get(symb_actual.0)
                     .expect(&format!("add ticker to db: {:?}", symb_actual.0));
                 TickerDiff::new(symb_actual.1, goal_tic, goal.deviation_percent)
             }).collect();

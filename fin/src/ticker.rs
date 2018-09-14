@@ -1,5 +1,13 @@
-#[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug, Default)]
+use std::fmt;
+
+#[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Default)]
 pub struct TickerSymbol(pub String);
+
+impl fmt::Debug for TickerSymbol {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug)]
 pub enum InvestmentKind {

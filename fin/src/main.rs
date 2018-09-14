@@ -59,9 +59,19 @@ fn main() {
     // start_server();
 }
 
+macro_rules! matches(
+    ($e:expr, $p:pat) => (
+        match $e {
+            $p => true,
+            _ => false
+        }
+    )
+);
+
 mod logic {
 
     use crate::data;
+    use crate::data::TickerDatabase;
     use crate::portfolio2;
     use crate::portfolio2::*;
 
@@ -82,9 +92,41 @@ mod logic {
         let diff = port.calculate_ticker_diff();
 
         println!("{}", serde_json::to_string_pretty(&diff).unwrap());
-        // println!("{:?}", port);
-        FIXME buy the one with the largest difference
-        // if difference for all is within q% then buy cheapest first
+
+        // FIXME also check that stock % is met
+
+        // filter if there is a Buy (difference is greater than deviation)
+        let contains_buy = diff
+            .iter()
+            .filter(|x| matches!(x.action, portfolio2::TickerAction::Buy))
+            .collect::<Vec<&TickerDiff>>()
+            .is_empty();
+
+        let action = if (contains_buy) {
+            // if no Buy then buy cheapest first
+            diff.into_iter().fold(TickerDiff::empty(), |x, y| {
+                // db.get_ticker(&x.symbol).price;
+                // db.get_ticker(&y.symbol).price;
+
+                // FIXME compare price and get cheapest one
+                // if (x.goal_minus_actual > y.goal_minus_actual) {
+                x
+                // } else {
+                //     y
+                // }
+            })
+        } else {
+            // else buy the one with the largest difference
+            diff.into_iter().fold(TickerDiff::empty(), |x, y| {
+                if (x.goal_minus_actual > y.goal_minus_actual) {
+                    x
+                } else {
+                    y
+                }
+            })
+        };
+
+        println!("{:#?}", action);
     }
 
 }
