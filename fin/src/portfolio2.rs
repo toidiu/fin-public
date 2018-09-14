@@ -126,13 +126,13 @@ impl Portfolio {
             .actual
             .tickers
             .iter()
-            .map(|symb_actual| {
+            .map(|symb_tic_actual| {
                 let goal_tic = self
                     .goal
                     .tickers
-                    .get(symb_actual.0)
-                    .expect(&format!("add ticker to db: {:?}", symb_actual.0));
-                TickerDiff::new(symb_actual.1, goal_tic, self.goal.deviation_percent)
+                    .get(symb_tic_actual.0)
+                    .expect(&format!("add ticker to db: {:?}", symb_tic_actual.0));
+                TickerDiff::new(symb_tic_actual.1, goal_tic, self.goal.deviation_percent)
             }).collect();
         v.sort_by(|a, b| a.order.cmp(&b.order));
         self.meta.ticker_diffs = v;
