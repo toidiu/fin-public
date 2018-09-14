@@ -15,6 +15,7 @@ serde = "1.0.76"
 serde_derive = "1.0.76"
 serde_json = "1.0.26"
 derivative = "1.0.0"
+lazy_static = "1.1.0"
 
 # testing
 mock_derive = "0.7.0"

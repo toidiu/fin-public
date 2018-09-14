@@ -6,8 +6,9 @@
 #![feature(custom_attribute)]
 
 #[macro_use]
+extern crate lazy_static;
+#[macro_use]
 extern crate derivative;
-
 #[macro_use]
 extern crate serde_derive;
 
@@ -30,7 +31,7 @@ fn index() -> String {
 #[get("/2")]
 fn two() -> String {
     let db = data::DefaultTickerDatabase {};
-    let d = portfolio2::get_data(db);
+    let d = portfolio2::get_data(&db);
     serde_json::to_string(&d).unwrap()
 }
 
@@ -77,7 +78,7 @@ mod logic {
 
     pub fn next_buy() {
         let db = data::DefaultTickerDatabase {};
-        let port = portfolio2::get_data(db);
+        let port = portfolio2::get_data(&db);
 
         let is_stock_greater = port.determine_action();
         match is_stock_greater {
@@ -93,7 +94,7 @@ mod logic {
 
         println!("{}", serde_json::to_string_pretty(&diff).unwrap());
 
-        // FIXME also check that stock % is met
+        FIXME also check that stock % is met
 
         // filter if there is a Buy (difference is greater than deviation)
         let contains_buy = diff
@@ -102,22 +103,21 @@ mod logic {
             .collect::<Vec<&TickerDiff>>()
             .is_empty();
 
+        let empty_diff = EMPTY_TICKER_DIFF.clone();
         let action = if (contains_buy) {
             // if no Buy then buy cheapest first
-            diff.into_iter().fold(TickerDiff::empty(), |x, y| {
-                // db.get_ticker(&x.symbol).price;
-                // db.get_ticker(&y.symbol).price;
-
-                // FIXME compare price and get cheapest one
-                // if (x.goal_minus_actual > y.goal_minus_actual) {
-                x
-                // } else {
-                //     y
-                // }
+            diff.into_iter().fold(empty_diff, |x, y| {
+                if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
+                    y
+                } else if (db.get_ticker(&x.symbol).price <= db.get_ticker(&y.symbol).price) {
+                    x
+                } else {
+                    y
+                }
             })
         } else {
             // else buy the one with the largest difference
-            diff.into_iter().fold(TickerDiff::empty(), |x, y| {
+            diff.into_iter().fold(empty_diff, |x, y| {
                 if (x.goal_minus_actual > y.goal_minus_actual) {
                     x
                 } else {

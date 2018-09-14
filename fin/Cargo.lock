@@ -96,6 +96,7 @@ name = "fin"
 version = "0.1.0"
 dependencies = [
  "derivative 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "mock_derive 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_codegen 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -6,18 +6,29 @@ use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::num;
 
+lazy_static! {
+    pub static ref EMPTY_TICKER_DIFF: TickerDiff = {
+        TickerDiff {
+            symbol: TickerSymbol("".to_string()),
+            goal_minus_actual: 0.0,
+            action: TickerAction::Hold,
+            order: 0,
+        }
+    };
+}
+
 pub enum StockBondAction {
     BuyStock,
     BuyBond,
     BuyEither,
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum TickerAction {
     Buy,
     Sell,
     Hold,
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TickerDiff {
     pub symbol: TickerSymbol,
     pub goal_minus_actual: f32,
@@ -129,7 +140,7 @@ struct PortfolioActual {
 }
 
 impl PortfolioActual {
-    fn new<T: data::TickerDatabase>(tickers: Vec<TickerActual>, db: T) -> Self {
+    fn new<T: data::TickerDatabase>(tickers: Vec<TickerActual>, db: &T) -> Self {
         let mut map = BTreeMap::new();
         for x in tickers {
             map.insert(x.symbol.clone(), x);
@@ -145,7 +156,7 @@ impl PortfolioActual {
         self.total_value = self.tickers.iter().map(|x| x.1.actual_value).sum();
         self
     }
-    fn calculate_stock_percent<T: data::TickerDatabase>(mut self, db: T) -> Self {
+    fn calculate_stock_percent<T: data::TickerDatabase>(mut self, db: &T) -> Self {
         let stock_value: f32 = self
             .tickers
             .iter()
@@ -180,7 +191,7 @@ impl TickerActual {
     }
 }
 
-pub fn get_data<T: data::TickerDatabase>(db: T) -> Portfolio {
+pub fn get_data<T: data::TickerDatabase>(db: &T) -> Portfolio {
     let pg = PortfolioGoal {
         tickers: db.get_goal(),
         goal_stock_percent: 58.0,
