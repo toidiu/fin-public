@@ -140,8 +140,7 @@ impl Portfolio {
                     self.tickers
                         .get(&x.symbol)
                         .expect(&format!("add ticker to db: {:?}", &x.symbol))
-                        .kind
-                        == InvestmentKind::Stock
+                        .is_stock()
                 }).collect(),
 
             PortfolioAction::BuyBond => self
@@ -152,8 +151,7 @@ impl Portfolio {
                     self.tickers
                         .get(&x.symbol)
                         .expect(&format!("add ticker to db: {:?}", &x.symbol))
-                        .kind
-                        == InvestmentKind::Bond
+                        .is_bond()
                 }).collect(),
 
             PortfolioAction::BuyEither => self.meta.tickers_diff.iter().collect(),
