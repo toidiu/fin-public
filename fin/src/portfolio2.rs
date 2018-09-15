@@ -31,9 +31,9 @@ pub enum TickerAction {
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TickerDiff {
-    pub symbol: TickerSymbol,
-    pub goal_minus_actual: f32,
-    pub action: TickerAction,
+    symbol: TickerSymbol,
+    goal_minus_actual: f32,
+    action: TickerAction,
     // used to display the tickers in deterministic order each time
     order: u32,
 }
@@ -75,22 +75,59 @@ impl TickerDiff {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
-    pub name: String,
+    name: String,
     #[serde(skip)]
     goal: PortfolioGoal,
     #[serde(skip)]
     actual: PortfolioActual,
-    pub meta: PortfolioMeta,
+    meta: PortfolioMeta,
     #[serde(skip)]
     tickers: HashMap<TickerSymbol, Ticker>,
 }
 
 impl Portfolio {
+    pub fn get_data<T: data::TickerDatabase>(db: &T) -> Portfolio {
+        let mut tickers_map = HashMap::new();
+        for x in db.get_tickers() {
+            tickers_map.insert(x.symbol.clone(), x);
+        }
+
+        let pg = PortfolioGoal {
+            tickers: db.get_goal(),
+            goal_stock_percent: 58.0,
+            deviation_percent: 5.0,
+        };
+
+        let actual_tickers = {
+            let mut actual = db.get_actual();
+            let total_value = actual.iter().map(|x| x.1.actual_value).sum();
+            actual
+                .into_iter()
+                .map(|x| x.1.update_actual_percent(total_value))
+                .collect()
+        };
+
+        let pa = PortfolioActual::new(actual_tickers, &tickers_map);
+        let meta = PortfolioMeta {
+            tickers_diff: vec![],
+            stock_diff: 0.0,
+            portfolio_action: PortfolioAction::BuyEither,
+        };
+
+        Portfolio {
+            name: "my portfolio".to_owned(),
+            goal: pg,
+            actual: pa,
+            meta: meta,
+            // eventually only request those we care about (ones in goal)
+            tickers: tickers_map,
+        }
+    }
+
     // calculate that stock % is met
     pub fn update_portfolio(&mut self) {
         self.calc_stock_diff();
         self.calc_ticker_diff();
-        // self.calc_contains_buy();
     }
 
     pub fn filter_based_on_stock_action(&self) -> TickerDiff {
@@ -136,7 +173,7 @@ impl Portfolio {
         // filter cheapest
         let empty_diff = EMPTY_TICKER_DIFF.clone();
 
-        let ss: &TickerDiff = filter_buys.iter().fold(&empty_diff, |x, y| {
+        let tic_diff: &TickerDiff = filter_buys.iter().fold(&empty_diff, |x, y| {
             if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
                 return y;
             }
@@ -158,7 +195,7 @@ impl Portfolio {
             }
         });
 
-        ss.clone()
+        tic_diff.clone()
     }
 
     // calculate stock difference and action
@@ -201,11 +238,13 @@ impl Portfolio {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct PortfolioMeta {
+struct PortfolioMeta {
     // calculated
-    pub tickers_diff: Vec<TickerDiff>,
-    pub stock_diff: f32,
-    pub portfolio_action: PortfolioAction,
+    tickers_diff: Vec<TickerDiff>,
+    // calculated
+    stock_diff: f32,
+    // calculated
+    portfolio_action: PortfolioAction,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
@@ -225,9 +264,9 @@ struct PortfolioActual {
 }
 
 impl PortfolioActual {
-    fn new<T: data::TickerDatabase>(tickers: Vec<TickerActual>, db: &T) -> Self {
+    fn new(tickers_actual: Vec<TickerActual>, tickers: &HashMap<TickerSymbol, Ticker>) -> Self {
         let mut map = HashMap::new();
-        for x in tickers {
+        for x in tickers_actual {
             map.insert(x.symbol.clone(), x);
         }
         PortfolioActual {
@@ -235,17 +274,17 @@ impl PortfolioActual {
             total_value: 0.0,
             actual_stock_percent: 0.0,
         }.calculate_total()
-        .calculate_stock_percent(db)
+        .calculate_stock_percent(tickers)
     }
     fn calculate_total(mut self) -> Self {
         self.total_value = self.tickers.iter().map(|x| x.1.actual_value).sum();
         self
     }
-    fn calculate_stock_percent<T: data::TickerDatabase>(mut self, db: &T) -> Self {
+    fn calculate_stock_percent(mut self, tickers: &HashMap<TickerSymbol, Ticker>) -> Self {
         let stock_value: f32 = self
             .tickers
             .iter()
-            .filter(|ref x| db.get_ticker(&x.1.symbol).is_stock())
+            .filter(|ref x| tickers.get(&x.1.symbol).unwrap().is_stock())
             .map(|x| x.1.actual_value)
             .sum();
         self.actual_stock_percent = (stock_value / self.total_value) * 100.0;
@@ -273,43 +312,5 @@ impl TickerActual {
     pub fn update_actual_percent(mut self, total_value: f32) -> Self {
         self.actual_percent = (self.actual_value / total_value) * 100.0;
         self
-    }
-}
-
-pub fn get_data<T: data::TickerDatabase>(db: &T) -> Portfolio {
-    let pg = PortfolioGoal {
-        tickers: db.get_goal(),
-        goal_stock_percent: 58.0,
-        deviation_percent: 5.0,
-    };
-
-    let actual_tickers = {
-        let mut actual = db.get_actual();
-        let total_value = actual.iter().map(|x| x.1.actual_value).sum();
-        actual
-            .into_iter()
-            .map(|x| x.1.update_actual_percent(total_value))
-            .collect()
-    };
-
-    let pa = PortfolioActual::new(actual_tickers, db);
-    let meta = PortfolioMeta {
-        tickers_diff: vec![],
-        stock_diff: 0.0,
-        portfolio_action: PortfolioAction::BuyEither,
-    };
-
-    let mut map = HashMap::new();
-    for x in db.get_tickers() {
-        map.insert(x.symbol.clone(), x);
-    }
-
-    Portfolio {
-        name: "my portfolio".to_owned(),
-        goal: pg,
-        actual: pa,
-        meta: meta,
-        // eventually only request that we care about (in goal)
-        tickers: map,
     }
 }

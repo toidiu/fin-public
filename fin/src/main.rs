@@ -33,7 +33,7 @@ fn index() -> String {
 #[get("/2")]
 fn two() -> String {
     let db = data::DefaultTickerDatabase {};
-    let d = portfolio2::get_data(&db);
+    let d = portfolio2::Portfolio::get_data(&db);
     serde_json::to_string(&d).unwrap()
 }
 
@@ -67,11 +67,10 @@ mod logic {
     use crate::data;
     use crate::data::TickerDatabase;
     use crate::portfolio2;
-    use crate::portfolio2::*;
 
     pub fn next_buy() {
         let db = data::DefaultTickerDatabase {};
-        let mut port = portfolio2::get_data(&db);
+        let mut port = portfolio2::Portfolio::get_data(&db);
 
         // update meta data based on ticker price and percent
         port.update_portfolio();
