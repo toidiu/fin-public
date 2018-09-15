@@ -3,7 +3,7 @@
 use crate::data;
 use crate::ticker::*;
 use std::cmp::Ordering;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::num;
 
 lazy_static! {
@@ -18,7 +18,7 @@ lazy_static! {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum StockBondAction {
+pub enum PortfolioAction {
     BuyStock,
     BuyBond,
     BuyEither,
@@ -76,9 +76,13 @@ impl TickerDiff {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
     pub name: String,
+    #[serde(skip)]
     goal: PortfolioGoal,
+    #[serde(skip)]
     actual: PortfolioActual,
     pub meta: PortfolioMeta,
+    #[serde(skip)]
+    tickers: HashMap<TickerSymbol, Ticker>,
 }
 
 impl Portfolio {
@@ -89,6 +93,74 @@ impl Portfolio {
         // self.calc_contains_buy();
     }
 
+    pub fn filter_based_on_stock_action(&self) -> TickerDiff {
+        let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
+            PortfolioAction::BuyStock => self
+                .meta
+                .tickers_diff
+                .iter()
+                .filter(|x| {
+                    self.tickers
+                        .get(&x.symbol)
+                        .expect(&format!("add ticker to db: {:?}", &x.symbol))
+                        .kind
+                        == InvestmentKind::Stock
+                }).collect(),
+
+            PortfolioAction::BuyBond => self
+                .meta
+                .tickers_diff
+                .iter()
+                .filter(|x| {
+                    self.tickers
+                        .get(&x.symbol)
+                        .expect(&format!("add ticker to db: {:?}", &x.symbol))
+                        .kind
+                        == InvestmentKind::Bond
+                }).collect(),
+
+            PortfolioAction::BuyEither => self.meta.tickers_diff.iter().collect(),
+        };
+
+        let filter_buys: Vec<&TickerDiff> = if (!filter_kind.is_empty()) {
+            // filter buys
+            filter_kind
+                .into_iter()
+                .filter(|x| matches!(x.action, TickerAction::Buy))
+                .collect()
+        } else {
+            // dont filter
+            filter_kind
+        };
+
+        // filter cheapest
+        let empty_diff = EMPTY_TICKER_DIFF.clone();
+
+        let ss: &TickerDiff = filter_buys.iter().fold(&empty_diff, |x, y| {
+            if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
+                return y;
+            }
+            let x_price = self
+                .tickers
+                .get(&x.symbol)
+                .expect(&format!("add ticker to db: {:?}", &x.symbol))
+                .price;
+            let y_price = self
+                .tickers
+                .get(&y.symbol)
+                .expect(&format!("add ticker to db: {:?}", &y.symbol))
+                .price;
+
+            if (x_price < y_price) {
+                x
+            } else {
+                y
+            }
+        });
+
+        ss.clone()
+    }
+
     // calculate stock difference and action
     fn calc_stock_diff(&mut self) {
         let actual_per = self.actual.actual_stock_percent;
@@ -96,29 +168,18 @@ impl Portfolio {
         let deviation = self.goal.deviation_percent;
 
         let diff = goal_per - actual_per;
-        self.meta.stock_action = if ((diff < 0.0) && diff.abs() > deviation) {
+        self.meta.portfolio_action = if ((diff < 0.0) && diff.abs() > deviation) {
             // If gS%-aS% is - and abs val above q% then buy bonds
-            StockBondAction::BuyStock
+            PortfolioAction::BuyBond
         } else if (diff > 0.0 && diff > deviation) {
             // If gS%-aS% is + and above q% then buy stocks
-            StockBondAction::BuyBond
+            PortfolioAction::BuyStock
         } else {
             // else buy stock or bond
-            StockBondAction::BuyEither
+            PortfolioAction::BuyEither
         };
         self.meta.stock_diff = diff;
     }
-
-    // // filter if there is a Buy (difference is greater than deviation)
-    // fn calc_contains_buy(&mut self) {
-    //     self.meta.contains_buy = self
-    //         .meta
-    //         .ticker_diffs
-    //         .iter()
-    //         .filter(|x| matches!(x.action, TickerAction::Buy))
-    //         .collect::<Vec<&TickerDiff>>()
-    //         .is_empty();
-    // }
 
     // calculate gTn%-aTn% for each ticker
     fn calc_ticker_diff(&mut self) {
@@ -135,29 +196,28 @@ impl Portfolio {
                 TickerDiff::new(symb_tic_actual.1, goal_tic, self.goal.deviation_percent)
             }).collect();
         v.sort_by(|a, b| a.order.cmp(&b.order));
-        self.meta.ticker_diffs = v;
+        self.meta.tickers_diff = v;
     }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PortfolioMeta {
     // calculated
-    pub ticker_diffs: Vec<TickerDiff>,
-    pub contains_buy: bool,
+    pub tickers_diff: Vec<TickerDiff>,
     pub stock_diff: f32,
-    pub stock_action: StockBondAction,
+    pub portfolio_action: PortfolioAction,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 struct PortfolioGoal {
-    tickers: BTreeMap<TickerSymbol, TickerGoal>,
+    tickers: HashMap<TickerSymbol, TickerGoal>,
     goal_stock_percent: f32,
     deviation_percent: f32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 struct PortfolioActual {
-    tickers: BTreeMap<TickerSymbol, TickerActual>,
+    tickers: HashMap<TickerSymbol, TickerActual>,
     // calculated
     total_value: f32,
     // calculated
@@ -166,7 +226,7 @@ struct PortfolioActual {
 
 impl PortfolioActual {
     fn new<T: data::TickerDatabase>(tickers: Vec<TickerActual>, db: &T) -> Self {
-        let mut map = BTreeMap::new();
+        let mut map = HashMap::new();
         for x in tickers {
             map.insert(x.symbol.clone(), x);
         }
@@ -234,16 +294,22 @@ pub fn get_data<T: data::TickerDatabase>(db: &T) -> Portfolio {
 
     let pa = PortfolioActual::new(actual_tickers, db);
     let meta = PortfolioMeta {
-        ticker_diffs: vec![],
-        contains_buy: false,
+        tickers_diff: vec![],
         stock_diff: 0.0,
-        stock_action: StockBondAction::BuyEither,
+        portfolio_action: PortfolioAction::BuyEither,
     };
+
+    let mut map = HashMap::new();
+    for x in db.get_tickers() {
+        map.insert(x.symbol.clone(), x);
+    }
 
     Portfolio {
         name: "my portfolio".to_owned(),
         goal: pg,
         actual: pa,
         meta: meta,
+        // eventually only request that we care about (in goal)
+        tickers: map,
     }
 }

@@ -4,14 +4,14 @@ use mock_derive::mock;
 
 use crate::portfolio2;
 use crate::ticker::*;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 #[mock]
 pub trait TickerDatabase {
     fn get_ticker(&self, symbol: &TickerSymbol) -> Ticker;
     fn get_tickers(&self) -> Vec<Ticker>;
-    fn get_goal(&self) -> BTreeMap<TickerSymbol, portfolio2::TickerGoal>;
-    fn get_actual(&self) -> BTreeMap<TickerSymbol, portfolio2::TickerActual>;
+    fn get_goal(&self) -> HashMap<TickerSymbol, portfolio2::TickerGoal>;
+    fn get_actual(&self) -> HashMap<TickerSymbol, portfolio2::TickerActual>;
 }
 
 pub struct DefaultTickerDatabase {}
@@ -114,7 +114,7 @@ impl TickerDatabase for DefaultTickerDatabase {
         vec![vti, vtv, voe, vbr, vea, vwo, vtip, agg, mub, bndx, vwob]
     }
 
-    fn get_goal(&self) -> BTreeMap<TickerSymbol, portfolio2::TickerGoal> {
+    fn get_goal(&self) -> HashMap<TickerSymbol, portfolio2::TickerGoal> {
         let g_vti = portfolio2::TickerGoal {
             symbol: TickerSymbol("vti".to_owned()),
             goal_percent: 20.0,
@@ -175,14 +175,14 @@ impl TickerDatabase for DefaultTickerDatabase {
         ];
 
         // create a map
-        let mut map: BTreeMap<TickerSymbol, portfolio2::TickerGoal> = BTreeMap::new();
+        let mut map: HashMap<TickerSymbol, portfolio2::TickerGoal> = HashMap::new();
         for x in v {
             map.insert(x.symbol.clone(), x);
         }
         map
     }
 
-    fn get_actual(&self) -> BTreeMap<TickerSymbol, portfolio2::TickerActual> {
+    fn get_actual(&self) -> HashMap<TickerSymbol, portfolio2::TickerActual> {
         let a_vti = portfolio2::TickerActual {
             symbol: TickerSymbol("vti".to_owned()),
             actual_value: 300.0,
@@ -254,7 +254,7 @@ impl TickerDatabase for DefaultTickerDatabase {
         ];
 
         // create a map
-        let mut map: BTreeMap<TickerSymbol, portfolio2::TickerActual> = BTreeMap::new();
+        let mut map: HashMap<TickerSymbol, portfolio2::TickerActual> = HashMap::new();
         for x in v {
             map.insert(x.symbol.clone(), x);
         }

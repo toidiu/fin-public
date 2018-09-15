@@ -75,43 +75,11 @@ mod logic {
 
         // update meta data based on ticker price and percent
         port.update_portfolio();
+        // println!("{}", serde_json::to_string_pretty(&port.meta.tickers_diff).unwrap());
 
-        // println!("{}", serde_json::to_string_pretty(&diff).unwrap());
-
-        let empty_diff = EMPTY_TICKER_DIFF.clone();
-
-        // stock or bond
-        match port.meta.stock_action {
-            StockBondAction::BuyStock => (),
-            FIXME filter out stock or bond or none
-            FIXME filter out buy or if none then filter out cheapest
-            StockBondAction::BuyBond => (),
-            StockBondAction::BuyEither => (),
-        };
-
-        // let action = if (port.meta.contains_buy) {
-        //     // if no Buy then buy cheapest first
-        //     port.meta.ticker_diffs.into_iter().fold(empty_diff, |x, y| {
-        //         if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
-        //             y
-        //         } else if (db.get_ticker(&x.symbol).price <= db.get_ticker(&y.symbol).price) {
-        //             x
-        //         } else {
-        //             y
-        //         }
-        //     })
-        // } else {
-        //     // else buy the one with the largest difference
-        //     port.meta.ticker_diffs.into_iter().fold(empty_diff, |x, y| {
-        //         if (x.goal_minus_actual > y.goal_minus_actual) {
-        //             x
-        //         } else {
-        //             y
-        //         }
-        //     })
-        // };
-
-        // println!("{:#?}", action);
+        let buy_next = port.filter_based_on_stock_action();
+        println!("{:#?}", buy_next);
+        println!("{}", serde_json::to_string_pretty(&port).unwrap());
     }
 
 }
