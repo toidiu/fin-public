@@ -274,10 +274,12 @@ impl PortfolioActual {
         }.calculate_total()
         .calculate_stock_percent(tickers)
     }
+
     fn calculate_total(mut self) -> Self {
         self.total_value = self.tickers.iter().map(|x| x.1.actual_value).sum();
         self
     }
+
     fn calculate_stock_percent(mut self, tickers: &HashMap<TickerSymbol, Ticker>) -> Self {
         let stock_value: f32 = self
             .tickers
@@ -286,6 +288,7 @@ impl PortfolioActual {
             .map(|x| x.1.actual_value)
             .sum();
         self.actual_stock_percent = (stock_value / self.total_value) * 100.0;
+        self.actual_stock_percent = (self.actual_stock_percent * 100.00).round() / 100.00;
         self
     }
 }
@@ -307,8 +310,94 @@ pub struct TickerActual {
 }
 
 impl TickerActual {
+    // TODO see if we an change `mut self` to `&mut self`
     pub fn update_actual_percent(mut self, total_value: f32) -> Self {
         self.actual_percent = (self.actual_value / total_value) * 100.0;
+        self.actual_percent = (self.actual_percent * 100.00).round() / 100.00;
         self
     }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    struct Helper {}
+    impl Helper {
+        fn get_ticker_map() -> HashMap<TickerSymbol, Ticker> {
+            let t1 = Ticker {
+                symbol: TickerSymbol("vti".to_owned()),
+                fee: 0.04,
+                price: 150.0,
+                kind: InvestmentKind::Stock,
+            };
+            let t2 = Ticker {
+                symbol: TickerSymbol("vtv".to_owned()),
+                fee: 0.05,
+                price: 111.0,
+                kind: InvestmentKind::Stock,
+            };
+
+            let mut map = HashMap::new();
+            map.insert(t1.symbol.clone(), t1);
+            map.insert(t2.symbol.clone(), t2);
+            map
+        }
+
+        fn get_ticker_actual_map() -> HashMap<TickerSymbol, TickerActual> {
+            let ta1 = TickerActual {
+                symbol: TickerSymbol("vti".to_owned()),
+                actual_value: 5.0,
+                actual_shares: 1,
+                actual_percent: 22.56,
+            };
+            let ta2 = TickerActual {
+                symbol: TickerSymbol("vtv".to_owned()),
+                actual_value: 10.0,
+                actual_shares: 1,
+                actual_percent: 8.35,
+            };
+
+            let mut map = HashMap::new();
+            map.insert(ta1.symbol.clone(), ta1);
+            map.insert(ta2.symbol.clone(), ta2);
+            map
+        }
+
+        fn get_portfolio_actual() -> PortfolioActual {
+            let map = Self::get_ticker_actual_map();
+            PortfolioActual {
+                tickers: map,
+                total_value: 100.0,
+                actual_stock_percent: 0.0,
+            }
+        }
+    }
+
+    #[test]
+    fn update_ta_actual_percent() {
+        let ta = TickerActual {
+            symbol: TickerSymbol("vti".to_owned()),
+            actual_value: 200.0,
+            actual_shares: 1,
+            actual_percent: 0.0,
+        };
+        let per = ta.update_actual_percent(600.0);
+        assert_eq!(33.33, per.actual_percent);
+    }
+
+    #[test]
+    fn calculate_actual_value_of_tickers() {
+        let pa = Helper::get_portfolio_actual();
+        let pa = pa.calculate_total();
+        assert_eq!(15.0, pa.total_value);
+    }
+
+    #[test]
+    fn calculate_stock_percent_of_portfolio() {
+        let pa = Helper::get_portfolio_actual();
+        let pa = pa.calculate_stock_percent(&Helper::get_ticker_map());
+        assert_eq!(15.0, pa.actual_stock_percent);
+    }
+
 }
