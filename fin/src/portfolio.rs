@@ -312,7 +312,8 @@ pub struct TickerGoal {
 pub struct TickerActual {
     pub symbol: TickerSymbol,
     pub actual_value: f32,
-    pub actual_shares: u32,
+    // FIXME calculated
+    pub actual_shares: f32,
     // calculated
     pub actual_percent: f32,
 }
@@ -356,13 +357,13 @@ mod test {
             let ta1 = TickerActual {
                 symbol: TickerSymbol("vti".to_owned()),
                 actual_value: 5.0,
-                actual_shares: 1,
+                actual_shares: 1.0,
                 actual_percent: 22.56,
             };
             let ta2 = TickerActual {
                 symbol: TickerSymbol("vtv".to_owned()),
                 actual_value: 10.0,
-                actual_shares: 1,
+                actual_shares: 1.0,
                 actual_percent: 8.35,
             };
 
@@ -387,7 +388,7 @@ mod test {
         let ta = TickerActual {
             symbol: TickerSymbol("vti".to_owned()),
             actual_value: 200.0,
-            actual_shares: 1,
+            actual_shares: 1.0,
             actual_percent: 0.0,
         };
         let per = ta.update_actual_percent(600.0);
