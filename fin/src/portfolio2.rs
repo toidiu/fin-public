@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::num;
 
 lazy_static! {
-    pub static ref EMPTY_TICKER_DIFF: TickerDiff = {
+    static ref EMPTY_TICKER_DIFF: TickerDiff = {
         TickerDiff {
             symbol: TickerSymbol("".to_string()),
             goal_minus_actual: 0.0,
@@ -30,7 +30,7 @@ pub enum TickerAction {
     Hold,
 }
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct TickerDiff {
+struct TickerDiff {
     symbol: TickerSymbol,
     goal_minus_actual: f32,
     action: TickerAction,
@@ -76,17 +76,14 @@ impl TickerDiff {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
     name: String,
-    #[serde(skip)]
     goal: PortfolioGoal,
-    #[serde(skip)]
     actual: PortfolioActual,
     meta: PortfolioMeta,
-    #[serde(skip)]
     tickers: HashMap<TickerSymbol, Ticker>,
 }
 
 impl Portfolio {
-    pub fn get_data<T: data::TickerDatabase>(db: &T) -> Portfolio {
+    pub fn new<T: data::TickerDatabase>(db: &T) -> Portfolio {
         let mut tickers_map = HashMap::new();
         for x in db.get_tickers() {
             tickers_map.insert(x.symbol.clone(), x);
@@ -114,23 +111,26 @@ impl Portfolio {
             portfolio_action: PortfolioAction::BuyEither,
         };
 
-        Portfolio {
+        let mut port = Portfolio {
             name: "my portfolio".to_owned(),
             goal: pg,
             actual: pa,
             meta: meta,
             // eventually only request those we care about (ones in goal)
             tickers: tickers_map,
-        }
+        };
+
+        port.init();
+        port
     }
 
     // calculate that stock % is met
-    pub fn update_portfolio(&mut self) {
+    fn init(&mut self) {
         self.calc_stock_diff();
         self.calc_ticker_diff();
     }
 
-    pub fn filter_based_on_stock_action(&self) -> TickerDiff {
+    pub fn get_buy_next(&self) -> Ticker {
         let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
             PortfolioAction::BuyStock => self
                 .meta
@@ -157,6 +157,7 @@ impl Portfolio {
             PortfolioAction::BuyEither => self.meta.tickers_diff.iter().collect(),
         };
 
+        // FIXME broken logic
         let filter_buys: Vec<&TickerDiff> = if (!filter_kind.is_empty()) {
             // filter buys
             filter_kind
@@ -193,7 +194,14 @@ impl Portfolio {
             }
         });
 
-        tic_diff.clone()
+        self.get_ticker(&tic_diff.symbol)
+    }
+
+    fn get_ticker(&self, symbol: &TickerSymbol) -> Ticker {
+        self.tickers
+            .get(symbol)
+            .expect(&format!("add ticker to db: {:?}", &symbol))
+            .clone()
     }
 
     // calculate stock difference and action

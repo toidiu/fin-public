@@ -33,8 +33,14 @@ fn index() -> String {
 #[get("/2")]
 fn two() -> String {
     let db = data::DefaultTickerDatabase {};
-    let d = portfolio2::Portfolio::get_data(&db);
-    serde_json::to_string(&d).unwrap()
+    let mut port = portfolio2::Portfolio::new(&db);
+    serde_json::to_string(&port).unwrap()
+}
+
+#[get("/next")]
+fn next() -> String {
+    let b = logic::next_buy();
+    serde_json::to_string(&b).unwrap()
 }
 
 fn start_server() {
@@ -51,15 +57,13 @@ fn start_server() {
     };
 
     rocket::ignite()
-        .mount("/", routes![index, two])
+        .mount("/", routes![index, two, next])
         .attach(options)
         .launch();
 }
 
 fn main() {
-    logic::next_buy();
-
-    // start_server();
+    start_server();
 }
 
 mod logic {
@@ -67,18 +71,17 @@ mod logic {
     use crate::data;
     use crate::data::TickerDatabase;
     use crate::portfolio2;
+    use crate::ticker;
 
-    pub fn next_buy() {
+    pub fn next_buy() -> ticker::Ticker {
         let db = data::DefaultTickerDatabase {};
-        let mut port = portfolio2::Portfolio::get_data(&db);
+        let mut port = portfolio2::Portfolio::new(&db);
 
         // update meta data based on ticker price and percent
-        port.update_portfolio();
+        // port.update_portfolio();
         // println!("{}", serde_json::to_string_pretty(&port.meta.tickers_diff).unwrap());
 
-        let buy_next = port.filter_based_on_stock_action();
-        println!("{:#?}", buy_next);
-        println!("{}", serde_json::to_string_pretty(&port).unwrap());
+        port.get_buy_next()
     }
 
 }
