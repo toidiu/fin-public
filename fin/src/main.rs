@@ -63,6 +63,7 @@ fn start_server() {
 }
 
 fn main() {
+    let b = logic::next_buy();
     start_server();
 }
 

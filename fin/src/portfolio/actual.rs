@@ -72,8 +72,8 @@ pub struct TickerActual {
 impl TickerActual {
     pub fn new(symbol: TickerSymbol, shares: f32) -> Self {
         TickerActual {
-            symbol: TickerSymbol("vti".to_owned()),
-            actual_shares: 1.0,
+            symbol: symbol,
+            actual_shares: shares,
             ..Default::default()
         }
     }

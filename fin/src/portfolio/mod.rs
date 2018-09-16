@@ -16,7 +16,7 @@ pub use crate::portfolio::goal::{PortfolioGoal, TickerGoal};
 lazy_static! {
     static ref EMPTY_TICKER_DIFF: TickerDiff = {
         TickerDiff {
-            symbol: TickerSymbol("".to_string()),
+            symbol: TickerSymbol("EMPTY_TICKER_DIFF".to_string()),
             goal_minus_actual: 0.0,
             action: TickerAction::Hold,
             order: 0,
@@ -67,15 +67,6 @@ impl TickerDiff {
             order: goal_tic.order,
         }
     }
-
-    pub fn empty() -> TickerDiff {
-        TickerDiff {
-            symbol: TickerSymbol("".to_owned()),
-            goal_minus_actual: 0.0,
-            action: TickerAction::Hold,
-            order: 0,
-        }
-    }
 }
 
 // =================================
@@ -122,9 +113,7 @@ impl Portfolio {
     // calculate that stock % is met
     fn init(mut self) -> Self {
         // TODO maybe meta init should be in PortfolioMeta impl
-        self.calc_stock_diff();
-        self.calc_ticker_diff();
-        self
+        self.calc_stock_diff().calc_ticker_diff()
     }
 
     pub fn get_buy_next(&self) -> Ticker {
@@ -154,7 +143,7 @@ impl Portfolio {
             PortfolioAction::BuyEither => self.meta.tickers_diff.iter().collect(),
         };
 
-        // FIXME broken logic
+        // fixme broken logic
         let filter_buys: Vec<&TickerDiff> = if (!filter_kind.is_empty()) {
             // filter buys
             filter_kind
@@ -169,9 +158,12 @@ impl Portfolio {
         // filter cheapest
         let empty_diff = EMPTY_TICKER_DIFF.clone();
 
+        // fixme maybe user scan
         let tic_diff: &TickerDiff = filter_buys.iter().fold(&empty_diff, |x, y| {
             if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
                 return y;
+            } else if (y.symbol == EMPTY_TICKER_DIFF.symbol) {
+                return x;
             }
             let x_price = self
                 .tickers
@@ -202,7 +194,7 @@ impl Portfolio {
     }
 
     // calculate stock difference and action
-    fn calc_stock_diff(&mut self) {
+    fn calc_stock_diff(mut self) -> Self {
         let actual_per = self.actual.get_stock_percent();
         let goal_per = self.goal.goal_stock_percent;
         let deviation = self.goal.deviation_percent;
@@ -219,10 +211,11 @@ impl Portfolio {
             PortfolioAction::BuyEither
         };
         self.meta.stock_diff = diff;
+        self
     }
 
     // calculate gTn%-aTn% for each ticker
-    fn calc_ticker_diff(&mut self) {
+    fn calc_ticker_diff(mut self) -> Self {
         let mut v: Vec<TickerDiff> = self
             .actual
             .tickers
@@ -237,6 +230,7 @@ impl Portfolio {
             }).collect();
         v.sort_by(|a, b| a.order.cmp(&b.order));
         self.meta.tickers_diff = v;
+        self
     }
 }
 
