@@ -20,8 +20,8 @@ use crate::data::*;
 #[macro_use]
 mod macros;
 mod data;
+mod portfolio;
 mod portfolio1;
-mod portfolio2;
 mod ticker;
 
 #[get("/")]
@@ -33,7 +33,7 @@ fn index() -> String {
 #[get("/2")]
 fn two() -> String {
     let db = data::DefaultTickerDatabase {};
-    let mut port = portfolio2::Portfolio::new(&db);
+    let mut port = portfolio::Portfolio::new(&db);
     serde_json::to_string(&port).unwrap()
 }
 
@@ -70,12 +70,12 @@ mod logic {
 
     use crate::data;
     use crate::data::TickerDatabase;
-    use crate::portfolio2;
+    use crate::portfolio;
     use crate::ticker;
 
     pub fn next_buy() -> ticker::Ticker {
         let db = data::DefaultTickerDatabase {};
-        let mut port = portfolio2::Portfolio::new(&db);
+        let mut port = portfolio::Portfolio::new(&db);
 
         // update meta data based on ticker price and percent
         // port.update_portfolio();

@@ -2,7 +2,7 @@
 
 use mock_derive::mock;
 
-use crate::portfolio2;
+use crate::portfolio;
 use crate::ticker::*;
 use std::collections::HashMap;
 
@@ -10,8 +10,8 @@ use std::collections::HashMap;
 pub trait TickerDatabase {
     fn get_ticker(&self, symbol: &TickerSymbol) -> Ticker;
     fn get_tickers(&self) -> Vec<Ticker>;
-    fn get_goal(&self) -> HashMap<TickerSymbol, portfolio2::TickerGoal>;
-    fn get_actual(&self) -> HashMap<TickerSymbol, portfolio2::TickerActual>;
+    fn get_goal(&self) -> HashMap<TickerSymbol, portfolio::TickerGoal>;
+    fn get_actual(&self) -> HashMap<TickerSymbol, portfolio::TickerActual>;
 }
 
 pub struct DefaultTickerDatabase {}
@@ -114,58 +114,58 @@ impl TickerDatabase for DefaultTickerDatabase {
         vec![vti, vtv, voe, vbr, vea, vwo, vtip, agg, mub, bndx, vwob]
     }
 
-    fn get_goal(&self) -> HashMap<TickerSymbol, portfolio2::TickerGoal> {
-        let g_vti = portfolio2::TickerGoal {
+    fn get_goal(&self) -> HashMap<TickerSymbol, portfolio::TickerGoal> {
+        let g_vti = portfolio::TickerGoal {
             symbol: TickerSymbol("vti".to_owned()),
             goal_percent: 20.0,
             order: 1,
         };
-        let g_vtv = portfolio2::TickerGoal {
+        let g_vtv = portfolio::TickerGoal {
             symbol: TickerSymbol("vtv".to_owned()),
             goal_percent: 6.0,
             order: 2,
         };
-        let g_voe = portfolio2::TickerGoal {
+        let g_voe = portfolio::TickerGoal {
             symbol: TickerSymbol("voe".to_owned()),
             goal_percent: 4.0,
             order: 3,
         };
-        let g_vbr = portfolio2::TickerGoal {
+        let g_vbr = portfolio::TickerGoal {
             symbol: TickerSymbol("vbr".to_owned()),
             goal_percent: 3.0,
             order: 4,
         };
-        let g_vea = portfolio2::TickerGoal {
+        let g_vea = portfolio::TickerGoal {
             symbol: TickerSymbol("vea".to_owned()),
             goal_percent: 15.0,
             order: 5,
         };
-        let g_vwo = portfolio2::TickerGoal {
+        let g_vwo = portfolio::TickerGoal {
             symbol: TickerSymbol("vwo".to_owned()),
             goal_percent: 10.0,
             order: 6,
         };
-        let g_vtip = portfolio2::TickerGoal {
+        let g_vtip = portfolio::TickerGoal {
             symbol: TickerSymbol("vtip".to_owned()),
             goal_percent: 3.0,
             order: 7,
         };
-        let g_agg = portfolio2::TickerGoal {
+        let g_agg = portfolio::TickerGoal {
             symbol: TickerSymbol("agg".to_owned()),
             goal_percent: 4.0,
             order: 8,
         };
-        let g_mub = portfolio2::TickerGoal {
+        let g_mub = portfolio::TickerGoal {
             symbol: TickerSymbol("mub".to_owned()),
             goal_percent: 14.0,
             order: 9,
         };
-        let g_bndx = portfolio2::TickerGoal {
+        let g_bndx = portfolio::TickerGoal {
             symbol: TickerSymbol("bndx".to_owned()),
             goal_percent: 12.0,
             order: 10,
         };
-        let g_vwob = portfolio2::TickerGoal {
+        let g_vwob = portfolio::TickerGoal {
             symbol: TickerSymbol("vwob".to_owned()),
             goal_percent: 9.0,
             order: 11,
@@ -175,75 +175,75 @@ impl TickerDatabase for DefaultTickerDatabase {
         ];
 
         // create a map
-        let mut map: HashMap<TickerSymbol, portfolio2::TickerGoal> = HashMap::new();
+        let mut map: HashMap<TickerSymbol, portfolio::TickerGoal> = HashMap::new();
         for x in v {
             map.insert(x.symbol.clone(), x);
         }
         map
     }
 
-    fn get_actual(&self) -> HashMap<TickerSymbol, portfolio2::TickerActual> {
-        let a_vti = portfolio2::TickerActual {
+    fn get_actual(&self) -> HashMap<TickerSymbol, portfolio::TickerActual> {
+        let a_vti = portfolio::TickerActual {
             symbol: TickerSymbol("vti".to_owned()),
             actual_value: 300.0,
             actual_shares: 1,
             actual_percent: 22.56,
         };
-        let a_vtv = portfolio2::TickerActual {
+        let a_vtv = portfolio::TickerActual {
             symbol: TickerSymbol("vtv".to_owned()),
             actual_value: 111.0,
             actual_shares: 1,
             actual_percent: 8.35,
         };
-        let a_voe = portfolio2::TickerActual {
+        let a_voe = portfolio::TickerActual {
             symbol: TickerSymbol("voe".to_owned()),
             actual_value: 115.0,
             actual_shares: 1,
             actual_percent: 8.65,
         };
-        let a_vbr = portfolio2::TickerActual {
+        let a_vbr = portfolio::TickerActual {
             symbol: TickerSymbol("vbr".to_owned()),
             actual_value: 142.0,
             actual_shares: 1,
             actual_percent: 10.6,
         };
-        let a_vea = portfolio2::TickerActual {
+        let a_vea = portfolio::TickerActual {
             symbol: TickerSymbol("vea".to_owned()),
             actual_value: 129.0,
             actual_shares: 3,
             actual_percent: 9.7,
         };
-        let a_vwo = portfolio2::TickerActual {
+        let a_vwo = portfolio::TickerActual {
             symbol: TickerSymbol("vwo".to_owned()),
             actual_value: 86.0,
             actual_shares: 1,
             actual_percent: 6.4,
         };
-        let a_vtip = portfolio2::TickerActual {
+        let a_vtip = portfolio::TickerActual {
             symbol: TickerSymbol("vtip".to_owned()),
             actual_value: 49.0,
             actual_shares: 1,
             actual_percent: 3.6,
         };
-        let a_agg = portfolio2::TickerActual {
+        let a_agg = portfolio::TickerActual {
             symbol: TickerSymbol("agg".to_owned()),
             actual_value: 106.0,
             actual_shares: 1,
             actual_percent: 7.9,
         };
-        let a_mub = portfolio2::TickerActual {
+        let a_mub = portfolio::TickerActual {
             symbol: TickerSymbol("mub".to_owned()),
             actual_value: 109.0,
             actual_shares: 1,
             actual_percent: 8.2,
         };
-        let a_bndx = portfolio2::TickerActual {
+        let a_bndx = portfolio::TickerActual {
             symbol: TickerSymbol("bndx".to_owned()),
             actual_value: 108.0,
             actual_shares: 2,
             actual_percent: 8.1,
         };
-        let a_vwob = portfolio2::TickerActual {
+        let a_vwob = portfolio::TickerActual {
             symbol: TickerSymbol("vwob".to_owned()),
             actual_value: 75.0,
             actual_shares: 1,
@@ -254,7 +254,7 @@ impl TickerDatabase for DefaultTickerDatabase {
         ];
 
         // create a map
-        let mut map: HashMap<TickerSymbol, portfolio2::TickerActual> = HashMap::new();
+        let mut map: HashMap<TickerSymbol, portfolio::TickerActual> = HashMap::new();
         for x in v {
             map.insert(x.symbol.clone(), x);
         }
