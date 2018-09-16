@@ -8,8 +8,7 @@ use std::collections::HashMap;
 
 #[mock]
 pub trait TickerDatabase {
-    fn get_ticker(&self, symbol: &TickerSymbol) -> Ticker;
-    fn get_tickers(&self) -> Vec<Ticker>;
+    fn get_tickers(&self) -> HashMap<TickerSymbol, Ticker>;
     fn get_goal(&self) -> HashMap<TickerSymbol, portfolio::TickerGoal>;
     fn get_actual(&self) -> HashMap<TickerSymbol, portfolio::TickerActual>;
 }
@@ -17,18 +16,7 @@ pub trait TickerDatabase {
 pub struct DefaultTickerDatabase {}
 
 impl TickerDatabase for DefaultTickerDatabase {
-    fn get_ticker(&self, symbol: &TickerSymbol) -> Ticker {
-        let tickers = self.get_tickers();
-        let d: Vec<Ticker> = tickers
-            .into_iter()
-            .filter(|x| x.symbol.eq(&symbol))
-            .collect();
-        d.first()
-            .cloned()
-            .expect(&format!("add stock to database: {:?}", symbol))
-    }
-
-    fn get_tickers(&self) -> Vec<Ticker> {
+    fn get_tickers(&self) -> HashMap<TickerSymbol, Ticker> {
         let vti = Ticker {
             symbol: TickerSymbol("vti".to_owned()),
             fee: 0.04,
@@ -111,7 +99,14 @@ impl TickerDatabase for DefaultTickerDatabase {
             kind: InvestmentKind::Bond,
         };
 
-        vec![vti, vtv, voe, vbr, vea, vwo, vtip, agg, mub, bndx, vwob]
+        let v = vec![vti, vtv, voe, vbr, vea, vwo, vtip, agg, mub, bndx, vwob];
+
+        // create a map
+        let mut map: HashMap<TickerSymbol, Ticker> = HashMap::new();
+        for x in v {
+            map.insert(x.symbol.clone(), x);
+        }
+        map
     }
 
     fn get_goal(&self) -> HashMap<TickerSymbol, portfolio::TickerGoal> {
@@ -185,9 +180,10 @@ impl TickerDatabase for DefaultTickerDatabase {
     fn get_actual(&self) -> HashMap<TickerSymbol, portfolio::TickerActual> {
         let a_vti = portfolio::TickerActual {
             symbol: TickerSymbol("vti".to_owned()),
-            actual_value: 300.0,
             actual_shares: 1.0,
-            actual_percent: 22.56,
+            ..Default::default()
+            // actual_value: 300.0,
+            // actual_percent: 22.56,
         };
         let a_vtv = portfolio::TickerActual {
             symbol: TickerSymbol("vtv".to_owned()),
