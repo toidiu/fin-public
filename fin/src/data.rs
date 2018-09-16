@@ -178,73 +178,17 @@ impl TickerDatabase for DefaultTickerDatabase {
     }
 
     fn get_actual(&self) -> HashMap<TickerSymbol, portfolio::TickerActual> {
-        let a_vti = portfolio::TickerActual {
-            symbol: TickerSymbol("vti".to_owned()),
-            actual_shares: 1.0,
-            ..Default::default()
-            // actual_value: 300.0,
-            // actual_percent: 22.56,
-        };
-        let a_vtv = portfolio::TickerActual {
-            symbol: TickerSymbol("vtv".to_owned()),
-            actual_value: 111.0,
-            actual_shares: 1.0,
-            actual_percent: 8.35,
-        };
-        let a_voe = portfolio::TickerActual {
-            symbol: TickerSymbol("voe".to_owned()),
-            actual_value: 115.0,
-            actual_shares: 1.0,
-            actual_percent: 8.65,
-        };
-        let a_vbr = portfolio::TickerActual {
-            symbol: TickerSymbol("vbr".to_owned()),
-            actual_value: 142.0,
-            actual_shares: 1.0,
-            actual_percent: 10.6,
-        };
-        let a_vea = portfolio::TickerActual {
-            symbol: TickerSymbol("vea".to_owned()),
-            actual_value: 129.0,
-            actual_shares: 3.0,
-            actual_percent: 9.7,
-        };
-        let a_vwo = portfolio::TickerActual {
-            symbol: TickerSymbol("vwo".to_owned()),
-            actual_value: 86.0,
-            actual_shares: 1.0,
-            actual_percent: 6.4,
-        };
-        let a_vtip = portfolio::TickerActual {
-            symbol: TickerSymbol("vtip".to_owned()),
-            actual_value: 49.0,
-            actual_shares: 1.0,
-            actual_percent: 3.6,
-        };
-        let a_agg = portfolio::TickerActual {
-            symbol: TickerSymbol("agg".to_owned()),
-            actual_value: 106.0,
-            actual_shares: 1.0,
-            actual_percent: 7.9,
-        };
-        let a_mub = portfolio::TickerActual {
-            symbol: TickerSymbol("mub".to_owned()),
-            actual_value: 109.0,
-            actual_shares: 1.0,
-            actual_percent: 8.2,
-        };
-        let a_bndx = portfolio::TickerActual {
-            symbol: TickerSymbol("bndx".to_owned()),
-            actual_value: 108.0,
-            actual_shares: 2.0,
-            actual_percent: 8.1,
-        };
-        let a_vwob = portfolio::TickerActual {
-            symbol: TickerSymbol("vwob".to_owned()),
-            actual_value: 75.0,
-            actual_shares: 1.0,
-            actual_percent: 5.6,
-        };
+        let a_vti = portfolio::TickerActual::new(TickerSymbol("vti".to_owned()), 1.0);
+        let a_vtv = portfolio::TickerActual::new(TickerSymbol("vtv".to_owned()), 1.0);
+        let a_voe = portfolio::TickerActual::new(TickerSymbol("voe".to_owned()), 1.0);
+        let a_vbr = portfolio::TickerActual::new(TickerSymbol("vbr".to_owned()), 1.0);
+        let a_vea = portfolio::TickerActual::new(TickerSymbol("vea".to_owned()), 3.0);
+        let a_vwo = portfolio::TickerActual::new(TickerSymbol("vwo".to_owned()), 1.0);
+        let a_vtip = portfolio::TickerActual::new(TickerSymbol("vtip".to_owned()), 1.0);
+        let a_agg = portfolio::TickerActual::new(TickerSymbol("agg".to_owned()), 1.0);
+        let a_mub = portfolio::TickerActual::new(TickerSymbol("mub".to_owned()), 1.0);
+        let a_bndx = portfolio::TickerActual::new(TickerSymbol("bndx".to_owned()), 2.0);
+        let a_vwob = portfolio::TickerActual::new(TickerSymbol("vwob".to_owned()), 1.0);
         let v = vec![
             a_vti, a_vtv, a_voe, a_vbr, a_vea, a_vwo, a_vtip, a_agg, a_mub, a_bndx, a_vwob,
         ];

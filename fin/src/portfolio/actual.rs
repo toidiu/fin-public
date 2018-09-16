@@ -66,7 +66,7 @@ pub struct TickerActual {
     // fixme make private.. calculated
     pub actual_value: f32,
     // fixme make private.. calculated
-    pub actual_percent: f32,
+    actual_percent: f32,
 }
 
 impl TickerActual {
