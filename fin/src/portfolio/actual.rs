@@ -11,6 +11,7 @@ pub struct PortfolioActual {
 }
 
 impl PortfolioActual {
+    // fixme test!
     pub fn new(
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
@@ -49,6 +50,7 @@ impl PortfolioActual {
         pa
     }
 
+    // fixme test!
     pub fn get_stock_percent(&self) -> f32 {
         self.actual_stock_percent
     }
@@ -70,6 +72,7 @@ pub struct TickerActual {
 }
 
 impl TickerActual {
+    // fixme test!
     pub fn new(symbol: TickerSymbol, shares: f32) -> Self {
         TickerActual {
             symbol: symbol,
@@ -78,6 +81,7 @@ impl TickerActual {
         }
     }
 
+    // fixme test!
     pub fn get_actual_percent(&self) -> f32 {
         self.actual_percent
     }

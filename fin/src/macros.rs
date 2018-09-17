@@ -1,3 +1,7 @@
+/*
+ * Helper macros to make life easier.
+ */
+
 macro_rules! matches(
     ($e:expr, $p:pat) => (
         match $e {
@@ -16,13 +20,15 @@ macro_rules! symbol(
 #[cfg(test)]
 mod test {
 
+    use crate::ticker::*;
+
     enum TestMacro {
         Foo,
         Bar,
     }
 
     #[test]
-    fn should_match() {
+    fn symbol_should_equal() {
         assert_eq!(TickerSymbol("bla".to_owned()), symbol!("bla"));
     }
 
