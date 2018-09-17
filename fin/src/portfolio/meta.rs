@@ -9,6 +9,7 @@ pub enum PortfolioAction {
     BuyBond,
     BuyEither,
 }
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum TickerAction {
     Buy,
@@ -27,12 +28,51 @@ pub struct PortfolioMeta {
 }
 
 impl PortfolioMeta {
-    pub fn default() -> Self {
-        PortfolioMeta {
+    pub fn new(goal: &PortfolioGoal, actual: &PortfolioActual) -> Self {
+        let mut meta = PortfolioMeta {
             tickers_diff: vec![],
             stock_diff: 0.0,
             portfolio_action: PortfolioAction::BuyEither,
-        }
+        };
+        meta.calc_stock_diff(goal, actual);
+        meta.calc_ticker_diff(goal, actual);
+        meta
+    }
+
+    // calculate stock difference and action
+    fn calc_stock_diff(&mut self, goal: &PortfolioGoal, actual: &PortfolioActual) {
+        let actual_per = actual.get_stock_percent();
+        let goal_per = goal.goal_stock_percent;
+        let deviation = goal.deviation_percent;
+
+        let diff = goal_per - actual_per;
+        self.portfolio_action = if ((diff < 0.0) && diff.abs() > deviation) {
+            // If gS%-aS% is - and abs val above q% then buy bonds
+            PortfolioAction::BuyBond
+        } else if (diff > 0.0 && diff > deviation) {
+            // If gS%-aS% is + and above q% then buy stocks
+            PortfolioAction::BuyStock
+        } else {
+            // else buy stock or bond
+            PortfolioAction::BuyEither
+        };
+        self.stock_diff = diff;
+    }
+
+    // calculate gTn%-aTn% for each ticker
+    fn calc_ticker_diff(&mut self, goal: &PortfolioGoal, actual: &PortfolioActual) {
+        let mut v: Vec<TickerDiff> = actual
+            .tickers
+            .iter()
+            .map(|symb_tic_actual| {
+                let goal_tic = goal
+                    .tickers
+                    .get(symb_tic_actual.0)
+                    .expect(&format!("add ticker to db: {:?}", symb_tic_actual.0));
+                TickerDiff::new(symb_tic_actual.1, goal_tic, goal.deviation_percent)
+            }).collect();
+        v.sort_by(|a, b| a.order.cmp(&b.order));
+        self.tickers_diff = v;
     }
 }
 

@@ -54,24 +54,23 @@ impl Portfolio {
         let pa = PortfolioActual::new(db.get_actual(), &tickers_map);
 
         // get meta
-        let meta = PortfolioMeta::default();
+        let meta = PortfolioMeta::new(&pg, &pa);
 
-        let mut port = Portfolio {
+        Portfolio {
             name: "my portfolio".to_owned(),
             goal: pg,
             actual: pa,
             meta: meta,
             tickers: tickers_map,
-        };
-
-        port.init()
+        }
     }
 
-    // calculate that stock % is met
-    fn init(mut self) -> Self {
-        // TODO maybe meta init should be in PortfolioMeta impl
-        self.calc_stock_diff().calc_ticker_diff()
-    }
+    // // calculate that stock % is met
+    // fn init(mut self) -> Self {
+    //     // TODO maybe meta init should be in PortfolioMeta impl
+    //     self.meta.init(&self.goal, &self.actual);
+    //     self
+    // }
 
     pub fn get_buy_next(&self) -> Ticker {
         let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
@@ -148,46 +147,6 @@ impl Portfolio {
             .get(symbol)
             .expect(&format!("add ticker to db: {:?}", &symbol))
             .clone()
-    }
-
-    // calculate stock difference and action
-    fn calc_stock_diff(mut self) -> Self {
-        let actual_per = self.actual.get_stock_percent();
-        let goal_per = self.goal.goal_stock_percent;
-        let deviation = self.goal.deviation_percent;
-
-        let diff = goal_per - actual_per;
-        self.meta.portfolio_action = if ((diff < 0.0) && diff.abs() > deviation) {
-            // If gS%-aS% is - and abs val above q% then buy bonds
-            PortfolioAction::BuyBond
-        } else if (diff > 0.0 && diff > deviation) {
-            // If gS%-aS% is + and above q% then buy stocks
-            PortfolioAction::BuyStock
-        } else {
-            // else buy stock or bond
-            PortfolioAction::BuyEither
-        };
-        self.meta.stock_diff = diff;
-        self
-    }
-
-    // calculate gTn%-aTn% for each ticker
-    fn calc_ticker_diff(mut self) -> Self {
-        let mut v: Vec<TickerDiff> = self
-            .actual
-            .tickers
-            .iter()
-            .map(|symb_tic_actual| {
-                let goal_tic = self
-                    .goal
-                    .tickers
-                    .get(symb_tic_actual.0)
-                    .expect(&format!("add ticker to db: {:?}", symb_tic_actual.0));
-                TickerDiff::new(symb_tic_actual.1, goal_tic, self.goal.deviation_percent)
-            }).collect();
-        v.sort_by(|a, b| a.order.cmp(&b.order));
-        self.meta.tickers_diff = v;
-        self
     }
 }
 

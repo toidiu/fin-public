@@ -4,9 +4,9 @@ use std::collections::HashMap;
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct PortfolioActual {
     pub tickers: HashMap<TickerSymbol, TickerActual>,
-    // fixme make private.. calculated
+    // calculated
     total_value: f32,
-    // fixme make private.. calculated
+    // calculated
     actual_stock_percent: f32,
 }
 
@@ -63,9 +63,9 @@ impl PortfolioActual {
 pub struct TickerActual {
     pub symbol: TickerSymbol,
     pub actual_shares: f32,
-    // fixme make private.. calculated
-    pub actual_value: f32,
-    // fixme make private.. calculated
+    // calculated
+    actual_value: f32,
+    // calculated
     actual_percent: f32,
 }
 
