@@ -101,13 +101,13 @@ mod test {
     impl Helper {
         // fn get_ticker_map() -> HashMap<TickerSymbol, Ticker> {
         //     let t1 = Ticker {
-        //         symbol: TickerSymbol("vti".to_owned()),
+        //         symbol: symbol!("vti"),
         //         fee: 0.04,
         //         price: 150.0,
         //         kind: InvestmentKind::Stock,
         //     };
         //     let t2 = Ticker {
-        //         symbol: TickerSymbol("vtv".to_owned()),
+        //         symbol: symbol!("vtv"),
         //         fee: 0.05,
         //         price: 111.0,
         //         kind: InvestmentKind::Stock,
@@ -121,13 +121,13 @@ mod test {
 
         fn get_ticker_actual_map() -> HashMap<TickerSymbol, TickerActual> {
             let ta1 = TickerActual {
-                symbol: TickerSymbol("vti".to_owned()),
+                symbol: symbol!("vti"),
                 actual_value: 5.0,
                 actual_shares: 1.0,
                 actual_percent: 22.56,
             };
             let ta2 = TickerActual {
-                symbol: TickerSymbol("vtv".to_owned()),
+                symbol: symbol!("vtv"),
                 actual_value: 10.0,
                 actual_shares: 1.0,
                 actual_percent: 8.35,
@@ -158,7 +158,7 @@ mod test {
     #[test]
     fn ta_actual_percent() {
         let mut ta = TickerActual {
-            symbol: TickerSymbol("vti".to_owned()),
+            symbol: symbol!("vti"),
             actual_value: 200.0,
             actual_shares: 1.0,
             actual_percent: 0.0,
@@ -170,7 +170,7 @@ mod test {
     #[test]
     fn ta_actual_value() {
         let mut ta = TickerActual {
-            symbol: TickerSymbol("vti".to_owned()),
+            symbol: symbol!("vti"),
             actual_value: 0.0,
             actual_shares: 2.5,
             actual_percent: 0.0,

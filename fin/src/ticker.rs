@@ -50,7 +50,7 @@ mod test {
     impl Helper {
         pub fn get_stock() -> Ticker {
             Ticker {
-                symbol: TickerSymbol("vwo".to_owned()),
+                symbol: symbol!("vwo"),
                 fee: 0.14,
                 price: 43.0,
                 kind: InvestmentKind::Stock,
@@ -59,7 +59,7 @@ mod test {
 
         pub fn get_bond() -> Ticker {
             Ticker {
-                symbol: TickerSymbol("vtip".to_owned()),
+                symbol: symbol!("vtip"),
                 fee: 0.06,
                 price: 49.0,
                 kind: InvestmentKind::Bond,
@@ -83,13 +83,13 @@ mod test {
 
     #[test]
     fn symbol_should_have_clean_display_fmt() {
-        let symbol = TickerSymbol("abc".to_owned());
+        let symbol = symbol!("abc");
         assert_eq!("abc", format!("{}", symbol));
     }
 
     #[test]
     fn symbol_should_have_clean_debug_fmt() {
-        let symbol = TickerSymbol("abc".to_owned());
+        let symbol = symbol!("abc");
         assert_eq!("abc", format!("{:?}", symbol));
     }
 }

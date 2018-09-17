@@ -7,12 +7,23 @@ macro_rules! matches(
     )
 );
 
+macro_rules! symbol(
+    ($s:expr) => (
+        TickerSymbol($s.to_owned())
+    )
+);
+
 #[cfg(test)]
 mod test {
 
     enum TestMacro {
         Foo,
         Bar,
+    }
+
+    #[test]
+    fn should_match() {
+        assert_eq!(TickerSymbol("bla".to_owned()), symbol!("bla"));
     }
 
     #[test]

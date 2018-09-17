@@ -97,13 +97,13 @@ pub struct TickerStatus {
 pub fn get_data_portfolio1() -> Portfolio {
     let tg_vti = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("vti".to_owned()),
+            symbol: symbol!("vti"),
             fee: 0.04,
             price: 150.0,
             kind: InvestmentKind::Stock,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("vti".to_owned()),
+            // symbol: symbol!("vti"),
             goal_percent: 20.0,
             current_percent: 22.56,
             current_value: 300.0,
@@ -113,13 +113,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_vtv = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("vtv".to_owned()),
+            symbol: symbol!("vtv"),
             fee: 0.05,
             price: 111.0,
             kind: InvestmentKind::Stock,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("vtv".to_owned()),
+            // symbol: symbol!("vtv"),
             goal_percent: 6.0,
             current_percent: 8.35,
             current_value: 111.0,
@@ -129,13 +129,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_voe = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("voe".to_owned()),
+            symbol: symbol!("voe"),
             fee: 0.07,
             price: 115.0,
             kind: InvestmentKind::Stock,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("voe".to_owned()),
+            // symbol: symbol!("voe"),
             goal_percent: 4.0,
             current_percent: 8.65,
             current_value: 115.0,
@@ -145,13 +145,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_vbr = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("vbr".to_owned()),
+            symbol: symbol!("vbr"),
             fee: 0.07,
             price: 142.0,
             kind: InvestmentKind::Stock,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("vbr".to_owned()),
+            // symbol: symbol!("vbr"),
             goal_percent: 3.0,
             current_percent: 10.68,
             current_value: 142.0,
@@ -161,13 +161,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_vea = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("vea".to_owned()),
+            symbol: symbol!("vea"),
             fee: 0.07,
             price: 43.0,
             kind: InvestmentKind::Stock,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("vea".to_owned()),
+            // symbol: symbol!("vea"),
             goal_percent: 15.0,
             current_percent: 9.70,
             current_value: 129.0,
@@ -177,13 +177,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_vwo = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("vwo".to_owned()),
+            symbol: symbol!("vwo"),
             fee: 0.14,
             price: 43.0,
             kind: InvestmentKind::Stock,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("vwo".to_owned()),
+            // symbol: symbol!("vwo"),
             goal_percent: 10.0,
             current_percent: 6.47,
             current_value: 86.0,
@@ -193,13 +193,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_vtip = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("vtip".to_owned()),
+            symbol: symbol!("vtip"),
             fee: 0.06,
             price: 49.0,
             kind: InvestmentKind::Bond,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("vtip".to_owned()),
+            // symbol: symbol!("vtip"),
             goal_percent: 3.0,
             current_percent: 3.68,
             current_value: 49.0,
@@ -209,13 +209,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_agg = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("agg".to_owned()),
+            symbol: symbol!("agg"),
             fee: 0.05,
             price: 106.0,
             kind: InvestmentKind::Bond,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("agg".to_owned()),
+            // symbol: symbol!("agg"),
             goal_percent: 4.0,
             current_percent: 7.97,
             current_value: 106.0,
@@ -225,13 +225,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_mub = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("mub".to_owned()),
+            symbol: symbol!("mub"),
             fee: 0.07,
             price: 109.0,
             kind: InvestmentKind::Bond,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("mub".to_owned()),
+            // symbol: symbol!("mub"),
             goal_percent: 14.0,
             current_percent: 8.2,
             current_value: 109.0,
@@ -241,13 +241,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_bndx = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("bndx".to_owned()),
+            symbol: symbol!("bndx"),
             fee: 0.11,
             price: 54.0,
             kind: InvestmentKind::Bond,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("bndx".to_owned()),
+            // symbol: symbol!("bndx"),
             goal_percent: 12.0,
             current_percent: 8.12,
             current_value: 108.0,
@@ -257,13 +257,13 @@ pub fn get_data_portfolio1() -> Portfolio {
 
     let tg_vwob = TickerStatus {
         ticker: Ticker {
-            symbol: TickerSymbol("vwob".to_owned()),
+            symbol: symbol!("vwob"),
             fee: 0.32,
             price: 75.0,
             kind: InvestmentKind::Bond,
         },
         goal: TickerGoal {
-            // symbol: TickerSymbol("vwob".to_owned()),
+            // symbol: symbol!("vwob"),
             goal_percent: 9.0,
             current_percent: 5.64,
             current_value: 75.0,

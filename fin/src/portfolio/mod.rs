@@ -20,7 +20,7 @@ pub use crate::portfolio::meta::{PortfolioMeta, TickerDiff};
 lazy_static! {
     static ref EMPTY_TICKER_DIFF: TickerDiff = {
         TickerDiff {
-            symbol: TickerSymbol("EMPTY_TICKER_DIFF".to_string()),
+            symbol: symbol!("EMPTY_TICKER_DIFF"),
             goal_minus_actual: 0.0,
             action: TickerAction::Hold,
             order: 0,
