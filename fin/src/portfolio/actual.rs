@@ -11,7 +11,7 @@ pub struct PortfolioActual {
 }
 
 impl PortfolioActual {
-    // fixme test!
+    fixme test!
     pub fn new(
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
