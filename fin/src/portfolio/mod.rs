@@ -41,7 +41,7 @@ impl Portfolio {
     pub fn new<T: data::TickerDatabase>(db: &T) -> Portfolio {
         // get goal
         let pg = PortfolioGoal {
-            tickers: db.get_goal(),
+            tickers_goal: db.get_goal(),
             goal_stock_percent: 58.0,
             deviation_percent: 5.0,
         };

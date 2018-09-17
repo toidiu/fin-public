@@ -62,11 +62,11 @@ impl PortfolioMeta {
     // calculate gTn%-aTn% for each ticker
     fn calc_ticker_diff(&mut self, goal: &PortfolioGoal, actual: &PortfolioActual) {
         let mut v: Vec<TickerDiff> = actual
-            .tickers
+            .tickers_actual
             .iter()
             .map(|symb_tic_actual| {
                 let goal_tic = goal
-                    .tickers
+                    .tickers_goal
                     .get(symb_tic_actual.0)
                     .expect(&format!("add ticker to db: {:?}", symb_tic_actual.0));
                 TickerDiff::new(symb_tic_actual.1, goal_tic, goal.deviation_percent)

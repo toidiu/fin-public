@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct PortfolioActual {
-    pub tickers: HashMap<TickerSymbol, TickerActual>,
+    pub tickers_actual: HashMap<TickerSymbol, TickerActual>,
     // calculated
     total_value: f32,
     // calculated
@@ -41,7 +41,7 @@ impl PortfolioActual {
         }
 
         let mut pa = PortfolioActual {
-            tickers: tickers_actual,
+            tickers_actual: tickers_actual,
             total_value: total_value,
             actual_stock_percent: 0.0,
         };
@@ -142,7 +142,7 @@ mod test {
         fn get_portfolio_actual() -> PortfolioActual {
             let map = Self::get_ticker_actual_map();
             PortfolioActual {
-                tickers: map,
+                tickers_actual: map,
                 total_value: 200.0,
                 actual_stock_percent: 0.0,
             }

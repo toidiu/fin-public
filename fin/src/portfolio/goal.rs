@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct PortfolioGoal {
-    pub tickers: HashMap<TickerSymbol, TickerGoal>,
+    pub tickers_goal: HashMap<TickerSymbol, TickerGoal>,
     pub goal_stock_percent: f32,
     pub deviation_percent: f32,
 }
