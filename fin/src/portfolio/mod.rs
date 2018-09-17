@@ -8,10 +8,14 @@ use std::num;
 
 mod actual;
 mod goal;
+mod meta;
 
-// export this as portfolio::TickerGoal
+use crate::portfolio::meta::{PortfolioAction, TickerAction};
+
+// export this as portfolio::{...}
 pub use crate::portfolio::actual::{PortfolioActual, TickerActual};
 pub use crate::portfolio::goal::{PortfolioGoal, TickerGoal};
+pub use crate::portfolio::meta::{PortfolioMeta, TickerDiff};
 
 lazy_static! {
     static ref EMPTY_TICKER_DIFF: TickerDiff = {
@@ -23,53 +27,6 @@ lazy_static! {
         }
     };
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum PortfolioAction {
-    BuyStock,
-    BuyBond,
-    BuyEither,
-}
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub enum TickerAction {
-    Buy,
-    Sell,
-    Hold,
-}
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct TickerDiff {
-    symbol: TickerSymbol,
-    goal_minus_actual: f32,
-    action: TickerAction,
-    // used to display the tickers in deterministic order each time
-    order: u32,
-}
-
-impl TickerDiff {
-    pub fn new(
-        actual_tic: &TickerActual,
-        goal_tic: &TickerGoal,
-        deviation_percent: f32,
-    ) -> TickerDiff {
-        let g_minus_a = goal_tic.goal_percent - actual_tic.get_actual_percent();
-        TickerDiff {
-            symbol: actual_tic.symbol.clone(),
-            goal_minus_actual: g_minus_a,
-            action: {
-                if (g_minus_a < 0.0 && g_minus_a.abs() > deviation_percent) {
-                    TickerAction::Sell
-                } else if (g_minus_a > 0.0 && g_minus_a.abs() > deviation_percent) {
-                    TickerAction::Buy
-                } else {
-                    TickerAction::Hold
-                }
-            },
-            order: goal_tic.order,
-        }
-    }
-}
-
-// =================================
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
@@ -231,26 +188,6 @@ impl Portfolio {
         v.sort_by(|a, b| a.order.cmp(&b.order));
         self.meta.tickers_diff = v;
         self
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct PortfolioMeta {
-    // calculated
-    tickers_diff: Vec<TickerDiff>,
-    // calculated
-    stock_diff: f32,
-    // calculated
-    portfolio_action: PortfolioAction,
-}
-
-impl PortfolioMeta {
-    pub fn default() -> Self {
-        PortfolioMeta {
-            tickers_diff: vec![],
-            stock_diff: 0.0,
-            portfolio_action: PortfolioAction::BuyEither,
-        }
     }
 }
 
