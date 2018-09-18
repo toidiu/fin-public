@@ -10,7 +10,8 @@ pub struct PortfolioActual {
     actual_stock_percent: f32,
 }
 
-struct TotalStockValue {
+struct UpdatedTickerActual {
+    tickers_actual: HashMap<TickerSymbol, TickerActual>,
     total: f32,
     stock: f32,
 }
@@ -20,40 +21,38 @@ impl PortfolioActual {
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
     ) -> Self {
-        // calculate global values
-        // let mut total_value: f32 = 0.0;
-        // let mut stock_value: f32 = 0.0;
-
-        let total_stock_value = Self::update_ticker_actual(&mut tickers_actual, tickers);
+        let mut updated = Self::update_tickers_actual(tickers_actual, tickers);
 
         // calculate ticker percent
-        for mut x in &mut tickers_actual {
-            x.1.update_actual_percent(total_stock_value.total);
+        for x in &mut updated.tickers_actual {
+            x.1.update_actual_percent(&updated.total);
         }
 
         let mut pa = PortfolioActual {
-            tickers_actual: tickers_actual,
-            total_value: total_stock_value.total,
+            tickers_actual: updated.tickers_actual,
+            total_value: updated.total,
             actual_stock_percent: 0.0,
         };
-        pa.calculate_stock_percent(total_stock_value.stock);
+        pa.calculate_stock_percent(updated.stock);
         pa
     }
 
     // fixme test!
-    // calculate ticker value
-    fn update_ticker_actual(
-        tickers_actual: &mut HashMap<TickerSymbol, TickerActual>,
+    /// Calculate the price of TickerActual and also calculate
+    /// the total value and stock value while we are iterating
+    /// over the tickers.
+    fn update_tickers_actual(
+        mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
-    ) -> TotalStockValue {
+    ) -> UpdatedTickerActual {
         // calculate global values
         let mut total_value: f32 = 0.0;
         let mut stock_value: f32 = 0.0;
 
         // calculate ticker value
-        for mut x in tickers_actual {
+        for mut x in &mut tickers_actual {
             let ticker = tickers
-                .get(x.0)
+                .get(&x.0)
                 .expect(&format!("add ticker to db: {:?}", &x.0));
 
             x.1.update_actual_value(ticker.price);
@@ -65,13 +64,15 @@ impl PortfolioActual {
             );
         }
 
-        TotalStockValue {
+        UpdatedTickerActual {
+            tickers_actual: tickers_actual,
             total: total_value,
             stock: stock_value,
         }
     }
 
     // fixme test!
+    /// Calculate total value and stock value of the PortfolioActual
     fn update_total_stock_value(
         total_value: &mut f32,
         stock_value: &mut f32,
@@ -91,9 +92,10 @@ impl PortfolioActual {
         self.actual_stock_percent
     }
 
+    /// Calculate the percent of portfolio that is Stocks.
     fn calculate_stock_percent(&mut self, stock_value: f32) {
         self.actual_stock_percent = (stock_value / self.total_value) * 100.0;
-        self.actual_stock_percent = (self.actual_stock_percent * 100.00).round() / 100.00;
+        // self.actual_stock_percent = (self.actual_stock_percent * 100.00).round() / 100.00;
     }
 }
 
@@ -122,9 +124,9 @@ impl TickerActual {
         self.actual_percent
     }
 
-    fn update_actual_percent(&mut self, total_value: f32) {
+    fn update_actual_percent(&mut self, total_value: &f32) {
         self.actual_percent = (self.actual_value / total_value) * 100.0;
-        self.actual_percent = (self.actual_percent * 100.00).round() / 100.00;
+        // self.actual_percent = (self.actual_percent * 100.00).round() / 100.00;
     }
 
     fn update_actual_value(&mut self, price: f32) {
