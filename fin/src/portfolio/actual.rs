@@ -10,44 +10,80 @@ pub struct PortfolioActual {
     actual_stock_percent: f32,
 }
 
+struct TotalStockValue {
+    total: f32,
+    stock: f32,
+}
 impl PortfolioActual {
-    fixme test!
+    // fixme test!
     pub fn new(
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
     ) -> Self {
         // calculate global values
+        // let mut total_value: f32 = 0.0;
+        // let mut stock_value: f32 = 0.0;
+
+        let total_stock_value = Self::update_ticker_actual(&mut tickers_actual, tickers);
+
+        // calculate ticker percent
+        for mut x in &mut tickers_actual {
+            x.1.update_actual_percent(total_stock_value.total);
+        }
+
+        let mut pa = PortfolioActual {
+            tickers_actual: tickers_actual,
+            total_value: total_stock_value.total,
+            actual_stock_percent: 0.0,
+        };
+        pa.calculate_stock_percent(total_stock_value.stock);
+        pa
+    }
+
+    // fixme test!
+    // calculate ticker value
+    fn update_ticker_actual(
+        tickers_actual: &mut HashMap<TickerSymbol, TickerActual>,
+        tickers: &HashMap<TickerSymbol, Ticker>,
+    ) -> TotalStockValue {
+        // calculate global values
         let mut total_value: f32 = 0.0;
         let mut stock_value: f32 = 0.0;
 
         // calculate ticker value
-        for mut x in &mut tickers_actual {
+        for mut x in tickers_actual {
             let ticker = tickers
                 .get(x.0)
                 .expect(&format!("add ticker to db: {:?}", &x.0));
 
             x.1.update_actual_value(ticker.price);
-
-            // calculate total price of portfolio
-            total_value = total_value + x.1.actual_value;
-            // calculate stock price of portfolio
-            if (ticker.is_stock()) {
-                stock_value = stock_value + x.1.actual_value;
-            }
+            Self::update_total_stock_value(
+                &mut total_value,
+                &mut stock_value,
+                ticker,
+                x.1.actual_value,
+            );
         }
 
-        // calculate ticker percent
-        for mut x in &mut tickers_actual {
-            x.1.update_actual_percent(total_value);
+        TotalStockValue {
+            total: total_value,
+            stock: stock_value,
         }
+    }
 
-        let mut pa = PortfolioActual {
-            tickers_actual: tickers_actual,
-            total_value: total_value,
-            actual_stock_percent: 0.0,
-        };
-        pa.calculate_stock_percent(stock_value);
-        pa
+    // fixme test!
+    fn update_total_stock_value(
+        total_value: &mut f32,
+        stock_value: &mut f32,
+        ticker: &Ticker,
+        actual_value: f32,
+    ) {
+        // calculate total price of portfolio
+        *total_value = *total_value + actual_value;
+        // calculate stock price of portfolio
+        if (ticker.is_stock()) {
+            *stock_value = *stock_value + actual_value;
+        }
     }
 
     // fixme test!
