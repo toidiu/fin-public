@@ -28,6 +28,22 @@ lazy_static! {
     };
 }
 
+struct PortfolioState {
+    tickers: HashMap<TickerSymbol, TickerState>,
+    stock_percent: f32,
+    total_value: f32,
+    deviation_percent: f32,
+}
+
+struct TickerState {
+    symbol: TickerSymbol,
+    goal_percent: f32,
+    actual_percent: f32,
+    actual_value: f32,
+    price: f32,
+    order: u32,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
     name: String,
@@ -65,12 +81,7 @@ impl Portfolio {
         }
     }
 
-    // // calculate that stock % is met
-    // fn init(mut self) -> Self {
-    //     // TODO maybe meta init should be in PortfolioMeta impl
-    //     self.meta.init(&self.goal, &self.actual);
-    //     self
-    // }
+    pub fn get_state() -> PortfolioState {}
 
     pub fn get_buy_next(&self) -> Ticker {
         let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
