@@ -16,30 +16,38 @@ impl PortfolioActual {
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
     ) -> Self {
-        let mut updated = Self::update_tickers_actual(tickers_actual, tickers);
+        let mut updated_val: UpdatedTAValue = Self::update_tickers_actual(tickers_actual, tickers);
 
-        // calculate ticker percent
-        for x in &mut updated.tickers_actual {
-            x.1.update_actual_percent(&updated.total);
-        }
+        let ta_updated_per: UpdatedTAPercent =
+            Self::update_ticker_actual_percent(updated_val.tickers_actual, &updated_val.total);
 
         let mut pa = PortfolioActual {
-            tickers_actual: updated.tickers_actual,
-            total_value: updated.total,
-            actual_stock_percent: 0.0,
+            tickers_actual: ta_updated_per,
+            total_value: updated_val.total,
+            ..Default::default()
         };
-        pa.calculate_stock_percent(updated.stock);
+        pa.calculate_stock_percent(updated_val.stock);
         pa
     }
 
-    fixme test!
+    fn update_ticker_actual_percent(
+        mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
+        total_val: &f32,
+    ) -> UpdatedTAPercent {
+        // calculate ticker percent
+        for x in &mut tickers_actual {
+            x.1.update_actual_percent(total_val);
+        }
+        tickers_actual
+    }
+
     /// Calculate the price of TickerActual and also calculate
     /// the total value and stock value while we are iterating
     /// over the tickers.
     fn update_tickers_actual(
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
-    ) -> UpdatedTickerActual {
+    ) -> UpdatedTAValue {
         // calculate global values
         let mut total_value: f32 = 0.0;
         let mut stock_value: f32 = 0.0;
@@ -59,7 +67,7 @@ impl PortfolioActual {
             );
         }
 
-        UpdatedTickerActual {
+        UpdatedTAValue {
             tickers_actual: tickers_actual,
             total: total_value,
             stock: stock_value,
@@ -93,11 +101,13 @@ impl PortfolioActual {
 }
 
 /// Internal wrapper to bundle return values from a function.
-struct UpdatedTickerActual {
+#[derive(Debug)]
+struct UpdatedTAValue {
     tickers_actual: HashMap<TickerSymbol, TickerActual>,
     total: f32,
     stock: f32,
 }
+type UpdatedTAPercent = HashMap<TickerSymbol, TickerActual>;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct TickerActual {
@@ -148,8 +158,8 @@ mod test {
 
     #[test]
     fn ta_get_percent() {
-        let ta1 = Helper::get_tic_actual_bond();
-        assert_eq!(ta1.get_actual_percent(), 22.56);
+        let ta1 = Helper::get_ta_bond();
+        assert_eq!(ta1.get_actual_percent(), 5.4);
     }
 
     #[test]
@@ -219,6 +229,50 @@ mod test {
         assert_eq!(stock_value, 14.0);
     }
 
+    #[test]
+    fn pa_update_ticker_actual() {
+        let tic_map = Helper::get_ticker_map();
+        let tic_actual_map = Helper::get_ticker_actual_map();
+
+        let updated = PortfolioActual::update_tickers_actual(tic_actual_map, &tic_map);
+
+        let ta_b = Helper::get_ta_bond();
+        let t_b = Helper::bond();
+        let ta_s = Helper::get_ta_stock();
+        let t_s = Helper::stock();
+        let updated_stock = updated.tickers_actual.get(&symbol!("stock")).unwrap();
+        let updated_bond = updated.tickers_actual.get(&symbol!("bond")).unwrap();
+
+        let calc_total_val = (t_s.price * ta_s.actual_shares) + (t_b.price * ta_b.actual_shares);
+        assert_eq!(updated.total, calc_total_val);
+        let calc_stock_val = t_s.price * ta_s.actual_shares;
+        assert_eq!(updated.stock, calc_stock_val);
+        let calc_ta_s_val = t_s.price * ta_s.actual_shares;
+        assert_eq!(updated_stock.actual_value, calc_ta_s_val);
+        let calc_ta_b_val = t_b.price * ta_b.actual_shares;
+        assert_eq!(updated_bond.actual_value, calc_ta_b_val);
+    }
+
+    #[test]
+    fn pa_update_ticker_actual_percent() {
+        let tic_actual_map = Helper::get_ticker_actual_map();
+        let total_val = 330.0;
+
+        let updated = PortfolioActual::update_ticker_actual_percent(tic_actual_map, &total_val);
+
+        let updated_stock = updated.get(&symbol!("stock")).unwrap();
+        let updated_bond = updated.get(&symbol!("bond")).unwrap();
+        let ta_b = Helper::get_ta_bond();
+        let ta_s = Helper::get_ta_stock();
+
+        let calc_ta_s_per = (ta_s.actual_value / total_val) * 100.0;
+        let calc_ta_s_per = ((calc_ta_s_per) * 100.00).round() / 100.00;
+        assert_eq!(updated_stock.actual_percent, calc_ta_s_per);
+        let calc_ta_b_per = (ta_b.actual_value / total_val) * 100.0;
+        let calc_ta_b_per = ((calc_ta_b_per) * 100.00).round() / 100.00;
+        assert_eq!(updated_bond.actual_percent, calc_ta_b_per);
+    }
+
     // ==============================
     // Helper
     // ===============================
@@ -232,13 +286,28 @@ mod test {
                 kind: InvestmentKind::Stock,
             }
         }
-
         fn bond() -> Ticker {
             Ticker {
                 symbol: symbol!("bond"),
                 fee: 0.04,
                 price: 10.0,
                 kind: InvestmentKind::Bond,
+            }
+        }
+        fn get_ta_stock() -> TickerActual {
+            TickerActual {
+                symbol: symbol!("stock"),
+                actual_value: 5.0,
+                actual_shares: 1.5,
+                actual_percent: 2.6,
+            }
+        }
+        fn get_ta_bond() -> TickerActual {
+            TickerActual {
+                symbol: symbol!("bond"),
+                actual_value: 10.0,
+                actual_shares: 2.0,
+                actual_percent: 5.4,
             }
         }
 
@@ -251,27 +320,9 @@ mod test {
             map
         }
 
-        fn get_tic_actual_stock() -> TickerActual {
-            TickerActual {
-                symbol: symbol!("stock"),
-                actual_value: 5.0,
-                actual_shares: 1.0,
-                actual_percent: 22.56,
-            }
-        }
-
-        fn get_tic_actual_bond() -> TickerActual {
-            TickerActual {
-                symbol: symbol!("bond"),
-                actual_value: 5.0,
-                actual_shares: 1.0,
-                actual_percent: 22.56,
-            }
-        }
-
         fn get_ticker_actual_map() -> HashMap<TickerSymbol, TickerActual> {
-            let ta1 = Helper::get_tic_actual_bond();
-            let ta2 = Helper::get_tic_actual_stock();
+            let ta1 = Helper::get_ta_bond();
+            let ta2 = Helper::get_ta_stock();
             let mut map = HashMap::new();
             map.insert(ta1.symbol.clone(), ta1);
             map.insert(ta2.symbol.clone(), ta2);
