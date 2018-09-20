@@ -31,7 +31,8 @@ lazy_static! {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PortfolioState {
     tickers: Vec<TickerState>,
-    stock_percent: f32,
+    goal_stock_percent: f32,
+    actual_stock_percent: f32,
     total_value: f32,
     deviation_percent: f32,
 }
@@ -39,6 +40,8 @@ pub struct PortfolioState {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TickerState {
     symbol: TickerSymbol,
+    kind: InvestmentKind,
+    fee: f32,
     goal_percent: f32,
     actual_percent: f32,
     actual_value: f32,
@@ -84,25 +87,32 @@ impl Portfolio {
     }
 
     pub fn get_state(&self) -> PortfolioState {
-        let mut tickers: Vec<TickerState> = self.goal.tickers_goal.iter().map(|x| {
-            let ticker = self.tickers.get(x.0).unwrap();
-            let ta = self.actual.tickers_actual.get(x.0).unwrap();
-            let tg = self.goal.tickers_goal.get(x.0).unwrap();
-            let td = self.meta.tickers_diff.get(x.0).unwrap();
+        let mut tickers: Vec<TickerState> = self
+            .goal
+            .tickers_goal
+            .iter()
+            .map(|x| {
+                let ticker = self.tickers.get(x.0).unwrap();
+                let ta = self.actual.tickers_actual.get(x.0).unwrap();
+                let tg = self.goal.tickers_goal.get(x.0).unwrap();
+                let td = self.meta.tickers_diff.get(x.0).unwrap();
 
-            TickerState {
-                symbol: x.0.clone(),
-                goal_percent: tg.goal_percent,
-                actual_percent: ta.get_actual_percent(),
-                actual_value: ta.get_actual_value(),
-                price: ticker.price,
-                order: tg.order,
-            }
-        }).collect();
+                TickerState {
+                    symbol: x.0.clone(),
+                    kind: ticker.kind.clone(),
+                    fee: ticker.fee,
+                    goal_percent: tg.goal_percent,
+                    actual_percent: ta.get_actual_percent(),
+                    actual_value: ta.get_actual_value(),
+                    price: ticker.price,
+                    order: tg.order,
+                }
+            }).collect();
         tickers.sort_by(|a, b| a.order.cmp(&b.order));
         PortfolioState {
             tickers: tickers,
-            stock_percent: self.actual.get_stock_percent(),
+            goal_stock_percent: self.goal.goal_stock_percent,
+            actual_stock_percent: self.actual.get_stock_percent(),
             total_value: self.actual.get_total_value(),
             deviation_percent: self.goal.deviation_percent,
         }
