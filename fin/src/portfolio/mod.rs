@@ -28,14 +28,16 @@ lazy_static! {
     };
 }
 
-struct PortfolioState {
-    tickers: HashMap<TickerSymbol, TickerState>,
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PortfolioState {
+    tickers: Vec<TickerState>,
     stock_percent: f32,
     total_value: f32,
     deviation_percent: f32,
 }
 
-struct TickerState {
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TickerState {
     symbol: TickerSymbol,
     goal_percent: f32,
     actual_percent: f32,
@@ -81,8 +83,32 @@ impl Portfolio {
         }
     }
 
-    pub fn get_state() -> PortfolioState {}
+    pub fn get_state(&self) -> PortfolioState {
+        let mut tickers: Vec<TickerState> = self.goal.tickers_goal.iter().map(|x| {
+            let ticker = self.tickers.get(x.0).unwrap();
+            let ta = self.actual.tickers_actual.get(x.0).unwrap();
+            let tg = self.goal.tickers_goal.get(x.0).unwrap();
+            let td = self.meta.tickers_diff.get(x.0).unwrap();
 
+            TickerState {
+                symbol: x.0.clone(),
+                goal_percent: tg.goal_percent,
+                actual_percent: ta.get_actual_percent(),
+                actual_value: ta.get_actual_value(),
+                price: ticker.price,
+                order: tg.order,
+            }
+        }).collect();
+        tickers.sort_by(|a, b| a.order.cmp(&b.order));
+        PortfolioState {
+            tickers: tickers,
+            stock_percent: self.actual.get_stock_percent(),
+            total_value: self.actual.get_total_value(),
+            deviation_percent: self.goal.deviation_percent,
+        }
+    }
+
+    // fixme optimize!!!
     pub fn get_buy_next(&self) -> Ticker {
         let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
             PortfolioAction::BuyStock => self
@@ -91,10 +117,11 @@ impl Portfolio {
                 .iter()
                 .filter(|x| {
                     self.tickers
-                        .get(&x.symbol)
-                        .expect(&format!("add ticker to db: {:?}", &x.symbol))
+                        .get(&x.0)
+                        .expect(&format!("add ticker to db: {:?}", &x.0))
                         .is_stock()
-                }).collect(),
+                }).map(|x| x.1)
+                .collect(),
 
             PortfolioAction::BuyBond => self
                 .meta
@@ -102,12 +129,13 @@ impl Portfolio {
                 .iter()
                 .filter(|x| {
                     self.tickers
-                        .get(&x.symbol)
-                        .expect(&format!("add ticker to db: {:?}", &x.symbol))
+                        .get(&x.0)
+                        .expect(&format!("add ticker to db: {:?}", &x.0))
                         .is_bond()
-                }).collect(),
+                }).map(|x| x.1)
+                .collect(),
 
-            PortfolioAction::BuyEither => self.meta.tickers_diff.iter().collect(),
+            PortfolioAction::BuyEither => self.meta.tickers_diff.iter().map(|x| x.1).collect(),
         };
 
         // fixme broken logic

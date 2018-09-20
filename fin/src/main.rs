@@ -34,7 +34,7 @@ fn index() -> String {
 fn two() -> String {
     let db = data::DefaultTickerDatabase {};
     let mut port = portfolio::Portfolio::new(&db);
-    serde_json::to_string(&port).unwrap()
+    serde_json::to_string(&port.get_state()).unwrap()
 }
 
 #[get("/next")]
@@ -63,7 +63,6 @@ fn start_server() {
 }
 
 fn main() {
-    let b = logic::next_buy();
     start_server();
 }
 
@@ -77,11 +76,6 @@ mod logic {
     pub fn next_buy() -> ticker::Ticker {
         let db = data::DefaultTickerDatabase {};
         let mut port = portfolio::Portfolio::new(&db);
-
-        // update meta data based on ticker price and percent
-        // port.update_portfolio();
-        // println!("{}", serde_json::to_string_pretty(&port.meta.tickers_diff).unwrap());
-
         port.get_buy_next()
     }
 

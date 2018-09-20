@@ -89,6 +89,11 @@ impl PortfolioActual {
         }
     }
 
+    // fixme test!!!
+    pub fn get_total_value(&self) -> f32 {
+        self.total_value
+    }
+
     pub fn get_stock_percent(&self) -> f32 {
         self.actual_stock_percent
     }
@@ -126,6 +131,11 @@ impl TickerActual {
             actual_shares: shares,
             ..Default::default()
         }
+    }
+
+    // fixme test!!!
+    pub fn get_actual_value(&self) -> f32 {
+        self.actual_value
     }
 
     pub fn get_actual_percent(&self) -> f32 {

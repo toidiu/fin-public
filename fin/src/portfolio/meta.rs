@@ -20,7 +20,7 @@ pub enum TickerAction {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PortfolioMeta {
     // calculated
-    pub tickers_diff: Vec<TickerDiff>,
+    pub tickers_diff: HashMap<TickerSymbol, TickerDiff>,
     // calculated
     pub stock_diff: f32,
     // calculated
@@ -30,7 +30,7 @@ pub struct PortfolioMeta {
 impl PortfolioMeta {
     pub fn new(goal: &PortfolioGoal, actual: &PortfolioActual) -> Self {
         let mut meta = PortfolioMeta {
-            tickers_diff: vec![],
+            tickers_diff: HashMap::new(),
             stock_diff: 0.0,
             portfolio_action: PortfolioAction::BuyEither,
         };
@@ -71,8 +71,12 @@ impl PortfolioMeta {
                     .expect(&format!("add ticker to db: {:?}", symb_tic_actual.0));
                 TickerDiff::new(symb_tic_actual.1, goal_tic, goal.deviation_percent)
             }).collect();
-        v.sort_by(|a, b| a.order.cmp(&b.order));
-        self.tickers_diff = v;
+        // create a map
+        let mut map: HashMap<TickerSymbol, TickerDiff> = HashMap::new();
+        for x in v {
+            map.insert(x.symbol.clone(), x);
+        }
+        self.tickers_diff = map;
     }
 }
 
