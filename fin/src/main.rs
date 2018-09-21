@@ -24,13 +24,13 @@ mod portfolio;
 mod portfolio1;
 mod ticker;
 
-#[get("/")]
+#[get("/old")]
 fn index() -> String {
     let d = portfolio1::get_data_portfolio1();
     serde_json::to_string(&d).unwrap()
 }
 
-#[get("/2")]
+#[get("/portfolio")]
 fn two() -> String {
     let db = data::DefaultTickerDatabase {};
     let mut port = portfolio::Portfolio::new(&db);

@@ -39,7 +39,7 @@
     },
     methods: {
       fetchData () {
-        axios.get('http://localhost:8000/')
+        axios.get('http://localhost:8000/old')
         .then((resp) =>
             this.initialState.portfolio = resp.data
         );

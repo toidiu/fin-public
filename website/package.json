@@ -18,7 +18,6 @@
   },
   "scripts": {
 
-    // & mean run them in parallel
     "start": "npm run purdy & parcel src/index.html",
     "purdy": "npx onchange 'src/**/*.{js,vue}' -- npx prettier 'src/**/*.{js,vue}' --write",
 
