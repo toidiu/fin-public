@@ -2,8 +2,7 @@
   <div>
     <portfolio-view :portState="wrapper.portState" />
 
-    Buy next: {{ wrapper.nextBuy.symbol }}
-    Buy next: {{ wrapper.nextBuy.kind }}
+    Buy next: {{ wrapper.nextBuy.symbol }} | {{ wrapper.nextBuy.kind }}
   </div>
 
 </template>

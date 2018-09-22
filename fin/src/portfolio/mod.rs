@@ -115,6 +115,10 @@ impl Portfolio {
     // fixme optimize!!!
     // fixme test!!
     pub fn get_buy_next(&self) -> Ticker {
+
+        println!("============3 {:?}", self.meta.portfolio_action);
+        println!("============3 {:?}", self.meta.tickers_diff);
+
         let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
             PortfolioAction::BuyStock => self
                 .meta
@@ -134,12 +138,19 @@ impl Portfolio {
 
             PortfolioAction::BuyEither => self.meta.tickers_diff.values().collect(),
         };
+        println!("============2 {:?}", filter_kind);
 
         // fixme combine with iter above
         let contains_no_buys = filter_kind
             .iter()
-            .filter(|x| matches!(&x.action, TickerAction::Buy))
-            .is_empty();
+            .filter(|x|
+                    {
+                    println!("============1 {:?}", x);
+                    let f = matches!(&x.action, TickerAction::Buy);
+                    println!("============1 {:?}", f);
+                    f
+                    }
+                    ).collect::<Vec<&&TickerDiff>>().is_empty();
 
         // fixme test
         let filter_buys: Vec<&TickerDiff> = if (contains_no_buys) {
