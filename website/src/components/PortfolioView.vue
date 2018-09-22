@@ -3,24 +3,26 @@
   <div>
 
     <h1>
-      {{ initialState.portfolio.name }}
+      {{ viewTableState.total_value }}
     </h1>
+      {{ viewTableState.tickers }}
 
+<!--
     <div id="table-wrapper">
       <div id="table-scroll">
 
         <table>
           <thead>
             <tr>
-              <th v-for="(key, idx) in initialState.columnsNames" v-bind:key="idx">
+              <th v-for="(key, idx) in viewTableState.columnsNames" v-bind:key="idx">
                 {{ key }}
               </th>
             </tr>
           </thead>
 
           <tbody>
-            <tr  v-for="(entry, idx) in initialState.portfolio.current_detail.stocks" v-bind:key="entry + idx">
-              <td v-bind:class=key v-for="(key, jdx) in initialState.columns" v-bind:key="entry.symbol + jdx">
+            <tr  v-for="(entry, idx) in viewTableState.portfolio.current_detail.stocks" v-bind:key="entry + idx">
+              <td v-bind:class=key v-for="(key, jdx) in viewTableState.columns" v-bind:key="entry.symbol + jdx">
                 {{ entry[key] }}
               </td>
             </tr>
@@ -32,15 +34,15 @@
               <td class="summary"></td>
               <td class="summary"></td>
               <td class="summary"></td>
-              <td class="summary goalPercent">{{ initialState.portfolio.current_detail.goal_stock_percent }}</td>
-              <td class="summary currentPercent">{{ initialState.portfolio.current_detail.current_stock_percent }}</td>
+              <td class="summary goalPercent">{{ viewTableState.portfolio.current_detail.goal_stock_percent }}</td>
+              <td class="summary currentPercent">{{ viewTableState.portfolio.current_detail.current_stock_percent }}</td>
               <td class="summary"></td>
             </tr>
           </tbody>
 
           <tbody>
-            <tr  v-for="(entry, idx) in initialState.portfolio.current_detail.bonds" v-bind:key="entry + idx">
-              <td v-bind:class=key v-for="(key, jdx) in initialState.columns" v-bind:key="entry.symbol + jdx">
+            <tr  v-for="(entry, idx) in viewTableState.portfolio.current_detail.bonds" v-bind:key="entry + idx">
+              <td v-bind:class=key v-for="(key, jdx) in viewTableState.columns" v-bind:key="entry.symbol + jdx">
                 {{ entry[key] }}
               </td>
             </tr>
@@ -51,6 +53,8 @@
         </table>
       </div>
     </div>
+-->
+
   </div>
 
 </template>
@@ -60,7 +64,8 @@ import { FinTableState } from "../models";
 
 export default {
   props: {
-    initialState: Object
+    viewTableState: Object as () => FinTableState
+    oldViewTableState: Object as () => FinTableState
   }
 };
 </script>

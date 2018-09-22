@@ -25,3 +25,11 @@ interface PortfolioDetails {
   current_stock_percent: number;
   deviation_percent: number;
 }
+
+export interface PortfolioState {
+  tickers: Array<Ticker>;
+  goal_stock_percent: number;
+  actual_stock_percent: number;
+  total_value: number;
+  deviation_percent: number;
+}

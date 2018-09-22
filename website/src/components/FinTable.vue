@@ -1,47 +1,65 @@
 <template>
-
-    <fin-view :initialState="initialState" />
+  <div>
+    <portfolio-view :viewTableState="wrapper.viewTableState" />
+    <old-fin-view :viewTableState="wrapper.oldViewTableState" />
+  </div>
 
 </template>
 
 <script lang="ts">
 
-  import FinView from "./FinView.vue";
-  import { Ticker, FinTableState } from '../models';
+  import OldFinView from "./OldFinView.vue";
+  import PortfolioView from "./PortfolioView.vue";
+  import { Ticker, FinTableState, PortfolioState } from '../models';
   import axios from 'axios';
 
 
   export default {
     components: {
-      FinView,
+      OldFinView,
+      PortfolioView,
     },
     data () {
       return {
-        initialState: <FinTableState> {
-          columnsNames: ['Symbol', 'Kind', 'Fee', 'Price',
-            'Goal %', 'C %', 'C $'],
-          columns: ['symbol', 'kind', 'fee', 'price',
-            'goalPercent', 'currentPercent', 'currentValue'],
-          portfolio : {
-            current_detail: {
-              stocks: [],
-              bonds: [],
-              goal_stock_percent: 3;
-              current_stock_percent: 33;
-              deviation_percent: 22;
-            }
-          },
+        wrapper: {
+          viewTableState: <PortfolioState> {
+              tickers: [],
+          }
+          oldViewTableState: <FinTableState> {
+            columnsNames: ['Symbol', 'Kind', 'Fee', 'Price',
+              'Goal %', 'C %', 'C $'],
+            columns: ['symbol', 'kind', 'fee', 'price',
+              'goalPercent', 'currentPercent', 'currentValue'],
+            portfolio : {
+              current_detail: {
+                stocks: [],
+                bonds: [],
+                goal_stock_percent: 3;
+                current_stock_percent: 33;
+                deviation_percent: 22;
+              }
+            },
+          }
         }
       };
     },
     created () {
+      this.fetchOldData()
       this.fetchData()
     },
     methods: {
-      fetchData () {
+      fetchOldData () {
         axios.get('http://localhost:8000/old')
         .then((resp) =>
-            this.initialState.portfolio = resp.data
+            this.wrapper.oldViewTableState.portfolio = resp.data
+        );
+      },
+
+      fetchData () {
+        axios.get('http://localhost:8000/portfolio')
+        .then((resp) =>
+            this.wrapper.viewTableState = resp.data
+            console.log(this.wrapper.viewTableState)
         );
       }
     },
