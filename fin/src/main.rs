@@ -18,7 +18,7 @@ use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use crate::data::*;
 
 #[macro_use]
-mod macros;
+mod std_ext;
 mod data;
 mod portfolio;
 mod portfolio1;

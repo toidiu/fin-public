@@ -34,8 +34,8 @@
               <td class="summary"></td>
               <td class="summary"></td>
               <td class="summary"></td>
-              <td class="summary goal_percent">{{ iPortView.goal_stock_percent }}</td>
-              <td class="summary actual_percent">{{ iPortView.actual_stock_percent }}</td>
+              <td class="summary goal_percent">{{ portState.goal_stock_percent }}</td>
+              <td class="summary actual_percent">{{ portState.actual_stock_percent }}</td>
               <td class="summary"></td>
             </tr>
           </tbody>
@@ -63,7 +63,7 @@ import { FinTableState } from "../models";
 
 export default {
   props: {
-    iPortView: Object as () => FinTableState
+    portState: Object as () => FinTableState
   },
   data: function() {
     return {
@@ -75,10 +75,10 @@ export default {
   }
   computed: {
     stocks: function() {
-      return this.iPortView.tickers.filter(tic => tic.kind === "stock");
+      return this.portState.tickers.filter(tic => tic.kind === "stock");
     },
     bonds: function() {
-      return this.iPortView.tickers.filter(tic => tic.kind === "bond");
+      return this.portState.tickers.filter(tic => tic.kind === "bond");
     }
   }
 };

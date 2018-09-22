@@ -1,6 +1,7 @@
 #![allow(dead_code, unused)]
 
 use crate::data;
+use crate::std_ext::*;
 use crate::ticker::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
@@ -59,6 +60,7 @@ pub struct Portfolio {
 }
 
 impl Portfolio {
+    // fixme test!!
     pub fn new<T: data::TickerDatabase>(db: &T) -> Portfolio {
         // get goal
         let pg = PortfolioGoal {
@@ -86,16 +88,29 @@ impl Portfolio {
         }
     }
 
+    // fixme test!!
     pub fn get_state(&self) -> PortfolioState {
         let mut tickers: Vec<TickerState> = self
             .goal
             .tickers_goal
             .iter()
             .map(|x| {
-                let ticker = self.tickers.get(x.0).unwrap();
-                let ta = self.actual.tickers_actual.get(x.0).unwrap();
-                let tg = self.goal.tickers_goal.get(x.0).unwrap();
-                let td = self.meta.tickers_diff.get(x.0).unwrap();
+                let ticker = self.get_ticker(x.0);
+                let ta = self
+                    .actual
+                    .tickers_actual
+                    .get(x.0)
+                    .expect(&format!("add ticker to db: {:?}", &x.0));
+                let tg = self
+                    .goal
+                    .tickers_goal
+                    .get(x.0)
+                    .expect(&format!("add ticker to db: {:?}", &x.0));
+                let td = self
+                    .meta
+                    .tickers_diff
+                    .get(x.0)
+                    .expect(&format!("add ticker to db: {:?}", &x.0));
 
                 TickerState {
                     symbol: x.0.clone(),
@@ -119,50 +134,48 @@ impl Portfolio {
     }
 
     // fixme optimize!!!
+    // fixme test!!
     pub fn get_buy_next(&self) -> Ticker {
         let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
             PortfolioAction::BuyStock => self
                 .meta
                 .tickers_diff
                 .iter()
-                .filter(|x| {
-                    self.tickers
-                        .get(&x.0)
-                        .expect(&format!("add ticker to db: {:?}", &x.0))
-                        .is_stock()
-                }).map(|x| x.1)
+                .filter(|x| self.get_ticker(&x.0).is_stock())
+                .map(|x| x.1)
                 .collect(),
 
             PortfolioAction::BuyBond => self
                 .meta
                 .tickers_diff
                 .iter()
-                .filter(|x| {
-                    self.tickers
-                        .get(&x.0)
-                        .expect(&format!("add ticker to db: {:?}", &x.0))
-                        .is_bond()
-                }).map(|x| x.1)
+                .filter(|x| self.get_ticker(&x.0).is_bond())
+                .map(|x| x.1)
                 .collect(),
 
-            PortfolioAction::BuyEither => self.meta.tickers_diff.iter().map(|x| x.1).collect(),
+            PortfolioAction::BuyEither => self.meta.tickers_diff.values().collect(),
         };
 
-        // fixme broken logic
-        let filter_buys: Vec<&TickerDiff> = if (!filter_kind.is_empty()) {
+        // fixme combine with iter above
+        let contains_no_buys = filter_kind
+            .iter()
+            .filter(|x| matches!(&x.action, TickerAction::Buy))
+            .is_empty();
+
+        // fixme test
+        let filter_buys: Vec<&TickerDiff> = if (contains_no_buys) {
+            // dont filter since we dont have buys
+            filter_kind
+        } else {
             // filter buys
             filter_kind
                 .into_iter()
                 .filter(|x| matches!(x.action, TickerAction::Buy))
                 .collect()
-        } else {
-            // dont filter
-            filter_kind
         };
 
         // filter cheapest
         let empty_diff = EMPTY_TICKER_DIFF.clone();
-
         // fixme maybe user scan
         let tic_diff: &TickerDiff = filter_buys.iter().fold(&empty_diff, |x, y| {
             if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
@@ -170,16 +183,8 @@ impl Portfolio {
             } else if (y.symbol == EMPTY_TICKER_DIFF.symbol) {
                 return x;
             }
-            let x_price = self
-                .tickers
-                .get(&x.symbol)
-                .expect(&format!("add ticker to db: {:?}", &x.symbol))
-                .price;
-            let y_price = self
-                .tickers
-                .get(&y.symbol)
-                .expect(&format!("add ticker to db: {:?}", &y.symbol))
-                .price;
+            let x_price = self.get_ticker(&x.symbol).price;
+            let y_price = self.get_ticker(&y.symbol).price;
 
             if (x_price < y_price) {
                 x
@@ -191,6 +196,7 @@ impl Portfolio {
         self.get_ticker(&tic_diff.symbol)
     }
 
+    // fixme test!!
     fn get_ticker(&self, symbol: &TickerSymbol) -> Ticker {
         self.tickers
             .get(symbol)

@@ -17,6 +17,32 @@ macro_rules! symbol(
     )
 );
 
+// struct ExtIterator<I: Iterator> {
+//     underlying: I,
+// }
+
+// impl<I> Iterator for ExtIterator<I>
+// where
+//     I: Iterator,
+// {
+//     type Item = I::Item;
+
+//     fn next(&mut self) -> Option<Self::Item> {
+//         self.underlying.next()
+//     }
+// }
+
+pub trait ExtIterator: Iterator
+where
+    Self: Sized,
+{
+    fn is_empty(self) -> bool {
+        self.peekable().peek().is_some()
+    }
+}
+
+impl<I: Iterator> ExtIterator for I {}
+
 #[cfg(test)]
 mod test {
 
