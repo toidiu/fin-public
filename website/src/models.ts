@@ -1,6 +1,6 @@
 
 export interface Ticker {
-  name: string;
+  symbol: string;
   fee: number;
   currentGoal: number;
   currentPercent: number;

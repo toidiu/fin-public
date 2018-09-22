@@ -3,57 +3,56 @@
   <div>
 
     <h1>
-      {{ viewTableState.total_value }}
+      fin portfolio
     </h1>
-      {{ viewTableState.tickers }}
 
-<!--
     <div id="table-wrapper">
       <div id="table-scroll">
 
         <table>
           <thead>
             <tr>
-              <th v-for="(key, idx) in viewTableState.columnsNames" v-bind:key="idx">
+              <th v-for="(key, idx) in dataW.columnsNames" v-bind:key="idx">
                 {{ key }}
               </th>
             </tr>
           </thead>
 
+          <!-- Stocks -->
           <tbody>
-            <tr  v-for="(entry, idx) in viewTableState.portfolio.current_detail.stocks" v-bind:key="entry + idx">
-              <td v-bind:class=key v-for="(key, jdx) in viewTableState.columns" v-bind:key="entry.symbol + jdx">
+            <tr  v-for="(entry, idx) in stocks" v-bind:key="entry + idx">
+              <td v-bind:class=key v-for="(key, jdx) in dataW.columnsKeys" v-bind:key="entry.symbol + jdx">
                 {{ entry[key] }}
               </td>
             </tr>
           </tbody>
 
+          <!-- Summary between stocks and bonds -->
           <tbody>
             <tr>
               <td class="summary"></td>
               <td class="summary"></td>
               <td class="summary"></td>
               <td class="summary"></td>
-              <td class="summary goalPercent">{{ viewTableState.portfolio.current_detail.goal_stock_percent }}</td>
-              <td class="summary currentPercent">{{ viewTableState.portfolio.current_detail.current_stock_percent }}</td>
+              <td class="summary goal_percent">{{ iPortView.goal_stock_percent }}</td>
+              <td class="summary actual_percent">{{ iPortView.actual_stock_percent }}</td>
               <td class="summary"></td>
             </tr>
           </tbody>
 
+          <!-- Bonds -->
           <tbody>
-            <tr  v-for="(entry, idx) in viewTableState.portfolio.current_detail.bonds" v-bind:key="entry + idx">
-              <td v-bind:class=key v-for="(key, jdx) in viewTableState.columns" v-bind:key="entry.symbol + jdx">
+            <tr  v-for="(entry, idx) in bonds" v-bind:key="entry + idx">
+              <td v-bind:class=key v-for="(key, jdx) in dataW.columnsKeys" v-bind:key="entry.symbol + jdx">
                 {{ entry[key] }}
               </td>
             </tr>
           </tbody>
 
 
-
         </table>
       </div>
     </div>
--->
 
   </div>
 
@@ -64,8 +63,23 @@ import { FinTableState } from "../models";
 
 export default {
   props: {
-    viewTableState: Object as () => FinTableState
-    oldViewTableState: Object as () => FinTableState
+    iPortView: Object as () => FinTableState
+  },
+  data: function() {
+    return {
+      dataW: {
+        columnsNames: ['Symbol', 'Kind', 'Fee', 'Price', 'Goal %', 'Actual %', 'Actual $'],
+        columnsKeys: ['symbol', 'kind', 'fee', 'price', 'goal_percent', 'actual_percent', 'actual_value'],
+      }
+    }
+  }
+  computed: {
+    stocks: function() {
+      return this.iPortView.tickers.filter(tic => tic.kind === "stock");
+    },
+    bonds: function() {
+      return this.iPortView.tickers.filter(tic => tic.kind === "bond");
+    }
   }
 };
 </script>
@@ -95,7 +109,7 @@ td {
 }
 
 td {
-  &.goalPercent,
+  &.goal_percent,
   &.symbol {
     & {
       font-weight: bold;
@@ -109,8 +123,8 @@ td.summary {
 
 td {
   &.fee,
-  &.currentPercent,
-  &.goalPercent {
+  &.actual_percent,
+  &.goal_percent {
     &.summary {
       color: red;
     }
@@ -123,7 +137,7 @@ td {
 
 td {
   &.price,
-  &.currentValue {
+  &.actual_value {
     &::before {
       content: "$";
       margin: 0 -2px;
