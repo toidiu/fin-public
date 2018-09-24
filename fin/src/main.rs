@@ -21,6 +21,7 @@ use crate::data::*;
 mod std_ext;
 mod data;
 mod portfolio;
+mod portfolio_state;
 mod portfolio1;
 mod ticker;
 
@@ -39,7 +40,7 @@ fn two() -> String {
 
 #[get("/next")]
 fn next() -> String {
-    let b = logic::next_buy();
+    let b = action::next_buy();
     serde_json::to_string(&b).unwrap()
 }
 
@@ -66,7 +67,7 @@ fn main() {
     start_server();
 }
 
-mod logic {
+mod action {
 
     use crate::data;
     use crate::data::TickerDatabase;

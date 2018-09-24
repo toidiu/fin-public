@@ -3,6 +3,7 @@
 use crate::data;
 use crate::std_ext::*;
 use crate::ticker::*;
+use crate::portfolio_state::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::num;
@@ -13,7 +14,6 @@ mod meta;
 
 use crate::portfolio::meta::{PortfolioAction, TickerAction};
 
-// export this as portfolio::{...}
 pub use crate::portfolio::actual::{PortfolioActual, TickerActual};
 pub use crate::portfolio::goal::{PortfolioGoal, TickerGoal};
 pub use crate::portfolio::meta::{PortfolioMeta, TickerDiff};
@@ -27,27 +27,6 @@ lazy_static! {
             order: 0,
         }
     };
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct PortfolioState {
-    tickers: Vec<TickerState>,
-    goal_stock_percent: f32,
-    actual_stock_percent: f32,
-    total_value: f32,
-    deviation_percent: f32,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TickerState {
-    symbol: TickerSymbol,
-    kind: InvestmentKind,
-    fee: f32,
-    goal_percent: f32,
-    actual_percent: f32,
-    actual_value: f32,
-    price: f32,
-    order: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
