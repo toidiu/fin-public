@@ -36,7 +36,6 @@ pub trait ExtIterator: Iterator
 where
     Self: Sized,
 {
-
     /// This extends the `is_empty()` semantic to Iterator
     /// trait, which lets us check if the iterator is empty
     /// without actually creating a collection.

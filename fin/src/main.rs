@@ -21,15 +21,7 @@ use crate::data::*;
 mod std_ext;
 mod data;
 mod portfolio;
-mod portfolio_state;
-mod portfolio1;
 mod ticker;
-
-#[get("/old")]
-fn index() -> String {
-    let d = portfolio1::get_data_portfolio1();
-    serde_json::to_string(&d).unwrap()
-}
 
 #[get("/portfolio")]
 fn two() -> String {
@@ -58,12 +50,19 @@ fn start_server() {
     };
 
     rocket::ignite()
-        .mount("/", routes![index, two, next])
+        .mount("/", routes![two, next])
         .attach(options)
         .launch();
 }
 
 fn main() {
+    let db = data::DefaultTickerDatabase {};
+    let mut port = portfolio::Portfolio::new(&db);
+    let next = port.get_buy_next();
+
+    fixme add state to Rocket and evolve
+    port.evolve(Action::Buy());
+
     start_server();
 }
 

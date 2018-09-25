@@ -3,7 +3,6 @@
 use crate::data;
 use crate::std_ext::*;
 use crate::ticker::*;
-use crate::portfolio_state::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::num;
@@ -11,8 +10,7 @@ use std::num;
 mod actual;
 mod goal;
 mod meta;
-
-use crate::portfolio::meta::{PortfolioAction, TickerAction};
+mod state;
 
 pub use crate::portfolio::actual::{PortfolioActual, TickerActual};
 pub use crate::portfolio::goal::{PortfolioGoal, TickerGoal};
@@ -23,7 +21,7 @@ lazy_static! {
         TickerDiff {
             symbol: symbol!("EMPTY_TICKER_DIFF"),
             goal_minus_actual: 0.0,
-            action: TickerAction::Hold,
+            action: meta::TickerAction::Hold,
             order: 0,
         }
     };
@@ -67,9 +65,39 @@ impl Portfolio {
         }
     }
 
+    // fixme test!!!
+    pub fn evolve(&self, action: state::Action) -> state::PortfolioState {
+        let port = match action {
+            state::Action::Buy(buy) => {
+                // buy actual share and re-calculate
+                let pa = self
+                    .actual
+                    .buy_share(&buy.symbol, buy.shares, &self.tickers);
+
+                // re-calculate meta
+                let meta = PortfolioMeta::new(&self.goal, &pa);
+
+                // clone goal and tickers
+                let pg = self.goal.clone();
+                let tickers_map = self.tickers.clone();
+
+                // return new Portfolio
+                Portfolio {
+                    name: "my portfolio".to_owned(),
+                    goal: pg,
+                    actual: pa,
+                    meta: meta,
+                    tickers: tickers_map,
+                }
+            }
+        };
+
+        port.get_state()
+    }
+
     // fixme test!!
-    pub fn get_state(&self) -> PortfolioState {
-        let mut tickers: Vec<TickerState> = self
+    pub fn get_state(&self) -> state::PortfolioState {
+        let mut tickers: Vec<state::TickerState> = self
             .goal
             .tickers_goal
             .iter()
@@ -91,7 +119,7 @@ impl Portfolio {
                     .get(x.0)
                     .expect(&format!("add ticker to db: {:?}", &x.0));
 
-                TickerState {
+                state::TickerState {
                     symbol: x.0.clone(),
                     kind: ticker.kind.clone(),
                     fee: ticker.fee,
@@ -103,7 +131,7 @@ impl Portfolio {
                 }
             }).collect();
         tickers.sort_by(|a, b| a.order.cmp(&b.order));
-        PortfolioState {
+        state::PortfolioState {
             tickers: tickers,
             goal_stock_percent: self.goal.goal_stock_percent,
             actual_stock_percent: self.actual.get_stock_percent(),
@@ -115,12 +143,8 @@ impl Portfolio {
     // fixme optimize!!!
     // fixme test!!
     pub fn get_buy_next(&self) -> Ticker {
-
-        println!("============3 {:?}", self.meta.portfolio_action);
-        println!("============3 {:?}", self.meta.tickers_diff);
-
         let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
-            PortfolioAction::BuyStock => self
+            meta::PortfolioAction::BuyStock => self
                 .meta
                 .tickers_diff
                 .iter()
@@ -128,7 +152,7 @@ impl Portfolio {
                 .map(|x| x.1)
                 .collect(),
 
-            PortfolioAction::BuyBond => self
+            meta::PortfolioAction::BuyBond => self
                 .meta
                 .tickers_diff
                 .iter()
@@ -136,21 +160,15 @@ impl Portfolio {
                 .map(|x| x.1)
                 .collect(),
 
-            PortfolioAction::BuyEither => self.meta.tickers_diff.values().collect(),
+            meta::PortfolioAction::BuyEither => self.meta.tickers_diff.values().collect(),
         };
-        println!("============2 {:?}", filter_kind);
 
         // fixme combine with iter above
         let contains_no_buys = filter_kind
             .iter()
-            .filter(|x|
-                    {
-                    println!("============1 {:?}", x);
-                    let f = matches!(&x.action, TickerAction::Buy);
-                    println!("============1 {:?}", f);
-                    f
-                    }
-                    ).collect::<Vec<&&TickerDiff>>().is_empty();
+            .filter(|x| matches!(&x.action, meta::TickerAction::Buy))
+            .collect::<Vec<&&TickerDiff>>()
+            .is_empty();
 
         // fixme test
         let filter_buys: Vec<&TickerDiff> = if (contains_no_buys) {
@@ -160,7 +178,7 @@ impl Portfolio {
             // filter buys
             filter_kind
                 .into_iter()
-                .filter(|x| matches!(x.action, TickerAction::Buy))
+                .filter(|x| matches!(x.action, meta::TickerAction::Buy))
                 .collect()
         };
 

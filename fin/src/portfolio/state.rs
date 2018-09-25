@@ -21,19 +21,12 @@ pub struct TickerState {
     pub order: u32,
 }
 
-enum Action {
-    ActionBuy,
+pub enum Action {
+    Buy(ActionBuy),
 }
-struct ActionBuy {
-    symbol: TickerSymbol,
-    shares: f32,
-    price: f32,
-}
-
-impl PortfolioState {
-    fn evolve(&self, action: Action) -> PortfolioState {
-        
-    }
+pub struct ActionBuy {
+    pub symbol: TickerSymbol,
+    pub shares: f32,
 }
 
-
+impl PortfolioState {}

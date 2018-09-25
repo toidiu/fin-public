@@ -1,7 +1,7 @@
 use crate::ticker::*;
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct PortfolioActual {
     pub tickers_actual: HashMap<TickerSymbol, TickerActual>,
     // calculated
@@ -16,21 +16,44 @@ impl PortfolioActual {
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
     ) -> Self {
-        let mut updated_val: UpdatedTAValue = Self::update_tickers_actual(tickers_actual, tickers);
+        // update value
+        let mut updated_val = Self::update_ta_value(tickers_actual, tickers);
 
-        let ta_updated_per: UpdatedTAPercent =
-            Self::update_ticker_actual_percent(updated_val.tickers_actual, &updated_val.total);
+        // update ticker's percent
+        let ta_updated_per =
+            Self::update_ta_percent(updated_val.tickers_actual, &updated_val.total);
 
         let mut pa = PortfolioActual {
             tickers_actual: ta_updated_per,
             total_value: updated_val.total,
             ..Default::default()
         };
-        pa.calculate_stock_percent(updated_val.stock);
+
+        // update stock percent
+        pa.update_stock_percent(updated_val.stock);
         pa
     }
 
-    fn update_ticker_actual_percent(
+    // fixme test!!!
+    pub fn buy_share(
+        &self,
+        symbol: &TickerSymbol,
+        amount: f32,
+        tickers: &HashMap<TickerSymbol, Ticker>,
+    ) -> Self {
+        let mut pa = self.clone();
+        let mut tickers_actual = pa.tickers_actual;
+
+        // buy a share
+        tickers_actual
+            .get_mut(symbol)
+            .expect(&format!("add ticker to db: {:?}", symbol))
+            .actual_shares += amount;
+
+        Self::new(tickers_actual, tickers)
+    }
+
+    fn update_ta_percent(
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         total_val: &f32,
     ) -> UpdatedTAPercent {
@@ -44,7 +67,7 @@ impl PortfolioActual {
     /// Calculate the price of TickerActual and also calculate
     /// the total value and stock value while we are iterating
     /// over the tickers.
-    fn update_tickers_actual(
+    fn update_ta_value(
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
     ) -> UpdatedTAValue {
@@ -99,7 +122,7 @@ impl PortfolioActual {
     }
 
     /// Calculate the percent of portfolio that is Stocks.
-    fn calculate_stock_percent(&mut self, stock_value: f32) {
+    fn update_stock_percent(&mut self, stock_value: f32) {
         self.actual_stock_percent = (stock_value / self.total_value) * 100.0;
         self.actual_stock_percent = (self.actual_stock_percent * 100.00).round() / 100.00;
     }
@@ -114,7 +137,7 @@ struct UpdatedTAValue {
 }
 type UpdatedTAPercent = HashMap<TickerSymbol, TickerActual>;
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct TickerActual {
     pub symbol: TickerSymbol,
     pub actual_shares: f32,
@@ -197,9 +220,9 @@ mod test {
     }
 
     #[test]
-    fn pa_calculate_stock_percent() {
+    fn pa_update_stock_percent() {
         let mut pa = Helper::get_portfolio_actual();
-        pa.calculate_stock_percent(15.0);
+        pa.update_stock_percent(15.0);
         assert_eq!(7.5, pa.actual_stock_percent);
     }
 
@@ -244,7 +267,7 @@ mod test {
         let tic_map = Helper::get_ticker_map();
         let tic_actual_map = Helper::get_ticker_actual_map();
 
-        let updated = PortfolioActual::update_tickers_actual(tic_actual_map, &tic_map);
+        let updated = PortfolioActual::update_ta_value(tic_actual_map, &tic_map);
 
         let ta_b = Helper::get_ta_bond();
         let t_b = Helper::bond();
@@ -268,7 +291,7 @@ mod test {
         let tic_actual_map = Helper::get_ticker_actual_map();
         let total_val = 330.0;
 
-        let updated = PortfolioActual::update_ticker_actual_percent(tic_actual_map, &total_val);
+        let updated = PortfolioActual::update_ta_percent(tic_actual_map, &total_val);
 
         let updated_stock = updated.get(&symbol!("stock")).unwrap();
         let updated_bond = updated.get(&symbol!("bond")).unwrap();
