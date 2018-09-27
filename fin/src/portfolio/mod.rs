@@ -22,7 +22,6 @@ lazy_static! {
             symbol: symbol!("EMPTY_TICKER_DIFF"),
             goal_minus_actual: 0.0,
             action: meta::TickerAction::Hold,
-            order: 0,
         }
     };
 }

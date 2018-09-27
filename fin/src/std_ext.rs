@@ -50,7 +50,6 @@ where
     ///         .is_empty();
     ///     assert_eq!(check, false);
     /// ```
-    // fixme test!!
     fn is_empty(self) -> bool {
         self.peekable().peek().is_none()
     }
@@ -62,10 +61,29 @@ impl<I: Iterator> ExtIterator for I {}
 mod test {
 
     use crate::ticker::*;
+    use super::ExtIterator;
 
     enum TestMacro {
         Foo,
         Bar,
+    }
+
+    #[test]
+    fn iter_is_not_empty() {
+         let v = vec![1, 2, 3];
+         let check = v.iter()
+             .filter(|x| **x == 1)
+             .is_empty();
+        assert_eq!(check, false);
+    }
+
+    #[test]
+    fn iter_is_empty() {
+         let v = vec![1, 2, 3];
+         let check = v.iter()
+             .filter(|x| **x == 0)
+             .is_empty();
+        assert_eq!(check, true);
     }
 
     #[test]

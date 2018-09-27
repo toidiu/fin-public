@@ -85,9 +85,6 @@ pub struct TickerDiff {
     pub symbol: TickerSymbol,
     pub goal_minus_actual: f32,
     pub action: TickerAction,
-    // used to display the tickers in deterministic order each time
-    // fixme remove
-    pub order: u32,
 }
 
 impl TickerDiff {
@@ -109,7 +106,6 @@ impl TickerDiff {
                     TickerAction::Hold
                 }
             },
-            order: goal_tic.order,
         }
     }
 }

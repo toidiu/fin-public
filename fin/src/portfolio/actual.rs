@@ -126,6 +126,10 @@ impl PortfolioActual {
         self.actual_stock_percent = (stock_value / self.total_value) * 100.0;
         self.actual_stock_percent = (self.actual_stock_percent * 100.00).round() / 100.00;
     }
+
+    fn get_ta(&self, symbol: &TickerSymbol) -> &TickerActual {
+        self.tickers_actual.get(&symbol).expect(&format!("add ticker to db: {:?}", &symbol))
+    }
 }
 
 /// Internal wrapper to bundle return values from a function.
@@ -305,6 +309,19 @@ mod test {
         let calc_ta_b_per = ((calc_ta_b_per) * 100.00).round() / 100.00;
         assert_eq!(updated_bond.actual_percent, calc_ta_b_per);
     }
+
+    #[test]
+    fn pa_buy_share() {
+        let sym = symbol!("stock");
+        let mut pa = Helper::get_portfolio_actual();
+        let tickers = Helper::get_ticker_map();
+        let orig_shares = pa.get_ta(&sym).actual_shares;
+
+        let updated_pa = pa.buy_share(&sym, 2.5, &tickers);
+
+        assert_eq!(updated_pa.get_ta(&sym).actual_shares, orig_shares + 2.5);
+    }
+
 
     // ==============================
     // Helper
