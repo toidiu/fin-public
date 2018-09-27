@@ -13,6 +13,7 @@ extern crate derivative;
 extern crate serde_derive;
 
 use rocket::http::Method;
+use rocket::State;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 
 use crate::data::*;
@@ -24,19 +25,18 @@ mod portfolio;
 mod ticker;
 
 #[get("/portfolio")]
-fn two() -> String {
-    let db = data::DefaultTickerDatabase {};
-    let mut port = portfolio::Portfolio::new(&db);
-    serde_json::to_string(&port.get_state()).unwrap()
+fn portfolio<'r>(state: State<'r, portfolio::Portfolio>) -> String {
+    let port_state = state.inner().get_state();
+    serde_json::to_string(&port_state).unwrap()
 }
 
 #[get("/next")]
-fn next() -> String {
-    let b = action::next_buy();
-    serde_json::to_string(&b).unwrap()
+fn next<'r>(state: State<'r, portfolio::Portfolio>) -> String {
+    let next = state.inner().get_buy_next();
+    serde_json::to_string(&next).unwrap()
 }
 
-fn start_server() {
+fn start_server(port: portfolio::Portfolio) {
     let (allowed_origins, failed_origins) = AllowedOrigins::some(&["http://localhost:1234"]);
     assert!(failed_origins.is_empty());
 
@@ -50,33 +50,30 @@ fn start_server() {
     };
 
     rocket::ignite()
-        .mount("/", routes![two, next])
+        .mount("/", routes![portfolio, next])
         .attach(options)
+        .manage(port)
         .launch();
 }
 
 fn main() {
     let db = data::DefaultTickerDatabase {};
     let mut port = portfolio::Portfolio::new(&db);
-    let next = port.get_buy_next();
 
-    fixme add state to Rocket and evolve
-    port.evolve(Action::Buy());
-
-    start_server();
+    start_server(port);
 }
 
-mod action {
+// mod action {
 
-    use crate::data;
-    use crate::data::TickerDatabase;
-    use crate::portfolio;
-    use crate::ticker;
+//     use crate::data;
+//     use crate::data::TickerDatabase;
+//     use crate::portfolio;
+//     use crate::ticker;
 
-    pub fn next_buy() -> ticker::Ticker {
-        let db = data::DefaultTickerDatabase {};
-        let mut port = portfolio::Portfolio::new(&db);
-        port.get_buy_next()
-    }
+//     pub fn next_buy() -> ticker::Ticker {
+//         let db = data::DefaultTickerDatabase {};
+//         let mut port = portfolio::Portfolio::new(&db);
+//         port.get_buy_next()
+//     }
 
-}
+// }
