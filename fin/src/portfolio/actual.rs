@@ -4,14 +4,16 @@ use std::collections::HashMap;
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
 pub struct PortfolioActual {
     pub tickers_actual: HashMap<TickerSymbol, TickerActual>,
+    // fixme maybe move this to meta so we have no calculations here
     // calculated
     total_value: f32,
+    // fixme maybe move this to meta so we have no calculations here
     // calculated
     actual_stock_percent: f32,
 }
 
 impl PortfolioActual {
-    // fixme test!
+    // todo test!
     pub fn new(
         mut tickers_actual: HashMap<TickerSymbol, TickerActual>,
         tickers: &HashMap<TickerSymbol, Ticker>,
@@ -34,7 +36,7 @@ impl PortfolioActual {
         pa
     }
 
-    // fixme test!!!
+    // todo test!!!
     pub fn buy_share(
         &self,
         symbol: &TickerSymbol,
@@ -112,7 +114,7 @@ impl PortfolioActual {
         }
     }
 
-    // fixme test!!!
+    // todo test!!!
     pub fn get_total_value(&self) -> f32 {
         self.total_value
     }
@@ -162,7 +164,7 @@ impl TickerActual {
         }
     }
 
-    // fixme test!!!
+    // todo test!!!
     pub fn get_actual_value(&self) -> f32 {
         self.actual_value
     }

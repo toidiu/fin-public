@@ -37,7 +37,7 @@ pub struct Portfolio {
 }
 
 impl Portfolio {
-    // fixme test!!
+    // todo test!!
     pub fn new<T: data::TickerDatabase>(db: &T) -> Portfolio {
         // get goal
         let pg = PortfolioGoal {
@@ -65,7 +65,7 @@ impl Portfolio {
         }
     }
 
-    // fixme test!!!
+    // todo test!!!
     pub fn evolve(&self, action: state::Action) -> Portfolio {
         let port = match action {
             state::Action::Buy(buy) => {
@@ -95,7 +95,7 @@ impl Portfolio {
         port
     }
 
-    // fixme test!!
+    // todo test!!
     pub fn get_state(&self) -> state::PortfolioState {
         let mut tickers: Vec<state::TickerState> = self
             .goal
@@ -141,7 +141,7 @@ impl Portfolio {
     }
 
     // fixme optimize!!!
-    // fixme test!!
+    // todo test!!
     pub fn get_buy_next(&self) -> Ticker {
         let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
             meta::PortfolioAction::BuyStock => self
@@ -170,7 +170,7 @@ impl Portfolio {
             .collect::<Vec<&&TickerDiff>>()
             .is_empty();
 
-        // fixme test
+        // todo test
         let filter_buys: Vec<&TickerDiff> = if (contains_no_buys) {
             // dont filter since we dont have buys
             filter_kind
@@ -184,7 +184,6 @@ impl Portfolio {
 
         // filter cheapest
         let empty_diff = EMPTY_TICKER_DIFF.clone();
-        // fixme maybe user scan
         let tic_diff: &TickerDiff = filter_buys.iter().fold(&empty_diff, |x, y| {
             if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
                 return y;
@@ -204,7 +203,7 @@ impl Portfolio {
         self.get_ticker(&tic_diff.symbol)
     }
 
-    // fixme test!!
+    // todo test!!
     fn get_ticker(&self, symbol: &TickerSymbol) -> Ticker {
         self.tickers
             .get(symbol)
