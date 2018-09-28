@@ -17,6 +17,7 @@ use rocket::State;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 
 use crate::data::*;
+use crate::ticker::TickerSymbol;
 
 #[macro_use]
 mod std_ext;
@@ -28,6 +29,18 @@ mod ticker;
 fn portfolio<'r>(state: State<'r, portfolio::Portfolio>) -> String {
     let port_state = state.inner().get_state();
     serde_json::to_string(&port_state).unwrap()
+}
+
+#[get("/buy")]
+fn buy<'r>(state: State<'r, portfolio::Portfolio>) -> String {
+    let ab = portfolio::ActionBuy {
+        symbol: symbol!("mub"),
+        shares: 1.0,
+    };
+    let action = portfolio::Action::Buy(ab);
+    let evolved = state.inner().evolve(action);
+    let new_state = evolved.get_buy_next();
+    serde_json::to_string(&new_state).unwrap()
 }
 
 #[get("/next")]
@@ -50,7 +63,7 @@ fn start_server(port: portfolio::Portfolio) {
     };
 
     rocket::ignite()
-        .mount("/", routes![portfolio, next])
+        .mount("/", routes![portfolio, next, buy])
         .attach(options)
         .manage(port)
         .launch();
@@ -63,17 +76,3 @@ fn main() {
     start_server(port);
 }
 
-// mod action {
-
-//     use crate::data;
-//     use crate::data::TickerDatabase;
-//     use crate::portfolio;
-//     use crate::ticker;
-
-//     pub fn next_buy() -> ticker::Ticker {
-//         let db = data::DefaultTickerDatabase {};
-//         let mut port = portfolio::Portfolio::new(&db);
-//         port.get_buy_next()
-//     }
-
-// }

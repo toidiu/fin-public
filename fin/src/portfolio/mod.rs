@@ -15,6 +15,7 @@ mod state;
 pub use crate::portfolio::actual::{PortfolioActual, TickerActual};
 pub use crate::portfolio::goal::{PortfolioGoal, TickerGoal};
 pub use crate::portfolio::meta::{PortfolioMeta, TickerDiff};
+pub use crate::portfolio::state::{Action, ActionBuy};
 
 lazy_static! {
     static ref EMPTY_TICKER_DIFF: TickerDiff = {
@@ -65,7 +66,7 @@ impl Portfolio {
     }
 
     // fixme test!!!
-    pub fn evolve(&self, action: state::Action) -> state::PortfolioState {
+    pub fn evolve(&self, action: state::Action) -> Portfolio {
         let port = match action {
             state::Action::Buy(buy) => {
                 // buy actual share and re-calculate
@@ -91,7 +92,7 @@ impl Portfolio {
             }
         };
 
-        port.get_state()
+        port
     }
 
     // fixme test!!
