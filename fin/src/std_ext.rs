@@ -60,8 +60,8 @@ impl<I: Iterator> ExtIterator for I {}
 #[cfg(test)]
 mod test {
 
-    use crate::ticker::*;
     use super::ExtIterator;
+    use crate::ticker::*;
 
     enum TestMacro {
         Foo,
@@ -70,19 +70,15 @@ mod test {
 
     #[test]
     fn iter_is_not_empty() {
-         let v = vec![1, 2, 3];
-         let check = v.iter()
-             .filter(|x| **x == 1)
-             .is_empty();
+        let v = vec![1, 2, 3];
+        let check = v.iter().filter(|x| **x == 1).is_empty();
         assert_eq!(check, false);
     }
 
     #[test]
     fn iter_is_empty() {
-         let v = vec![1, 2, 3];
-         let check = v.iter()
-             .filter(|x| **x == 0)
-             .is_empty();
+        let v = vec![1, 2, 3];
+        let check = v.iter().filter(|x| **x == 0).is_empty();
         assert_eq!(check, true);
     }
 

@@ -128,7 +128,9 @@ impl PortfolioActual {
     }
 
     fn get_ta(&self, symbol: &TickerSymbol) -> &TickerActual {
-        self.tickers_actual.get(&symbol).expect(&format!("add ticker to db: {:?}", &symbol))
+        self.tickers_actual
+            .get(&symbol)
+            .expect(&format!("add ticker to db: {:?}", &symbol))
     }
 }
 
@@ -321,7 +323,6 @@ mod test {
 
         assert_eq!(updated_pa.get_ta(&sym).actual_shares, orig_shares + 2.5);
     }
-
 
     // ==============================
     // Helper
