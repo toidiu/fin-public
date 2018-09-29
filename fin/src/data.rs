@@ -2,8 +2,7 @@
 
 use mock_derive::mock;
 
-use crate::portfolio;
-use crate::ticker::*;
+use crate::{portfolio, ticker::*};
 use std::collections::HashMap;
 
 #[mock]
@@ -166,11 +165,13 @@ impl TickerDatabase for DefaultTickerDatabase {
             order: 11,
         };
         let v = vec![
-            g_vti, g_vtv, g_voe, g_vbr, g_vea, g_vwo, g_vtip, g_agg, g_mub, g_bndx, g_vwob,
+            g_vti, g_vtv, g_voe, g_vbr, g_vea, g_vwo, g_vtip, g_agg, g_mub,
+            g_bndx, g_vwob,
         ];
 
         // create a map
-        let mut map: HashMap<TickerSymbol, portfolio::TickerGoal> = HashMap::new();
+        let mut map: HashMap<TickerSymbol, portfolio::TickerGoal> =
+            HashMap::new();
         for x in v {
             map.insert(x.symbol.clone(), x);
         }
@@ -190,11 +191,13 @@ impl TickerDatabase for DefaultTickerDatabase {
         let a_bndx = portfolio::TickerActual::new(symbol!("bndx"), 2.0);
         let a_vwob = portfolio::TickerActual::new(symbol!("vwob"), 1.0);
         let v = vec![
-            a_vti, a_vtv, a_voe, a_vbr, a_vea, a_vwo, a_vtip, a_agg, a_mub, a_bndx, a_vwob,
+            a_vti, a_vtv, a_voe, a_vbr, a_vea, a_vwo, a_vtip, a_agg, a_mub,
+            a_bndx, a_vwob,
         ];
 
         // create a map
-        let mut map: HashMap<TickerSymbol, portfolio::TickerActual> = HashMap::new();
+        let mut map: HashMap<TickerSymbol, portfolio::TickerActual> =
+            HashMap::new();
         for x in v {
             map.insert(x.symbol.clone(), x);
         }

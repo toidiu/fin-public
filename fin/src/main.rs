@@ -12,12 +12,10 @@ extern crate derivative;
 #[macro_use]
 extern crate serde_derive;
 
-use rocket::http::Method;
-use rocket::State;
+use rocket::{http::Method, State};
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 
-use crate::data::*;
-use crate::ticker::TickerSymbol;
+use crate::{data::*, ticker::TickerSymbol};
 
 #[macro_use]
 mod std_ext;
@@ -50,13 +48,17 @@ fn next<'r>(state: State<'r, portfolio::Portfolio>) -> String {
 }
 
 fn start_server(port: portfolio::Portfolio) {
-    let (allowed_origins, failed_origins) = AllowedOrigins::some(&["http://localhost:1234"]);
+    let (allowed_origins, failed_origins) =
+        AllowedOrigins::some(&["http://localhost:1234"]);
     assert!(failed_origins.is_empty());
 
     // You can also deserialize this
     let options = rocket_cors::Cors {
         allowed_origins: allowed_origins,
-        allowed_methods: vec![Method::Get].into_iter().map(From::from).collect(),
+        allowed_methods: vec![Method::Get]
+            .into_iter()
+            .map(From::from)
+            .collect(),
         allowed_headers: AllowedHeaders::some(&["Authorization", "Accept"]),
         allow_credentials: false,
         ..Default::default()
@@ -74,4 +76,6 @@ fn main() {
     let mut port = portfolio::Portfolio::new(&db);
 
     start_server(port);
+    // println!("{:#?}", port.get_state());
+    // println!("{:#?}", port.get_buy_next());
 }

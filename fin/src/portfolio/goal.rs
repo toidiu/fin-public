@@ -8,6 +8,14 @@ pub struct PortfolioGoal {
     pub deviation_percent: f32,
 }
 
+impl PortfolioGoal {
+    pub fn get_ticker(&self, symbol: &TickerSymbol) -> &TickerGoal {
+        self.tickers_goal
+            .get(symbol)
+            .expect(&format!("add ticker to db: {:?}", symbol))
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TickerGoal {
     pub symbol: TickerSymbol,

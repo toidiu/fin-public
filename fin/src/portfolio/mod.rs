@@ -1,31 +1,19 @@
 #![allow(dead_code, unused)]
 
-use crate::data;
-use crate::std_ext::*;
-use crate::ticker::*;
-use std::cmp::Ordering;
-use std::collections::HashMap;
-use std::num;
+use self::meta::EMPTY_TICKER_DIFF;
+pub use self::{
+    actual::{PortfolioActual, TickerActual},
+    goal::{PortfolioGoal, TickerGoal},
+    meta::{PortfolioMeta, TickerMeta},
+    state::{Action, ActionBuy},
+};
+use crate::{data, std_ext::*, ticker::*};
+use std::{cmp::Ordering, collections::HashMap, num};
 
 mod actual;
 mod goal;
 mod meta;
 mod state;
-
-pub use crate::portfolio::actual::{PortfolioActual, TickerActual};
-pub use crate::portfolio::goal::{PortfolioGoal, TickerGoal};
-pub use crate::portfolio::meta::{PortfolioMeta, TickerDiff};
-pub use crate::portfolio::state::{Action, ActionBuy};
-
-lazy_static! {
-    static ref EMPTY_TICKER_DIFF: TickerDiff = {
-        TickerDiff {
-            symbol: symbol!("EMPTY_TICKER_DIFF"),
-            goal_minus_actual: 0.0,
-            action: meta::TickerAction::Hold,
-        }
-    };
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
@@ -47,14 +35,14 @@ impl Portfolio {
         };
 
         // get tickers map
-        // TODO eventually only request those we care about (ones in goal)
+        // todo eventually only request those we care about (ones in goal)
         let tickers_map: HashMap<TickerSymbol, Ticker> = db.get_tickers();
 
         // get actual
         let pa = PortfolioActual::new(db.get_actual(), &tickers_map);
 
         // get meta
-        let meta = PortfolioMeta::new(&pg, &pa);
+        let meta = PortfolioMeta::new(&tickers_map, &pg, &pa);
 
         Portfolio {
             name: "my portfolio".to_owned(),
@@ -70,12 +58,14 @@ impl Portfolio {
         let port = match action {
             state::Action::Buy(buy) => {
                 // buy actual share and re-calculate
-                let pa = self
-                    .actual
-                    .buy_share(&buy.symbol, buy.shares, &self.tickers);
+                let pa = self.actual.buy_share(
+                    &buy.symbol,
+                    buy.shares,
+                    &self.tickers,
+                );
 
                 // re-calculate meta
-                let meta = PortfolioMeta::new(&self.goal, &pa);
+                let meta = PortfolioMeta::new(&self.tickers, &self.goal, &pa);
 
                 // clone goal and tickers
                 let pg = self.goal.clone();
@@ -103,29 +93,16 @@ impl Portfolio {
             .iter()
             .map(|x| {
                 let ticker = self.get_ticker(x.0);
-                let ta = self
-                    .actual
-                    .tickers_actual
-                    .get(x.0)
-                    .expect(&format!("add ticker to db: {:?}", &x.0));
-                let tg = self
-                    .goal
-                    .tickers_goal
-                    .get(x.0)
-                    .expect(&format!("add ticker to db: {:?}", &x.0));
-                let td = self
-                    .meta
-                    .tickers_diff
-                    .get(x.0)
-                    .expect(&format!("add ticker to db: {:?}", &x.0));
+                let tg = self.goal.get_ticker(x.0);
+                let tm = self.meta.get_ticker(x.0);
 
                 state::TickerState {
                     symbol: x.0.clone(),
                     kind: ticker.kind.clone(),
                     fee: ticker.fee,
                     goal_percent: tg.goal_percent,
-                    actual_percent: ta.get_actual_percent(),
-                    actual_value: ta.get_actual_value(),
+                    actual_percent: tm.ticker_percent,
+                    actual_value: tm.ticker_value,
                     price: ticker.price,
                     order: tg.order,
                 }
@@ -134,19 +111,19 @@ impl Portfolio {
         state::PortfolioState {
             tickers: tickers,
             goal_stock_percent: self.goal.goal_stock_percent,
-            actual_stock_percent: self.actual.get_stock_percent(),
-            total_value: self.actual.get_total_value(),
+            actual_stock_percent: self.meta.stock_percent,
+            total_value: self.meta.total_value,
             deviation_percent: self.goal.deviation_percent,
         }
     }
 
-    // fixme optimize!!!
     // todo test!!
     pub fn get_buy_next(&self) -> Ticker {
-        let filter_kind: Vec<&TickerDiff> = match self.meta.portfolio_action {
+        /// filter based on portfolio action
+        let filter_kind: Vec<&TickerMeta> = match self.meta.portfolio_action {
             meta::PortfolioAction::BuyStock => self
                 .meta
-                .tickers_diff
+                .tickers_meta
                 .iter()
                 .filter(|x| self.get_ticker(&x.0).is_stock())
                 .map(|x| x.1)
@@ -154,24 +131,26 @@ impl Portfolio {
 
             meta::PortfolioAction::BuyBond => self
                 .meta
-                .tickers_diff
+                .tickers_meta
                 .iter()
                 .filter(|x| self.get_ticker(&x.0).is_bond())
                 .map(|x| x.1)
                 .collect(),
 
-            meta::PortfolioAction::BuyEither => self.meta.tickers_diff.values().collect(),
+            meta::PortfolioAction::BuyEither => {
+                self.meta.tickers_meta.values().collect()
+            }
         };
 
-        // fixme combine with iter above
+        /// filter based on ticker action (buys)
         let contains_no_buys = filter_kind
             .iter()
             .filter(|x| matches!(&x.action, meta::TickerAction::Buy))
-            .collect::<Vec<&&TickerDiff>>()
+            .collect::<Vec<&&TickerMeta>>()
             .is_empty();
 
         // todo test
-        let filter_buys: Vec<&TickerDiff> = if (contains_no_buys) {
+        let filter_buys: Vec<&TickerMeta> = if (contains_no_buys) {
             // dont filter since we dont have buys
             filter_kind
         } else {
@@ -182,23 +161,24 @@ impl Portfolio {
                 .collect()
         };
 
-        // filter cheapest
+        /// filter based on price (cheapest)
         let empty_diff = EMPTY_TICKER_DIFF.clone();
-        let tic_diff: &TickerDiff = filter_buys.iter().fold(&empty_diff, |x, y| {
-            if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
-                return y;
-            } else if (y.symbol == EMPTY_TICKER_DIFF.symbol) {
-                return x;
-            }
-            let x_price = self.get_ticker(&x.symbol).price;
-            let y_price = self.get_ticker(&y.symbol).price;
+        let tic_diff: &TickerMeta =
+            filter_buys.iter().fold(&empty_diff, |x, y| {
+                if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
+                    return y;
+                } else if (y.symbol == EMPTY_TICKER_DIFF.symbol) {
+                    return x;
+                }
+                let x_price = self.get_ticker(&x.symbol).price;
+                let y_price = self.get_ticker(&y.symbol).price;
 
-            if (x_price < y_price) {
-                x
-            } else {
-                y
-            }
-        });
+                if (x_price < y_price) {
+                    x
+                } else {
+                    y
+                }
+            });
 
         self.get_ticker(&tic_diff.symbol)
     }

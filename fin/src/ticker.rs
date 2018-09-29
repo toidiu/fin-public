@@ -1,6 +1,8 @@
 use std::fmt;
 
-#[derive(Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Default)]
+#[derive(
+    Hash, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Default,
+)]
 pub struct TickerSymbol(pub String);
 
 impl fmt::Display for TickerSymbol {
@@ -16,7 +18,9 @@ impl fmt::Debug for TickerSymbol {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug)]
+#[derive(
+    PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug,
+)]
 pub enum InvestmentKind {
     #[serde(rename = "stock")]
     Stock,
@@ -36,6 +40,7 @@ impl Ticker {
     pub fn is_stock(&self) -> bool {
         self.kind.eq(&InvestmentKind::Stock)
     }
+
     pub fn is_bond(&self) -> bool {
         self.kind.eq(&InvestmentKind::Bond)
     }

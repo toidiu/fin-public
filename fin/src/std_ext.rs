@@ -1,6 +1,4 @@
-/*
- * Helper macros to make life easier.
- */
+// Helper macros to make life easier.
 
 macro_rules! matches(
     ($e:expr, $p:pat) => (
@@ -43,12 +41,13 @@ where
     /// Example:
     ///
     /// ```
-    ///     let v = vec![1, 2, 3];
-    ///     let check = v.iter()
-    ///         .filter(|x| **x == 1)
-    ///         // .collect::<Vec<_>>()  // <-- not needed
-    ///         .is_empty();
-    ///     assert_eq!(check, false);
+    /// let v = vec![1, 2, 3];
+    /// let check = v
+    ///     .iter()
+    ///     .filter(|x| **x == 1)
+    ///     // .collect::<Vec<_>>()  // <-- not needed
+    ///     .is_empty();
+    /// assert_eq!(check, false);
     /// ```
     fn is_empty(self) -> bool {
         self.peekable().peek().is_none()
