@@ -53,7 +53,7 @@ mod test {
 
     struct Helper {}
     impl Helper {
-        pub fn get_stock() -> Ticker {
+        fn get_stock() -> Ticker {
             Ticker {
                 symbol: symbol!("vwo"),
                 fee: 0.14,
@@ -62,7 +62,7 @@ mod test {
             }
         }
 
-        pub fn get_bond() -> Ticker {
+        fn get_bond() -> Ticker {
             Ticker {
                 symbol: symbol!("vtip"),
                 fee: 0.06,

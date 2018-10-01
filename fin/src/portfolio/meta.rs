@@ -163,7 +163,7 @@ pub struct TickerMeta {
 }
 
 impl TickerMeta {
-    pub fn default(symbol: TickerSymbol) -> TickerMeta {
+    fn default(symbol: TickerSymbol) -> TickerMeta {
         TickerMeta {
             symbol: symbol,
             action: TickerAction::Hold,
