@@ -118,7 +118,7 @@ impl Portfolio {
     }
 
     // todo test!!
-    pub fn get_buy_next(&self) -> Ticker {
+    pub fn get_buy_next(&self) -> action::Action {
         /// filter based on portfolio action
         let filter_kind: Vec<&TickerMeta> = match self.meta.portfolio_action {
             meta::PortfolioAction::BuyStock => self
@@ -180,7 +180,10 @@ impl Portfolio {
                 }
             });
 
-        self.get_ticker(&tic_diff.symbol)
+        action::Action::Buy(action::ActionBuy {
+            symbol: tic_diff.symbol.clone(),
+            shares: 1.0,
+        })
     }
 
     // todo test!!
