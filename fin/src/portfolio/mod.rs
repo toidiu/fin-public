@@ -2,18 +2,18 @@
 
 use self::meta::EMPTY_TICKER_DIFF;
 pub use self::{
+    action::{Action, ActionBuy},
     actual::{PortfolioActual, TickerActual},
     goal::{PortfolioGoal, TickerGoal},
     meta::{PortfolioMeta, TickerMeta},
-    state::{Action, ActionBuy},
 };
-use crate::{data, std_ext::*, ticker::*};
+use crate::{api, data, std_ext::*, ticker::*};
 use std::{cmp::Ordering, collections::HashMap, num};
 
+mod action;
 mod actual;
 mod goal;
 mod meta;
-mod state;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {
@@ -54,9 +54,9 @@ impl Portfolio {
     }
 
     // todo test!!!
-    pub fn evolve(&self, action: state::Action) -> Portfolio {
+    pub fn evolve(&self, action: action::Action) -> Portfolio {
         let port = match action {
-            state::Action::Buy(buy) => {
+            action::Action::Buy(buy) => {
                 // buy actual share and re-calculate
                 let pa = self.actual.buy_share(
                     &buy.symbol,
@@ -86,8 +86,8 @@ impl Portfolio {
     }
 
     // todo test!!
-    pub fn get_state(&self) -> state::PortfolioState {
-        let mut tickers: Vec<state::TickerState> = self
+    pub fn get_state(&self) -> api::PortfolioState {
+        let mut tickers: Vec<api::TickerState> = self
             .goal
             .tickers_goal
             .iter()
@@ -96,7 +96,7 @@ impl Portfolio {
                 let tg = self.goal.get_ticker(x.0);
                 let tm = self.meta.get_ticker(x.0);
 
-                state::TickerState {
+                api::TickerState {
                     symbol: x.0.clone(),
                     kind: ticker.kind.clone(),
                     fee: ticker.fee,
@@ -108,7 +108,7 @@ impl Portfolio {
                 }
             }).collect();
         tickers.sort_by(|a, b| a.order.cmp(&b.order));
-        state::PortfolioState {
+        api::PortfolioState {
             tickers: tickers,
             goal_stock_percent: self.goal.goal_stock_percent,
             actual_stock_percent: self.meta.stock_percent,

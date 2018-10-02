@@ -20,13 +20,3 @@ pub struct TickerState {
     pub price: f32,
     pub order: u32,
 }
-
-pub enum Action {
-    Buy(ActionBuy),
-}
-pub struct ActionBuy {
-    pub symbol: TickerSymbol,
-    pub shares: f32,
-}
-
-impl PortfolioState {}

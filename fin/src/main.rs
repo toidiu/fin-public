@@ -19,6 +19,7 @@ use crate::{data::*, ticker::TickerSymbol};
 
 #[macro_use]
 mod std_ext;
+mod api;
 mod data;
 mod portfolio;
 mod ticker;
