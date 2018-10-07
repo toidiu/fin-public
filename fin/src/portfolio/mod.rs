@@ -34,7 +34,7 @@ impl Portfolio {
         let pg = PortfolioGoal {
             tickers_goal: db.get_goal(),
             goal_stock_percent: 58.0,
-            deviation_percent: 5.0,
+            deviation_percent: 1.5,
         };
 
         // get tickers map
