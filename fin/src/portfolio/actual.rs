@@ -18,6 +18,25 @@ impl PortfolioActual {
     }
 
     // todo test!!!
+    pub fn sell_share(
+        &self,
+        symbol: &TickerSymbol,
+        amount: f32,
+        tickers: &HashMap<TickerSymbol, Ticker>,
+    ) -> Self {
+        let mut pa = self.clone();
+        let mut tickers_actual = pa.tickers_actual;
+
+        // buy a share
+        tickers_actual
+            .get_mut(symbol)
+            .expect(&format!("add ticker to db: {:?}", symbol))
+            .actual_shares -= amount;
+
+        Self::new(tickers_actual, tickers)
+    }
+
+    // todo test!!!
     pub fn buy_share(
         &self,
         symbol: &TickerSymbol,

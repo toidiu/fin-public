@@ -2,7 +2,7 @@
 
 use self::meta::EMPTY_TICKER_DIFF;
 pub use self::{
-    action::{Action, ActionBuy},
+    action::{Action, ActionInfo},
     actual::{PortfolioActual, TickerActual},
     goal::{PortfolioGoal, TickerGoal},
     meta::{PortfolioMeta, TickerMeta},
@@ -26,7 +26,10 @@ pub struct Portfolio {
 
 impl Portfolio {
     // todo test!!
-    pub fn new<T: data::TickerDatabase>(db: &T) -> Portfolio {
+    pub fn new<T: data::TickerDatabase>(
+        db: &T,
+        actual: &HashMap<TickerSymbol, TickerActual>,
+    ) -> Portfolio {
         // get goal
         let pg = PortfolioGoal {
             tickers_goal: db.get_goal(),
@@ -38,8 +41,9 @@ impl Portfolio {
         // todo eventually only request those we care about (ones in goal)
         let tickers_map: HashMap<TickerSymbol, Ticker> = db.get_tickers();
 
+        let actual = actual.clone();
         // get actual
-        let pa = PortfolioActual::new(db.get_actual(), &tickers_map);
+        let pa = PortfolioActual::new(actual, &tickers_map);
 
         // get meta
         let meta = PortfolioMeta::new(&tickers_map, &pg, &pa);
@@ -54,13 +58,38 @@ impl Portfolio {
     }
 
     // todo test!!!
-    pub fn evolve(&self, action: action::Action) -> Portfolio {
+    pub fn evolve(&self, action: &action::Action) -> Portfolio {
         let port = match action {
-            action::Action::Buy(buy) => {
+            action::Action::Buy(info) => {
                 // buy actual share and re-calculate
                 let pa = self.actual.buy_share(
-                    &buy.symbol,
-                    buy.shares,
+                    &info.symbol,
+                    info.shares,
+                    &self.tickers,
+                );
+
+                // re-calculate meta
+                let meta = PortfolioMeta::new(&self.tickers, &self.goal, &pa);
+
+                // clone goal and tickers
+                let pg = self.goal.clone();
+                let tickers_map = self.tickers.clone();
+
+                // return new Portfolio
+                Portfolio {
+                    name: "my portfolio".to_owned(),
+                    goal: pg,
+                    actual: pa,
+                    meta: meta,
+                    tickers: tickers_map,
+                }
+            }
+
+            action::Action::Sell(info) => {
+                // sell actual share and re-calculate
+                let pa = self.actual.sell_share(
+                    &info.symbol,
+                    info.shares,
                     &self.tickers,
                 );
 
@@ -180,9 +209,10 @@ impl Portfolio {
                 }
             });
 
-        action::Action::Buy(action::ActionBuy {
+        action::Action::Buy(action::ActionInfo {
             symbol: tic_diff.symbol.clone(),
             shares: 1.0,
+            price: self.get_ticker(&tic_diff.symbol).price,
         })
     }
 
@@ -192,6 +222,11 @@ impl Portfolio {
             .get(symbol)
             .expect(&format!("add ticker to db: {:?}", &symbol))
             .clone()
+    }
+
+    // todo test!!
+    pub fn get_actual_tickers(&self) -> HashMap<TickerSymbol, TickerActual> {
+        self.actual.tickers_actual.clone()
     }
 }
 

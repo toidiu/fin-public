@@ -1,4 +1,5 @@
 use crate::portfolio;
+use crate::portfolio::TickerActual;
 use crate::ticker::*;
 use std::collections::HashMap;
 
@@ -23,9 +24,23 @@ pub struct TickerState {
     pub order: u32,
 }
 
+// =================================== STATE
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Evolved {
-    init_state: PortfolioState,
-    final_state: Option<PortfolioState>,
-    actions: HashMap<TickerSymbol, portfolio::Action>,
+pub struct EvolvedState {
+    pub init_state: portfolio::Portfolio,
+    pub evolved_actual: HashMap<TickerSymbol, TickerActual>,
+    pub actions: Vec<portfolio::Action>,
+    pub buy_value: f32,
+}
+
+impl EvolvedState {
+    pub fn new(port: portfolio::Portfolio) -> Self {
+        let actual_tickers = port.get_actual_tickers();
+        EvolvedState {
+            init_state: port,
+            evolved_actual: actual_tickers,
+            actions: Vec::new(),
+            buy_value: 0.0,
+        }
+    }
 }
