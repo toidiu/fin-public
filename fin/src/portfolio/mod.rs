@@ -1,19 +1,20 @@
 #![allow(dead_code, unused)]
 
-use self::meta::EMPTY_TICKER_DIFF;
+mod action;
+mod actual;
+mod goal;
+mod meta;
+
 pub use self::{
     action::{Action, ActionInfo},
     actual::{PortfolioActual, TickerActual},
     goal::{PortfolioGoal, TickerGoal},
     meta::{PortfolioMeta, TickerMeta},
 };
+
+use self::meta::EMPTY_TICKER_DIFF;
 use crate::{api, data, std_ext::*, ticker::*};
 use std::{cmp::Ordering, collections::HashMap, num};
-
-mod action;
-mod actual;
-mod goal;
-mod meta;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Portfolio {

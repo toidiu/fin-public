@@ -11,7 +11,10 @@ extern crate lazy_static;
 extern crate derivative;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate log;
 
+use postgres::{Connection, TlsMode};
 use rocket::Request;
 use rocket::{http::Method, State};
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
@@ -24,16 +27,38 @@ use crate::{data::*, ticker::TickerSymbol};
 mod std_ext;
 mod api;
 mod data;
+mod errors;
+mod models;
 mod portfolio;
 mod ticker;
+extern crate env_logger;
 
 fn main() {
-    let db = data::DefaultTickerDatabase {};
-    let actual = db.get_actual();
-    let mut port = portfolio::Portfolio::new(&db, &actual);
-    let evolved = api::EvolvedState::new(port);
+    env_logger::init();
+    let pg = get_db();
 
-    start_server(evolved);
+    // TESTED manually
+    // pg.get_user(&"toidiu".to_owned(), &"123456".to_owned())
+    //     .unwrap();
+    // pg.get_ticker_actual(&1, &1).unwrap();
+    // pg.get_tickers_data(&vec![1, 2, 3]).unwrap();
+    // pg.get_port_goal(&1).unwrap();
+    // pg.get_ticker_goal(&1).unwrap();
+
+    // let db = data::DefaultTickerDatabase {};
+    // let actual = db.get_actual();
+    // let mut port = portfolio::Portfolio::new(&db, &actual);
+    // let evolved = api::EvolvedState::new(port);
+
+    // start_server(evolved);
+}
+
+pub fn get_db() -> data::PgTickerDatabase {
+    // impl TickerDatabase {
+    let database_url = "postgres://postgres@localhost:5432/test-fin";
+    let conn = Connection::connect(database_url, TlsMode::None).unwrap();
+
+    data::PgTickerDatabase { conn: conn }
 }
 
 fn start_server(evolved: api::EvolvedState) {
@@ -75,10 +100,7 @@ struct AmountQuery {
 }
 
 #[get("/buy?<q_amount>")]
-fn buy<'r>(
-    state: AppState<'r>,
-    q_amount: AmountQuery,
-) -> String {
+fn buy<'r>(state: AppState<'r>, q_amount: AmountQuery) -> String {
     println!("{}", q_amount.amount);
     let mut s = state.write().unwrap();
 

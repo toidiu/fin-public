@@ -1,20 +1,9 @@
-#![allow(dead_code, unused)]
-
-use mock_derive::mock;
-
 use crate::{portfolio, ticker::*};
 use std::collections::HashMap;
 
-#[mock]
-pub trait TickerDatabase {
-    fn get_tickers(&self) -> HashMap<TickerSymbol, Ticker>;
-    fn get_goal(&self) -> HashMap<TickerSymbol, portfolio::TickerGoal>;
-    fn get_actual(&self) -> HashMap<TickerSymbol, portfolio::TickerActual>;
-}
-
 pub struct DefaultTickerDatabase {}
 
-impl TickerDatabase for DefaultTickerDatabase {
+impl super::TickerDatabase for DefaultTickerDatabase {
     fn get_tickers(&self) -> HashMap<TickerSymbol, Ticker> {
         let vti = Ticker {
             symbol: symbol!("vti"),
@@ -28,13 +17,6 @@ impl TickerDatabase for DefaultTickerDatabase {
             price: 111.0,
             kind: InvestmentKind::Stock,
         };
-        let vwob = Ticker {
-            symbol: symbol!("vwob"),
-            fee: 0.32,
-            price: 75.0,
-            kind: InvestmentKind::Bond,
-        };
-
         let voe = Ticker {
             symbol: symbol!("voe"),
             fee: 0.07,
@@ -48,49 +30,42 @@ impl TickerDatabase for DefaultTickerDatabase {
             price: 142.0,
             kind: InvestmentKind::Stock,
         };
-
         let vea = Ticker {
             symbol: symbol!("vea"),
             fee: 0.07,
             price: 43.0,
             kind: InvestmentKind::Stock,
         };
-
         let vwo = Ticker {
             symbol: symbol!("vwo"),
             fee: 0.14,
             price: 43.0,
             kind: InvestmentKind::Stock,
         };
-
         let vtip = Ticker {
             symbol: symbol!("vtip"),
             fee: 0.06,
             price: 49.0,
             kind: InvestmentKind::Bond,
         };
-
         let agg = Ticker {
             symbol: symbol!("agg"),
             fee: 0.05,
             price: 106.0,
             kind: InvestmentKind::Bond,
         };
-
         let mub = Ticker {
             symbol: symbol!("mub"),
             fee: 0.07,
             price: 109.0,
             kind: InvestmentKind::Bond,
         };
-
         let bndx = Ticker {
             symbol: symbol!("bndx"),
             fee: 0.11,
             price: 54.0,
             kind: InvestmentKind::Bond,
         };
-
         let vwob = Ticker {
             symbol: symbol!("vwob"),
             fee: 0.32,
