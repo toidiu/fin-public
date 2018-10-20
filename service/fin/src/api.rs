@@ -14,6 +14,7 @@ pub struct PortfolioState {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TickerState {
+    pub id: TickerId,
     pub symbol: TickerSymbol,
     pub kind: InvestmentKind,
     pub fee: f32,
@@ -21,14 +22,14 @@ pub struct TickerState {
     pub actual_percent: f32,
     pub actual_value: f32,
     pub price: f32,
-    pub order: u32,
+    pub order: i32,
 }
 
 // =================================== STATE
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EvolvedState {
     pub init_state: portfolio::Portfolio,
-    pub evolved_actual: HashMap<TickerSymbol, TickerActual>,
+    pub evolved_actual: HashMap<TickerId, TickerActual>,
     pub actions: Vec<portfolio::Action>,
     pub buy_value: f32,
 }
@@ -43,4 +44,9 @@ impl EvolvedState {
             buy_value: 0.0,
         }
     }
+}
+
+#[derive(FromForm)]
+pub struct AmountQuery {
+    pub amount: f32,
 }

@@ -59,11 +59,11 @@
 </template>
 
 <script lang="ts">
-import { FinTableState } from "../models";
+import { PortfolioViewStart } from "../models";
 
 export default {
   props: {
-    portState: Object as () => FinTableState
+    portState: Object as () => PortfolioViewStart
   },
   data: function() {
     return {
@@ -111,10 +111,10 @@ export default {
   },
   computed: {
     stocks: function() {
-      return this.portState.tickers.filter(tic => tic.kind === "stock");
+      return this.portState.tickers.filter(tic => tic.kind === "STOCK");
     },
     bonds: function() {
-      return this.portState.tickers.filter(tic => tic.kind === "bond");
+      return this.portState.tickers.filter(tic => tic.kind === "BOND");
     },
     stock_action: function() {
       var diff =

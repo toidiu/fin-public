@@ -22,25 +22,29 @@ pub struct Portfolio {
     goal: PortfolioGoal,
     actual: PortfolioActual,
     meta: PortfolioMeta,
-    tickers: HashMap<TickerSymbol, Ticker>,
+    tickers: HashMap<TickerId, Ticker>,
 }
 
 impl Portfolio {
     // todo test!!
     pub fn new<T: data::TickerDatabase>(
-        db: &T,
-        actual: &HashMap<TickerSymbol, TickerActual>,
+        db: &mut T,
+        actual: &HashMap<TickerId, TickerActual>,
     ) -> Portfolio {
         // get goal
         let pg = PortfolioGoal {
+            id: 0,
             tickers_goal: db.get_goal(),
             goal_stock_percent: 58.0,
             deviation_percent: 1.5,
+            name: "".to_owned(),
+            description: None,
         };
 
         // get tickers map
         // todo eventually only request those we care about (ones in goal)
-        let tickers_map: HashMap<TickerSymbol, Ticker> = db.get_tickers();
+        let keys = actual.keys().map(|x| x.0).collect();
+        let tickers_map: HashMap<TickerId, Ticker> = db.get_tickers(&keys);
 
         let actual = actual.clone();
         // get actual
@@ -63,11 +67,8 @@ impl Portfolio {
         let port = match action {
             action::Action::Buy(info) => {
                 // buy actual share and re-calculate
-                let pa = self.actual.buy_share(
-                    &info.symbol,
-                    info.shares,
-                    &self.tickers,
-                );
+                let pa =
+                    self.actual.buy_share(&info.id, info.shares, &self.tickers);
 
                 // re-calculate meta
                 let meta = PortfolioMeta::new(&self.tickers, &self.goal, &pa);
@@ -89,7 +90,7 @@ impl Portfolio {
             action::Action::Sell(info) => {
                 // sell actual share and re-calculate
                 let pa = self.actual.sell_share(
-                    &info.symbol,
+                    &info.id,
                     info.shares,
                     &self.tickers,
                 );
@@ -127,7 +128,8 @@ impl Portfolio {
                 let tm = self.meta.get_ticker(x.0);
 
                 api::TickerState {
-                    symbol: x.0.clone(),
+                    id: x.0.clone(),
+                    symbol: ticker.symbol,
                     kind: ticker.kind.clone(),
                     fee: ticker.fee,
                     goal_percent: tg.goal_percent,
@@ -195,13 +197,13 @@ impl Portfolio {
         let empty_diff = EMPTY_TICKER_DIFF.clone();
         let tic_diff: &TickerMeta =
             filter_buys.iter().fold(&empty_diff, |x, y| {
-                if (x.symbol == EMPTY_TICKER_DIFF.symbol) {
+                if (x.id == EMPTY_TICKER_DIFF.id) {
                     return y;
-                } else if (y.symbol == EMPTY_TICKER_DIFF.symbol) {
+                } else if (y.id == EMPTY_TICKER_DIFF.id) {
                     return x;
                 }
-                let x_price = self.get_ticker(&x.symbol).price;
-                let y_price = self.get_ticker(&y.symbol).price;
+                let x_price = self.get_ticker(&x.id).price;
+                let y_price = self.get_ticker(&y.id).price;
 
                 if (x_price < y_price) {
                     x
@@ -211,22 +213,22 @@ impl Portfolio {
             });
 
         action::Action::Buy(action::ActionInfo {
-            symbol: tic_diff.symbol.clone(),
+            id: tic_diff.id.clone(),
             shares: 1.0,
-            price: self.get_ticker(&tic_diff.symbol).price,
+            price: self.get_ticker(&tic_diff.id).price,
         })
     }
 
     // todo test!!
-    fn get_ticker(&self, symbol: &TickerSymbol) -> Ticker {
+    fn get_ticker(&self, id: &TickerId) -> Ticker {
         self.tickers
-            .get(symbol)
-            .expect(&format!("add ticker to db: {:?}", &symbol))
+            .get(id)
+            .expect(&format!("add ticker to db: {:?}", &id))
             .clone()
     }
 
     // todo test!!
-    pub fn get_actual_tickers(&self) -> HashMap<TickerSymbol, TickerActual> {
+    pub fn get_actual_tickers(&self) -> HashMap<TickerId, TickerActual> {
         self.actual.tickers_actual.clone()
     }
 }

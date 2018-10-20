@@ -7,10 +7,10 @@ pub enum Action {
 }
 
 impl Action {
-    pub fn get_symbol(&self) -> TickerSymbol {
+    pub fn get_symbol(&self) -> TickerId {
         match self {
-            Action::Buy(ab) => ab.symbol.clone(),
-            Action::Sell(ab) => ab.symbol.clone(),
+            Action::Buy(ab) => ab.id.clone(),
+            Action::Sell(ab) => ab.id.clone(),
         }
     }
 
@@ -24,7 +24,7 @@ impl Action {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ActionInfo {
-    pub symbol: TickerSymbol,
+    pub id: TickerId,
     pub shares: f32,
     pub price: f32,
 }

@@ -12,13 +12,7 @@ export interface FinTableState {
   columns: Array<string>;
 }
 
-export interface Portfolio {
-  current_detail: PortfolioDetails;
-  columnsNames: Array<string>;
-  columns: Array<string>;
-}
-
-interface PortfolioDetails {
+interface Portfolio {
   stocks: Array<Ticker>;
   bonds: Array<Ticker>;
   goal_stock_percent: number;
@@ -26,7 +20,7 @@ interface PortfolioDetails {
   deviation_percent: number;
 }
 
-export interface PortfolioState {
+export interface FinPortfolioResp {
   tickers: Array<Ticker>;
   goal_stock_percent: number;
   actual_stock_percent: number;

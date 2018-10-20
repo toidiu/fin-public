@@ -9,7 +9,7 @@
 
 <script lang="ts">
 import PortfolioView from "./PortfolioView.vue";
-import { Ticker, FinTableState, PortfolioState } from "../models";
+import { Ticker, PortfolioViewStart } from "../models";
 import axios from "axios";
 
 export default {
@@ -19,7 +19,7 @@ export default {
   data() {
     return {
       wrapper: {
-        portState: <PortfolioState>{
+        portState: <FinPortfolioResp>{
           tickers: []
         },
         nextBuy: <Ticker>{}

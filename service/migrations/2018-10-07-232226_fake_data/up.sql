@@ -9,27 +9,27 @@ INSERT INTO exchanges VALUES
   ('NYSE');
 
 INSERT INTO tickers VALUES
-  (DEFAULT, 'vti', 'NYSE', .04, 'stock');
+  (DEFAULT, 'VTI', 'NYSE', .04, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'vtv', 'NYSE', .05, 'stock');
+  (DEFAULT, 'VTV', 'NYSE', .05, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'voe', 'NYSE', .07, 'stock');
+  (DEFAULT, 'VOE', 'NYSE', .07, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'vbr', 'NYSE', .07, 'stock');
+  (DEFAULT, 'VBR', 'NYSE', .07, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'vea', 'NYSE', .07, 'stock');
+  (DEFAULT, 'VEA', 'NYSE', .07, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'vwo', 'NYSE', .14, 'stock');
+  (DEFAULT, 'VWO', 'NYSE', .14, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'vtip', 'NYSE', .06, 'stock');
+  (DEFAULT, 'VTIP', 'NYSE', .06, 'BOND');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'agg', 'NYSE', .05, 'stock');
+  (DEFAULT, 'AGG', 'NYSE', .05, 'BOND');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'mub', 'NYSE', .07, 'stock');
+  (DEFAULT, 'MUB', 'NYSE', .07, 'BOND');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'bndx', 'NYSE', .11, 'stock');
+  (DEFAULT, 'BNDX', 'NYSE', .11, 'BOND');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'vwob', 'NYSE', .32, 'stock');
+  (DEFAULT, 'VWOB', 'NYSE', .32, 'BOND');
 
 ----------- goal
 INSERT INTO port_goal VALUES

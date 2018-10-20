@@ -15,6 +15,12 @@ macro_rules! symbol(
     )
 );
 
+macro_rules! tic_id(
+    ($s:expr) => (
+        TickerId($s)
+    )
+);
+
 // struct ExtIterator<I: Iterator> {
 //     underlying: I,
 // }

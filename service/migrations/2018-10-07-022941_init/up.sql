@@ -14,7 +14,7 @@ CREATE TABLE exchanges (
 
 CREATE DOMAIN dom_tic_kind
   AS text NOT NULL
-  CONSTRAINT tk_check CHECK (VALUE IN('stock', 'bond'));
+  CONSTRAINT tk_check CHECK (VALUE IN('STOCK', 'BOND'));
 
 CREATE TABLE tickers (
   id bigserial PRIMARY KEY,
@@ -49,7 +49,7 @@ CREATE TABLE tic_actual (
   fk_user_id int8 NOT NULL REFERENCES users(id),
   fk_port_g_id int8 NOT NULL REFERENCES port_goal(id),
   fk_tic_id int8 NOT NULL REFERENCES tickers(id),
-  actual_shares float8 NOT NULL DEFAULT 0.0,
+  actual_shares float4 NOT NULL DEFAULT 0.0,
   UNIQUE(fk_user_id, fk_port_g_id, fk_tic_id)
 );
 

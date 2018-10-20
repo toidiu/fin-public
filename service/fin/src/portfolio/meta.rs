@@ -19,7 +19,7 @@ pub enum TickerAction {
 lazy_static! {
     pub static ref EMPTY_TICKER_DIFF: TickerMeta = {
         TickerMeta {
-            symbol: symbol!("EMPTY_TICKER_DIFF"),
+            id: tic_id!(-1),
             action: TickerAction::Hold,
             ticker_value: 0.0,
             ticker_percent: 0.0,
@@ -29,7 +29,7 @@ lazy_static! {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PortfolioMeta {
-    pub tickers_meta: HashMap<TickerSymbol, TickerMeta>,
+    pub tickers_meta: HashMap<TickerId, TickerMeta>,
     pub total_value: f32,
     pub stock_value: f32,
     // todo maybe calculate lazily
@@ -40,7 +40,7 @@ pub struct PortfolioMeta {
 impl PortfolioMeta {
     // todo test!!
     pub fn new(
-        tickers: &HashMap<TickerSymbol, Ticker>,
+        tickers: &HashMap<TickerId, Ticker>,
         goal: &PortfolioGoal,
         actual: &PortfolioActual,
     ) -> Self {
@@ -75,11 +75,11 @@ impl PortfolioMeta {
 
     // todo test
     fn populate_ticker_meta(
-        tickers_actual: &HashMap<TickerSymbol, TickerActual>,
-    ) -> HashMap<TickerSymbol, TickerMeta> {
+        tickers_actual: &HashMap<TickerId, TickerActual>,
+    ) -> HashMap<TickerId, TickerMeta> {
         let mut map = HashMap::new();
-        for (symb, _) in tickers_actual.iter() {
-            map.insert(symb.clone(), TickerMeta::default(symb.clone()));
+        for (t_id, _) in tickers_actual.iter() {
+            map.insert(t_id.clone(), TickerMeta::default(t_id.clone()));
         }
         map
     }
@@ -87,14 +87,14 @@ impl PortfolioMeta {
     // todo test
     fn calc_value(
         &mut self,
-        tickers: &HashMap<TickerSymbol, Ticker>,
+        tickers: &HashMap<TickerId, Ticker>,
         actual: &PortfolioActual,
     ) {
-        for (symb, tic_meta) in self.tickers_meta.iter_mut() {
+        for (t_id, tic_meta) in self.tickers_meta.iter_mut() {
             let tic = tickers
-                .get(&symb)
-                .expect(&format!("add ticker to db: {:?}", &symb));
-            let tic_act = actual.get_ticker(&symb);
+                .get(&t_id)
+                .expect(&format!("add ticker to db: {:?}", &t_id));
+            let tic_act = actual.get_ticker(&t_id);
             let tic_value = tic.price * tic_act.actual_shares;
             tic_meta.ticker_value = tic_value;
 
@@ -132,8 +132,8 @@ impl PortfolioMeta {
             PortfolioAction::BuyEither
         };
 
-        for (symb, tic_meta) in self.tickers_meta.iter_mut() {
-            let goal_tic = goal.get_ticker(symb);
+        for (t_id, tic_meta) in self.tickers_meta.iter_mut() {
+            let goal_tic = goal.get_ticker(t_id);
             tic_meta.calc_ticker_action(goal_tic.goal_percent, deviation);
         }
     }
@@ -147,25 +147,25 @@ impl PortfolioMeta {
         self.total_value = total_val;
     }
 
-    pub fn get_ticker(&self, symbol: &TickerSymbol) -> &TickerMeta {
+    pub fn get_ticker(&self, id: &TickerId) -> &TickerMeta {
         self.tickers_meta
-            .get(&symbol)
-            .expect(&format!("add ticker to db: {:?}", &symbol))
+            .get(&id)
+            .expect(&format!("add ticker to db: {:?}", &id))
     }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TickerMeta {
-    pub symbol: TickerSymbol,
+    pub id: TickerId,
     pub action: TickerAction,
     pub ticker_value: f32,
     pub ticker_percent: f32,
 }
 
 impl TickerMeta {
-    fn default(symbol: TickerSymbol) -> TickerMeta {
+    fn default(id: TickerId) -> TickerMeta {
         TickerMeta {
-            symbol: symbol,
+            id: id,
             action: TickerAction::Hold,
             ticker_value: 0.0,
             ticker_percent: 0.0,

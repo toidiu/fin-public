@@ -5,6 +5,20 @@ use std::fmt;
 )]
 pub struct TickerSymbol(pub String);
 
+#[derive(
+    Hash,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    Clone,
+    Default,
+    Debug,
+)]
+pub struct TickerId(pub i64);
+
 impl fmt::Display for TickerSymbol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
@@ -22,15 +36,17 @@ impl fmt::Debug for TickerSymbol {
     PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Clone, Debug,
 )]
 pub enum InvestmentKind {
-    #[serde(rename = "stock")]
+    #[serde(rename = "STOCK")]
     Stock,
-    #[serde(rename = "bond")]
+    #[serde(rename = "BOND")]
     Bond,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Ticker {
+    pub id: i64,
     pub symbol: TickerSymbol,
+    pub exchange: String,
     pub fee: f32,
     pub price: f32,
     pub kind: InvestmentKind,
