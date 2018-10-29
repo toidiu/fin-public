@@ -1,6 +1,5 @@
-use crate::portfolio;
-use crate::ticker;
-use crate::ticker::TickerSymbol;
+use chrono::prelude::*;
+use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -9,7 +8,7 @@ pub struct UserData {
     pub username: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PostgresMapper)]
 pub struct TickerData {
     pub id: i64,
     pub symbol: String,
@@ -19,8 +18,8 @@ pub struct TickerData {
 }
 
 impl TickerData {
-    pub fn to_ticker(self, price: f32) -> ticker::Ticker {
-        ticker::Ticker {
+    pub fn to_ticker(self, price: f32) -> Ticker {
+        Ticker {
             id: self.id,
             symbol: symbol!(self.symbol),
             exchange: self.fk_exchange,
@@ -28,9 +27,9 @@ impl TickerData {
             price: price,
             kind: {
                 if (self.kind == "STOCK") {
-                    ticker::InvestmentKind::Stock
+                    InvestmentKind::Stock
                 } else if (self.kind == "BOND") {
-                    ticker::InvestmentKind::Bond
+                    InvestmentKind::Bond
                 } else {
                     panic!("expected either STOCK or BOND")
                 }
@@ -49,10 +48,13 @@ pub struct PortGoalData {
 }
 
 impl PortGoalData {
-    fn to_port_goal(self) -> portfolio::PortfolioGoal {
+    pub fn to_port_goal(
+        self,
+        tickers_goal: HashMap<TickerId, portfolio::TickerGoal>,
+    ) -> portfolio::PortfolioGoal {
         portfolio::PortfolioGoal {
             id: self.id,
-            tickers_goal: HashMap::new(),
+            tickers_goal: tickers_goal,
             goal_stock_percent: self.stock_per,
             deviation_percent: self.deviation,
             name: self.name,
@@ -80,13 +82,15 @@ impl TickerGoalData {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PostgresMapper)]
 pub struct TickerActualData {
     pub id: i64,
     pub fk_user_id: i64,
     pub fk_port_g_id: i64,
     pub fk_tic_id: i64,
     pub actual_shares: f32,
+    pub version: i32,
+    pub tsz: DateTime<Utc>,
 }
 
 impl TickerActualData {
@@ -97,6 +101,16 @@ impl TickerActualData {
             port_goal_id: self.fk_port_g_id,
             ticker_id: self.fk_tic_id,
             actual_shares: self.actual_shares,
+            version: self.version,
+            tsz: self.tsz,
         }
     }
+}
+
+#[derive(Debug, PostgresMapper)]
+pub struct OldPortActualData {
+    pub fk_user_id: i64,
+    pub fk_port_g_id: i64,
+    pub version: i32,
+    pub port_a_data: serde_json::Value, // PortfolioActualData
 }

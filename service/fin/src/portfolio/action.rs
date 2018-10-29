@@ -1,13 +1,15 @@
-use crate::ticker::*;
+use super::ticker::*;
+use std::ops::Add;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
+#[serde(tag = "action")]
 pub enum Action {
     Buy(ActionInfo),
     Sell(ActionInfo),
 }
 
 impl Action {
-    pub fn get_symbol(&self) -> TickerId {
+    pub fn get_id(&self) -> TickerId {
         match self {
             Action::Buy(ab) => ab.id.clone(),
             Action::Sell(ab) => ab.id.clone(),
@@ -22,7 +24,38 @@ impl Action {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+impl Add for Action {
+    type Output = Action;
+
+    fn add(self, other: Action) -> Action {
+        match (&self, &other) {
+            (Action::Buy(a), Action::Buy(b)) => Action::Buy(ActionInfo {
+                id: self.get_id(),
+                shares: a.shares + b.shares,
+                price: self.get_price(),
+            }),
+            // FIXME!!!!!!
+            (Action::Buy(a), Action::Sell(b)) => Action::Buy(ActionInfo {
+                id: self.get_id(),
+                shares: b.shares - a.shares,
+                price: self.get_price(),
+            }),
+            // FIXME!!!!!!
+            (Action::Sell(a), Action::Buy(b)) => Action::Buy(ActionInfo {
+                id: self.get_id(),
+                shares: a.shares - b.shares,
+                price: self.get_price(),
+            }),
+            (Action::Sell(a), Action::Sell(b)) => Action::Sell(ActionInfo {
+                id: self.get_id(),
+                shares: a.shares + b.shares,
+                price: self.get_price(),
+            }),
+        }
+    }
+}
+
+#[derive(Serialize, Clone, Debug)]
 pub struct ActionInfo {
     pub id: TickerId,
     pub shares: f32,

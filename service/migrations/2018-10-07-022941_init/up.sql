@@ -9,7 +9,7 @@ CREATE TABLE users (
 
 -----------
 CREATE TABLE exchanges (
-  name text PRIMARY KEY -- NYSE, NASDAQ
+  mic text PRIMARY KEY
 );
 
 CREATE DOMAIN dom_tic_kind
@@ -19,7 +19,7 @@ CREATE DOMAIN dom_tic_kind
 CREATE TABLE tickers (
   id bigserial PRIMARY KEY,
   symbol text NOT NULL,
-  fk_exchange text REFERENCES exchanges(name) NOT NULL,
+  fk_exchange text REFERENCES exchanges(mic) NOT NULL,
   fee float4 NOT NULL,
   kind dom_tic_kind NOT NULL,
   UNIQUE (symbol, fk_exchange)
@@ -50,8 +50,16 @@ CREATE TABLE tic_actual (
   fk_port_g_id int8 NOT NULL REFERENCES port_goal(id),
   fk_tic_id int8 NOT NULL REFERENCES tickers(id),
   actual_shares float4 NOT NULL DEFAULT 0.0,
+  version int4 NOT NULL,
+  tsz timestamptz NOT NULL,
   UNIQUE(fk_user_id, fk_port_g_id, fk_tic_id)
 );
 
-
+CREATE TABLE old_port_actual (
+  fk_user_id int8 NOT NULL REFERENCES users(id),
+  fk_port_g_id int8 NOT NULL REFERENCES port_goal(id),
+  version int4 NOT NULL,
+  port_a_data jsonb,
+  PRIMARY KEY (fk_user_id, fk_port_g_id, version)
+);
 

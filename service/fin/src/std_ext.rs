@@ -36,6 +36,15 @@ macro_rules! tic_id(
 //     }
 // }
 
+pub struct StdExt {}
+
+impl StdExt {
+    // todo test!!
+    pub fn round_two_digits(val: &mut f32) {
+        *val = (*val * 100.00).round() / 100.00;
+    }
+}
+
 pub trait ExtIterator: Iterator
 where
     Self: Sized,

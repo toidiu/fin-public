@@ -1,4 +1,4 @@
-use crate::ticker::*;
+use super::ticker::*;
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]

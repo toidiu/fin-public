@@ -1,4 +1,5 @@
-use crate::ticker::*;
+use super::ticker::*;
+use chrono::prelude::*;
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
@@ -62,13 +63,15 @@ impl PortfolioActual {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TickerActual {
     pub id: i64,
     pub user_id: i64,
     pub port_goal_id: i64,
     pub ticker_id: i64,
     pub actual_shares: f32,
+    pub version: i32,
+    pub tsz: DateTime<Utc>,
 }
 
 impl TickerActual {

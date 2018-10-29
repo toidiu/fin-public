@@ -1,25 +1,27 @@
+use crate::portfolio::{self, Ticker, TickerId};
 use crate::std_ext::ExtIterator;
-use crate::{portfolio, ticker::*};
 use lru_time_cache::LruCache;
 use postgres::Connection;
 use std::collections::HashMap;
 
-use super::NewDatabase;
+use super::db_types;
+use super::TickerDb;
 use crate::errors::{FinError, ResultFinErr};
-use crate::models;
+use postgres_mapper;
+use postgres_mapper::FromPostgresRow;
 
 pub struct PgTickerDatabase {
     pub conn: Connection,
     pub lru: LruCache<String, f32>,
 }
 
-impl NewDatabase for PgTickerDatabase {
+impl TickerDb for PgTickerDatabase {
     //========== (login) -> user
     fn get_user(
         &self,
         username: &String,
         pass: &String,
-    ) -> ResultFinErr<models::UserData> {
+    ) -> ResultFinErr<db_types::UserData> {
         let rows = &self
             .conn
             .query(
@@ -31,8 +33,8 @@ impl NewDatabase for PgTickerDatabase {
         let ret = rows
             .iter()
             .next()
-            .map(|row| models::UserData {
-                id: row.get(0),
+            .map(|row| db_types::UserData {
+                id: row.get("id"),
                 username: row.get(1),
             }).ok_or_else(|| FinError::DatabaseErr("no record".to_string()));
 
@@ -44,7 +46,7 @@ impl NewDatabase for PgTickerDatabase {
         &self,
         user_id: &i64,
         port_g_id: &i64,
-    ) -> ResultFinErr<Vec<models::TickerActualData>> {
+    ) -> ResultFinErr<Vec<db_types::TickerActualData>> {
         let rows = &self
             .conn
             .query(
@@ -55,22 +57,101 @@ impl NewDatabase for PgTickerDatabase {
 
         let ret = rows
             .iter()
-            .map(|row| models::TickerActualData {
-                id: row.get(0),
-                fk_user_id: row.get(1),
-                fk_port_g_id: row.get(2),
-                fk_tic_id: row.get(3),
-                actual_shares: row.get(4),
-            }).collect::<Vec<models::TickerActualData>>();
+            .map(|row| {
+                db_types::TickerActualData::from_postgres_row(row)
+            }).collect::<Result<Vec<db_types::TickerActualData>, postgres_mapper::Error>>();
 
-        Ok(ret)
+        ret.map_err(|err| FinError::DatabaseErr(err.to_string()))
+    }
+
+    fn update_tickers_actual(
+        &self,
+        init_tickers_actual: Vec<portfolio::TickerActual>,
+        updated_tickers_actual: Vec<portfolio::TickerActual>,
+    ) -> ResultFinErr<Vec<db_types::TickerActualData>> {
+        let stmt_old = "INSERT INTO old_port_actual
+            (fk_user_id, fk_port_g_id, version, port_a_data)
+            VALUES ($1, $2, $3, $4)";
+        let stmt_update_tic_a = "UPDATE tic_actual
+            SET actual_shares = $4, version = $5, tsz = $6
+            WHERE fk_user_id = $1, fk_port_g_id = $2, fk_tic_id = $3
+            RETURNING tic_actual.id,
+                tic_actual.fk_user_id,
+                tic_actual.fk_port_g_id,
+                tic_actual.fk_tic_id,
+                tic_actual.actual_shares";
+
+        let tic = updated_tickers_actual
+            .first()
+            .expect("expected non empty vec");
+        let old_version = tic.version;
+        let new_version = old_version + 1;
+        let user_id = tic.user_id;
+        let port_g_id = tic.port_goal_id;
+
+        let trans = &self
+            .conn
+            .transaction()
+            .map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+
+        // set old
+        let data = serde_json::to_value(init_tickers_actual).unwrap();
+        trans.execute(stmt_old, &[&user_id, &port_g_id, &old_version, &data]);
+
+        // set new and get updated
+        updated_tickers_actual.iter().map(|updated_tic| {
+            let rows = trans
+                .query(
+                    stmt_update_tic_a,
+                    &[
+                        // where clause
+                        &user_id,
+                        &port_g_id,
+                        &updated_tic.id,
+                        // updated values
+                        &updated_tic.actual_shares,
+                        &new_version,
+                        &updated_tic.tsz,
+                    ],
+                ).map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+
+            let ret =
+                rows.into_iter()
+                    .map(|row| {
+                        db_types::TickerActualData::from_postgres_row(row)
+                    }).collect::<Result<
+                        Vec<db_types::TickerActualData>,
+                        postgres_mapper::Error,
+                    >>();
+
+            ret.map_err(|err| FinError::DatabaseErr(err.to_string()))
+        });
+
+        for updated_tic in updated_tickers_actual {
+            trans.execute(
+                stmt_update_tic_a,
+                &[
+                    // where clause
+                    &user_id,
+                    &port_g_id,
+                    &updated_tic.id,
+                    // updated values
+                    &updated_tic.actual_shares,
+                    &new_version,
+                    &updated_tic.tsz,
+                ],
+            );
+        }
+
+        trans.set_commit();
+        unimplemented!()
     }
 
     //========== -> Pg -> [Tg]
     fn get_port_goal(
         &self,
         port_g_id: &i64,
-    ) -> ResultFinErr<models::PortGoalData> {
+    ) -> ResultFinErr<db_types::PortGoalData> {
         let rows = &self
             .conn
             .query(
@@ -82,7 +163,7 @@ impl NewDatabase for PgTickerDatabase {
         let ret = rows
             .iter()
             .next()
-            .map(|row| models::PortGoalData {
+            .map(|row| db_types::PortGoalData {
                 id: row.get(0),
                 stock_per: row.get(1),
                 deviation: row.get(2),
@@ -96,7 +177,7 @@ impl NewDatabase for PgTickerDatabase {
     fn get_ticker_goal(
         &self,
         port_g_id: &i64,
-    ) -> ResultFinErr<Vec<models::TickerGoalData>> {
+    ) -> ResultFinErr<Vec<db_types::TickerGoalData>> {
         let rows = &self
             .conn
             .query(
@@ -107,21 +188,21 @@ impl NewDatabase for PgTickerDatabase {
 
         let ret = rows
             .iter()
-            .map(|row| models::TickerGoalData {
+            .map(|row| db_types::TickerGoalData {
                 fk_port_g_id: row.get(0),
                 fk_tic_id: row.get(1),
                 goal_per: row.get(2),
                 ord: row.get(3),
-            }).collect::<Vec<models::TickerGoalData>>();
+            }).collect::<Vec<db_types::TickerGoalData>>();
 
         Ok(ret)
     }
 
     //========== -> [T]
-    fn get_tickers_data(
+    fn get_tickers_by_ids(
         &self,
         ids: &Vec<i64>,
-    ) -> ResultFinErr<Vec<models::TickerData>> {
+    ) -> ResultFinErr<Vec<db_types::TickerData>> {
         let rows = &self
             .conn
             .query(
@@ -132,23 +213,26 @@ impl NewDatabase for PgTickerDatabase {
 
         let ret = rows
             .iter()
-            .map(|row| models::TickerData {
-                id: row.get(0),
-                symbol: row.get(1),
-                fk_exchange: row.get(2),
-                fee: row.get(3),
-                kind: row.get(4),
-            }).collect::<Vec<models::TickerData>>();
+            .map(|row| {
+                db_types::TickerData::from_postgres_row(row)
+            }).collect::<Result<Vec<db_types::TickerData>, postgres_mapper::Error>>();
 
-        Ok(ret)
+        ret.map_err(|err| FinError::DatabaseErr(err.to_string()))
     }
 
     //========== (buy) -> Actual -> Goal -> T
 }
 
-impl super::TickerDatabase for PgTickerDatabase {
+impl super::TickerBackend for PgTickerDatabase {
+    fn get_port_goal(
+        &self,
+        port_g_id: &i64,
+    ) -> ResultFinErr<db_types::PortGoalData> {
+        TickerDb::get_port_goal(self, port_g_id)
+    }
+
     fn get_tickers(&mut self, ids: &Vec<i64>) -> HashMap<TickerId, Ticker> {
-        let res_tickers = self.get_tickers_data(ids);
+        let res_tickers = self.get_tickers_by_ids(ids);
         let mut tic_map = HashMap::new();
         let iex = iex_rust::Iex {};
 
@@ -194,8 +278,11 @@ impl super::TickerDatabase for PgTickerDatabase {
         tic_map
     }
 
-    fn get_goal(&self) -> HashMap<TickerId, portfolio::TickerGoal> {
-        let tg = self.get_ticker_goal(&1);
+    fn get_goal(
+        &self,
+        port_g_id: &i64,
+    ) -> HashMap<TickerId, portfolio::TickerGoal> {
+        let tg = self.get_ticker_goal(port_g_id);
         let mut map = HashMap::new();
         if let Ok(g_tickers) = tg {
             for x in g_tickers {
@@ -206,8 +293,12 @@ impl super::TickerDatabase for PgTickerDatabase {
         map
     }
 
-    fn get_actual(&self) -> HashMap<TickerId, portfolio::TickerActual> {
-        let ta = self.get_ticker_actual(&1, &1);
+    fn get_actual(
+        &self,
+        user_id: &i64,
+        port_g_id: &i64,
+    ) -> HashMap<TickerId, portfolio::TickerActual> {
+        let ta = self.get_ticker_actual(user_id, port_g_id);
         let mut map = HashMap::new();
         if let Ok(a_tickers) = ta {
             for x in a_tickers {

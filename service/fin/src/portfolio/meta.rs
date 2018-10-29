@@ -1,5 +1,5 @@
-use super::{actual::*, goal::*};
-use crate::{std_ext::*, ticker::*};
+use super::{actual::*, goal::*, ticker::*};
+use crate::std_ext::*;
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -67,12 +67,6 @@ impl PortfolioMeta {
         meta
     }
 
-    // todo test!!
-    fn rounded_percent(val: f32, total_val: f32) -> f32 {
-        let per = (val / total_val) * 100.0;
-        (per * 100.00).round() / 100.00
-    }
-
     // todo test
     fn populate_ticker_meta(
         tickers_actual: &HashMap<TickerId, TickerActual>,
@@ -96,7 +90,9 @@ impl PortfolioMeta {
                 .expect(&format!("add ticker to db: {:?}", &t_id));
             let tic_act = actual.get_ticker(&t_id);
             let tic_value = tic.price * tic_act.actual_shares;
+
             tic_meta.ticker_value = tic_value;
+            StdExt::round_two_digits(&mut tic_meta.ticker_value);
 
             // total and stock value
             self.total_value += tic_value;
@@ -104,16 +100,20 @@ impl PortfolioMeta {
                 self.stock_value += tic_value;
             }
         }
+
+        // round total value to 2 digits
+        StdExt::round_two_digits(&mut self.total_value);
     }
 
     // todo test
     fn calc_percent(&mut self) {
-        self.stock_percent =
-            Self::rounded_percent(self.stock_value, self.total_value);
+        self.stock_percent = (self.stock_value / self.total_value) * 100.0;
+        StdExt::round_two_digits(&mut self.stock_percent);
 
         for (_, tic_meta) in self.tickers_meta.iter_mut() {
             tic_meta.ticker_percent =
-                Self::rounded_percent(tic_meta.ticker_value, self.total_value);
+                (tic_meta.ticker_value / self.total_value) * 100.0;
+            StdExt::round_two_digits(&mut tic_meta.ticker_percent);
         }
     }
 

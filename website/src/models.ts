@@ -21,9 +21,23 @@ interface Portfolio {
 }
 
 export interface FinPortfolioResp {
+  name: string,
   tickers: Array<Ticker>;
   goal_stock_percent: number;
   actual_stock_percent: number;
   total_value: number;
   deviation_percent: number;
+}
+
+
+//======== buy next
+export interface Action {
+  id: number;
+  shares: number;
+  price: number;
+}
+
+export interface BuyNextResp {
+  actions: Array<>;
+  buy_value: number;
 }

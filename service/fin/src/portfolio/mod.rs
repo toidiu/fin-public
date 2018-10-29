@@ -4,16 +4,17 @@ mod action;
 mod actual;
 mod goal;
 mod meta;
+mod ticker;
 
 pub use self::{
     action::{Action, ActionInfo},
     actual::{PortfolioActual, TickerActual},
     goal::{PortfolioGoal, TickerGoal},
-    meta::{PortfolioMeta, TickerMeta},
+    ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol},
 };
 
-use self::meta::EMPTY_TICKER_DIFF;
-use crate::{api, data, std_ext::*, ticker::*};
+use self::meta::{PortfolioMeta, TickerMeta, EMPTY_TICKER_DIFF};
+use crate::{api, data, std_ext::*};
 use std::{cmp::Ordering, collections::HashMap, num};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -27,20 +28,11 @@ pub struct Portfolio {
 
 impl Portfolio {
     // todo test!!
-    pub fn new<T: data::TickerDatabase>(
+    pub fn new<T: data::TickerBackend>(
         db: &mut T,
         actual: &HashMap<TickerId, TickerActual>,
+        pg: &PortfolioGoal,
     ) -> Portfolio {
-        // get goal
-        let pg = PortfolioGoal {
-            id: 0,
-            tickers_goal: db.get_goal(),
-            goal_stock_percent: 58.0,
-            deviation_percent: 1.5,
-            name: "".to_owned(),
-            description: None,
-        };
-
         // get tickers map
         // todo eventually only request those we care about (ones in goal)
         let keys = actual.keys().map(|x| x.0).collect();
@@ -54,17 +46,92 @@ impl Portfolio {
         let meta = PortfolioMeta::new(&tickers_map, &pg, &pa);
 
         Portfolio {
-            name: "my portfolio".to_owned(),
-            goal: pg,
+            name: pg.name.clone(),
+            goal: pg.clone(),
             actual: pa,
             meta: meta,
             tickers: tickers_map,
         }
     }
 
+    pub fn exec_buy_next<T: data::TickerBackend>(
+        db: &mut T,
+        actual: &HashMap<TickerId, TickerActual>,
+        buy_amount: f32,
+        port_g_id: &i64,
+    ) -> api::BuyNextResp {
+        // get evolved actual
+        // get current version
+
+        // transaction ==
+        // store initial in old_tic_actual
+        // store updated ticker_actual and increment version
+        unimplemented!()
+    }
+
+    pub fn get_buy_next<T: data::TickerBackend>(
+        db: &mut T,
+        actual: &HashMap<TickerId, TickerActual>,
+        buy_amount: f32,
+        port_g_id: &i64,
+    ) -> api::BuyNextResp {
+        let goal_tickers = db.get_goal(port_g_id);
+        let port_goal = db
+            .get_port_goal(port_g_id)
+            .unwrap()
+            .to_port_goal(goal_tickers);
+        let mut port = Portfolio::new(db, &actual, &port_goal);
+        let mut buy_next_resp = api::BuyNextResp::new(port);
+
+        // todo do based on buy_value and the desired value
+        while (buy_next_resp.buy_value < buy_amount) {
+            if let None = Self::get_next_action(
+                &mut buy_next_resp,
+                buy_amount,
+                db,
+                &port_goal,
+            ) {
+                break;
+            }
+        }
+        buy_next_resp.generate_summary()
+    }
+
+    fn get_next_action<T: data::TickerBackend>(
+        buy_next_resp: &mut api::BuyNextResp,
+        buy_amount: f32,
+        db: &mut T,
+        port_goal: &PortfolioGoal,
+    ) -> Option<Action> {
+        // get port from action actual
+        let port = Portfolio::new(db, &buy_next_resp.evolved_actual, port_goal);
+
+        // get action
+        let action = port.get_buy_next_action();
+
+        // buying more would put us above the buy value
+        if (buy_next_resp.buy_value + action.get_price() > buy_amount) {
+            return None;
+        }
+
+        // get evolved state
+        let evolved_port = port.evolve(&action);
+
+        // update buy_value
+        buy_next_resp.buy_value += action.get_price();
+        StdExt::round_two_digits(&mut buy_next_resp.buy_value);
+        // update action
+        buy_next_resp.actions.push(action.clone());
+
+        // update final state
+        buy_next_resp.evolved_actual = evolved_port.get_actual_tickers();
+
+        Some(action)
+    }
+
     // todo test!!!
-    pub fn evolve(&self, action: &action::Action) -> Portfolio {
-        let port = match action {
+    fn evolve(mut self, action: &action::Action) -> Portfolio {
+        match action {
             action::Action::Buy(info) => {
                 // buy actual share and re-calculate
                 let pa =
@@ -73,18 +140,9 @@ impl Portfolio {
                 // re-calculate meta
                 let meta = PortfolioMeta::new(&self.tickers, &self.goal, &pa);
 
-                // clone goal and tickers
-                let pg = self.goal.clone();
-                let tickers_map = self.tickers.clone();
-
-                // return new Portfolio
-                Portfolio {
-                    name: "my portfolio".to_owned(),
-                    goal: pg,
-                    actual: pa,
-                    meta: meta,
-                    tickers: tickers_map,
-                }
+                self.actual = pa;
+                self.meta = meta;
+                self
             }
 
             action::Action::Sell(info) => {
@@ -98,27 +156,16 @@ impl Portfolio {
                 // re-calculate meta
                 let meta = PortfolioMeta::new(&self.tickers, &self.goal, &pa);
 
-                // clone goal and tickers
-                let pg = self.goal.clone();
-                let tickers_map = self.tickers.clone();
-
-                // return new Portfolio
-                Portfolio {
-                    name: "my portfolio".to_owned(),
-                    goal: pg,
-                    actual: pa,
-                    meta: meta,
-                    tickers: tickers_map,
-                }
+                self.actual = pa;
+                self.meta = meta;
+                self
             }
-        };
-
-        port
+        }
     }
 
     // todo test!!
-    pub fn get_state(&self) -> api::PortfolioState {
-        let mut tickers: Vec<api::TickerState> = self
+    pub fn get_state(&self) -> api::PortfolioStateResp {
+        let mut tickers: Vec<api::TickerResp> = self
             .goal
             .tickers_goal
             .iter()
@@ -127,7 +174,7 @@ impl Portfolio {
                 let tg = self.goal.get_ticker(x.0);
                 let tm = self.meta.get_ticker(x.0);
 
-                api::TickerState {
+                api::TickerResp {
                     id: x.0.clone(),
                     symbol: ticker.symbol,
                     kind: ticker.kind.clone(),
@@ -140,7 +187,8 @@ impl Portfolio {
                 }
             }).collect();
         tickers.sort_by(|a, b| a.order.cmp(&b.order));
-        api::PortfolioState {
+        api::PortfolioStateResp {
+            name: self.name.clone(),
             tickers: tickers,
             goal_stock_percent: self.goal.goal_stock_percent,
             actual_stock_percent: self.meta.stock_percent,
@@ -150,7 +198,7 @@ impl Portfolio {
     }
 
     // todo test!!
-    pub fn get_buy_next(&self) -> action::Action {
+    fn get_buy_next_action(&self) -> action::Action {
         /// filter based on portfolio action
         let filter_kind: Vec<&TickerMeta> = match self.meta.portfolio_action {
             meta::PortfolioAction::BuyStock => self

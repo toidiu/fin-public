@@ -60,25 +60,25 @@ INSERT INTO tic_goal VALUES
 
 ----------- actual
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 1, 2.0);
+  (DEFAULT, 1, 1, 1, 2.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 2, 1.0);
+  (DEFAULT, 1, 1, 2, 1.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 3, 1.0);
+  (DEFAULT, 1, 1, 3, 1.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 4, 1.0);
+  (DEFAULT, 1, 1, 4, 1.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 5, 3.0);
+  (DEFAULT, 1, 1, 5, 3.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 6, 2.0);
+  (DEFAULT, 1, 1, 6, 2.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 7, 1.0);
+  (DEFAULT, 1, 1, 7, 1.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 8, 1.0);
+  (DEFAULT, 1, 1, 8, 1.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 9, 1.0);
+  (DEFAULT, 1, 1, 9, 1.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 10, 2.0);
+  (DEFAULT, 1, 1, 10, 2.0, 1, now());
 INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 11, 1.0);
+  (DEFAULT, 1, 1, 11, 1.0, 1, now());
 

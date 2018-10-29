@@ -1,18 +1,18 @@
 <template>
 
   <div id="app">
-    <fin-table />
+    <portfolio />
   </div>
 
 </template>
 
 <script>
-import FinTable from "./components/FinTable.vue";
+import Portfolio from "./components/Portfolio.vue";
 
 export default {
   name: "app",
   components: {
-    FinTable
+    Portfolio
   }
 };
 </script>

@@ -1,16 +1,21 @@
-use crate::{api, data, portfolio};
+use crate::api;
+use rocket::request::Form;
+use rocket::response::status;
 use rocket::Request;
 use rocket::{http::Method, State};
+use rocket_contrib::Json;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use std::ops::Deref;
 use std::sync::RwLock;
 
-use crate::{data::*, ticker::TickerId};
+use crate::data::{self, TickerBackend};
+use crate::portfolio::{self, Ticker, TickerId};
 use lru_time_cache::LruCache;
 use postgres::{Connection, TlsMode};
 
 const CACHE_MAX_COUNT: usize = 100;
 const CACHE_TTL: std::time::Duration = ::std::time::Duration::from_secs(10);
+const DB_URI: &'static str = "postgres://postgres@localhost:5432/test-fin";
 
 pub fn start_server() {
     let (allowed_origins, failed_origins) =
@@ -31,15 +36,14 @@ pub fn start_server() {
 
     rocket::ignite()
         .catch(catchers![internal_error, not_found])
-        .mount("/", routes![portfolio, buy])
+        .mount("/", routes![portfolio, get_buy_next, post_buy_next])
         .attach(options)
         .launch();
 }
 
-#[get("/portfolio")]
-fn portfolio() -> String {
-    let database_url = "postgres://postgres@localhost:5432/test-fin";
-    let conn = Connection::connect(database_url, TlsMode::None)
+#[get("/portfolio?<query>")]
+fn portfolio(query: api::PortfolioStateQuery) -> String {
+    let conn = Connection::connect(DB_URI, TlsMode::None)
         .expect("cannot connect to postgres");
 
     let lru_cache = LruCache::<String, f32>::with_expiry_duration_and_capacity(
@@ -52,18 +56,22 @@ fn portfolio() -> String {
     };
 
     // get port
-    let actual = db.get_actual();
-    let mut port = portfolio::Portfolio::new(&mut db, &actual);
+    let actual = db.get_actual(&query.user_id, &query.goal_id);
+    let goal_tickers = db.get_goal(&query.goal_id);
+    let port_goal = db
+        .get_port_goal(&query.goal_id)
+        .unwrap()
+        .to_port_goal(goal_tickers);
+    let mut port = portfolio::Portfolio::new(&mut db, &actual, &port_goal);
 
     // get state
     let port_state = port.get_state();
     serde_json::to_string(&port_state).unwrap()
 }
 
-#[get("/buy?<q_amount>")]
-fn buy<'r>(q_amount: api::AmountQuery) -> String {
-    let database_url = "postgres://postgres@localhost:5432/test-fin";
-    let conn = Connection::connect(database_url, TlsMode::None)
+#[get("/buy?<query>")]
+fn get_buy_next<'r>(query: api::BuyNextQuery) -> String {
+    let conn = Connection::connect(DB_URI, TlsMode::None)
         .expect("cannot connect to postgres");
 
     let lru_cache = LruCache::<String, f32>::with_expiry_duration_and_capacity(
@@ -76,50 +84,44 @@ fn buy<'r>(q_amount: api::AmountQuery) -> String {
     };
 
     // get port
-    let actual = db.get_actual();
-    let mut port = portfolio::Portfolio::new(&mut db, &actual);
+    let actual = db.get_actual(&query.user_id, &query.goal_id);
 
-    debug!("{}", q_amount.amount);
+    debug!("amount to buy for: {}", query.amount);
+    let resp = portfolio::Portfolio::get_buy_next(
+        &mut db,
+        &actual,
+        query.amount,
+        &query.goal_id,
+    );
 
-    let mut e_state = api::EvolvedState::new(port);
-
-    // todo do based on buy_value and the desired value
-    while (e_state.buy_value < q_amount.amount) {
-        if let None = next_state(&mut e_state, q_amount.amount, &mut db) {
-            break;
-        }
-    }
-
-    serde_json::to_string(&(e_state)).unwrap()
+    serde_json::to_string(&resp).unwrap()
 }
 
-fn next_state(
-    s: &mut api::EvolvedState,
-    buy_amount: f32,
-    db: &mut data::PgTickerDatabase,
-) -> Option<portfolio::Action> {
-    // get port from action actual
-    let port = portfolio::Portfolio::new(db, &s.evolved_actual);
-    // get action
-    let action = port.get_buy_next();
+#[post("/buy", data = "<form>")]
+fn post_buy_next(form: Json<api::BuyNextForm>) -> status::Created<String> {
+    let conn = Connection::connect(DB_URI, TlsMode::None)
+        .expect("cannot connect to postgres");
 
-    // buying more would put us above the buy value
-    if (s.buy_value + action.get_price() > buy_amount) {
-        return None;
-    }
+    let lru_cache = LruCache::<String, f32>::with_expiry_duration_and_capacity(
+        CACHE_TTL,
+        CACHE_MAX_COUNT,
+    );
+    let mut db = data::PgTickerDatabase {
+        conn: conn,
+        lru: lru_cache,
+    };
 
-    // get evolved state
-    let evolved_port = port.evolve(&action);
+    // get port
+    let actual = db.get_actual(&form.user_id, &form.goal_id);
 
-    // update buy_value
-    s.buy_value += action.get_price();
-    // update action
-    s.actions.push(action.clone());
+    let resp = portfolio::Portfolio::exec_buy_next(
+        &mut db,
+        &actual,
+        form.amount,
+        &form.goal_id,
+    );
 
-    // update final state
-    s.evolved_actual = evolved_port.get_actual_tickers();
-
-    Some(action)
+    status::Created("".to_owned(), None)
 }
 
 #[catch(500)]
