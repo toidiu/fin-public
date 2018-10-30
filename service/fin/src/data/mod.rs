@@ -21,7 +21,7 @@ pub trait TickerBackend {
         &self,
         user_id: &i64,
         port_g_id: &i64,
-    ) -> HashMap<TickerId, portfolio::TickerActual>;
+    ) -> ResultFinErr<HashMap<TickerId, portfolio::TickerActual>>;
 
     fn get_port_goal(
         &self,

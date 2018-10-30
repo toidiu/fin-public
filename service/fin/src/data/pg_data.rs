@@ -47,13 +47,20 @@ impl TickerDb for PgTickerDatabase {
         user_id: &i64,
         port_g_id: &i64,
     ) -> ResultFinErr<Vec<db_types::TickerActualData>> {
+        let stmt = "SELECT
+            id,
+            fk_user_id,
+            fk_port_g_id,
+            fk_tic_id,
+            actual_shares,
+            version,
+            tsz
+            FROM tic_actual
+            WHERE fk_user_id = $1 AND fk_port_g_id = $2";
         let rows = &self
             .conn
-            .query(
-                "SELECT id, fk_user_id, fk_port_g_id, fk_tic_id, actual_shares FROM tic_actual
-                WHERE fk_user_id = $1 AND fk_port_g_id = $2",
-                &[user_id, port_g_id],
-            ).map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+            .query(stmt, &[user_id, port_g_id])
+            .map_err(|err| FinError::DatabaseErr(err.to_string()))?;
 
         let ret = rows
             .iter()
@@ -297,15 +304,14 @@ impl super::TickerBackend for PgTickerDatabase {
         &self,
         user_id: &i64,
         port_g_id: &i64,
-    ) -> HashMap<TickerId, portfolio::TickerActual> {
-        let ta = self.get_ticker_actual(user_id, port_g_id);
+    ) -> ResultFinErr<HashMap<TickerId, portfolio::TickerActual>> {
+        let ta = self.get_ticker_actual(user_id, port_g_id)?;
         let mut map = HashMap::new();
-        if let Ok(a_tickers) = ta {
-            for x in a_tickers {
-                map.insert(tic_id!(x.fk_tic_id.clone()), x.to_tic_actual());
-            }
-        };
 
-        map
+        for x in ta {
+            map.insert(tic_id!(x.fk_tic_id.clone()), x.to_tic_actual());
+        }
+
+        Ok(map)
     }
 }
