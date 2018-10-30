@@ -218,13 +218,12 @@ impl TickerDb for PgTickerDatabase {
                 &[&ids],
             ).map_err(|err| FinError::DatabaseErr(err.to_string()))?;
 
-        let ret = rows
+        rows
             .iter()
             .map(|row| {
                 db_types::TickerData::from_postgres_row(row)
-            }).collect::<Result<Vec<db_types::TickerData>, postgres_mapper::Error>>();
-
-        ret.map_err(|err| FinError::DatabaseErr(err.to_string()))
+            }).collect::<Result<Vec<db_types::TickerData>, postgres_mapper::Error>>()
+            .map_err(|err| FinError::DatabaseErr(err.to_string()))
     }
 
     //========== (buy) -> Actual -> Goal -> T
