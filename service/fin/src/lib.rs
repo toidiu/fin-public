@@ -1,9 +1,9 @@
 #![feature(plugin, custom_derive)]
-#![feature(proc_macro_gen)]
 #![feature(nll)]
 #![plugin(rocket_codegen)]
 #![allow(unused)]
 #![feature(custom_attribute)]
+#![feature(proc_macro_gen)]
 
 #[macro_use]
 extern crate lazy_static;

@@ -1,6 +1,7 @@
 <template>
   <div>
 
+    <loader class="loader" v-show="isLoading" :isLoading="isLoading"></loader>
 
     <template v-if="portState.tickers.length" >
       <h1>
@@ -38,6 +39,7 @@
 </template>
 
 <script lang="ts">
+import Loader from './Loader.vue'
 import PortfolioView from "./PortfolioView.vue";
 import BuyNextView from "./BuyNextView.vue";
 import { BuyNextResp, Ticker, FinPortfolioResp } from "../models";
@@ -45,6 +47,7 @@ import axios from "axios";
 
 export default {
   components: {
+    Loader,
     PortfolioView,
     BuyNextView
   },
@@ -53,6 +56,7 @@ export default {
       portState: <FinPortfolioResp>{
         tickers: []
       },
+      isLoading: true,
       buyNext: <BuyNextResp>{
         actions: [],
         buy_value: 0,
@@ -66,9 +70,17 @@ export default {
   methods: {
     fetchPortfolio() {
       /* get portfolio */
+      this.isLoading = true
       axios
         .get("http://localhost:8000/portfolio?user_id=1&goal_id=1")
-        .then(resp => (this.portState = resp.data));
+        .then(resp => {
+          this.portState = resp.data
+      this.isLoading = false
+        })
+        .catch(error => {
+          console.log(error.response)
+          this.isLoading = false
+        });
     }
     fetchBuyNext(submitEvent) {
       var amount = submitEvent.target.elements.amount.value
@@ -77,15 +89,26 @@ export default {
         return;
       }
 
+      this.isLoading = true
       axios
         .get(`http://localhost:8000/buy?user_id=1&goal_id=1&amount=${amount}`)
-        .then(resp => (this.buyNext = resp.data));
+        .then(resp => {
+          this.buyNext = resp.data
+          this.isLoading = false
+        })
+        .catch(error => {
+          console.log(error.response)
+          this.isLoading = false
+        });
     }
   }
 };
 </script>
 
 <style lang="scss">
+.loader {
+  z-index: 2;
+}
 #table-wrapper {
   position: relative;
 }

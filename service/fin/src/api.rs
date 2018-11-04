@@ -36,30 +36,16 @@ pub struct PortfolioStateQuery {
 // ============ BuyNext
 #[derive(Serialize, Debug)]
 pub struct BuyNextResp {
-    #[serde(skip_serializing)]
-    pub init_state: portfolio::Portfolio,
-    #[serde(skip_serializing)]
-    pub evolved_actual: HashMap<TickerId, TickerActual>,
+    pub requested_value: f32,
     pub actions: Vec<portfolio::Action>,
     pub buy_value: f32,
     pub action_summary: HashMap<TickerId, portfolio::Action>,
 }
 
 impl BuyNextResp {
-    pub fn new(port: portfolio::Portfolio) -> Self {
-        let actual_tickers = port.get_actual_tickers();
-        BuyNextResp {
-            init_state: port,
-            evolved_actual: actual_tickers,
-            actions: Vec::new(),
-            buy_value: 0.0,
-            action_summary: HashMap::new(),
-        }
-    }
-
-    pub fn generate_summary(mut self) -> Self {
+    pub fn from_data(buy_next: portfolio::BuyNext, requested_value: f32) -> Self {
         let mut map: HashMap<TickerId, portfolio::Action> = HashMap::new();
-        for action in self.actions.iter() {
+        for action in buy_next.actions.iter() {
             let id = action.get_id();
             match map.get(&id) {
                 Some(exist) => {
@@ -71,8 +57,12 @@ impl BuyNextResp {
                 }
             };
         }
-        self.action_summary = map;
-        self
+        BuyNextResp {
+            requested_value: requested_value,
+            actions: buy_next.actions,
+            buy_value: buy_next.buy_value,
+            action_summary: map,
+        }
     }
 }
 

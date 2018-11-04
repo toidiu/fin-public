@@ -1,7 +1,7 @@
 -- This file should undo anything in `up.sql`
 
 -----------
-DROP TABLE old_tic_actual;
+DROP TABLE old_port_actual;
 DROP TABLE tic_actual;
 
 -----------

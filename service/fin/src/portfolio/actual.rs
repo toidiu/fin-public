@@ -3,7 +3,7 @@ use chrono::prelude::*;
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Default, Debug)]
-pub struct PortfolioActual {
+pub(super) struct PortfolioActual {
     pub tickers_actual: HashMap<TickerId, TickerActual>,
 }
 

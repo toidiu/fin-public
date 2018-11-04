@@ -39,7 +39,7 @@ pub struct PortfolioMeta {
 
 impl PortfolioMeta {
     // todo test!!
-    pub fn new(
+    pub(super) fn new(
         tickers: &HashMap<TickerId, Ticker>,
         goal: &PortfolioGoal,
         actual: &PortfolioActual,

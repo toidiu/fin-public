@@ -9,7 +9,7 @@ use std::ops::Deref;
 use std::sync::RwLock;
 
 use crate::data::{self, TickerBackend};
-use crate::errors::{FinError, ResultFinErr};
+use crate::errors::{FinError, ResultFin};
 use crate::portfolio::{self, Ticker, TickerId};
 use lru_time_cache::LruCache;
 use postgres::{Connection, TlsMode};
@@ -26,12 +26,11 @@ pub fn start_server() {
     // You can also deserialize this
     let options = rocket_cors::Cors {
         allowed_origins: allowed_origins,
-        allowed_methods: vec![Method::Get]
+        allowed_methods: vec![Method::Get, Method::Post, Method::Options]
             .into_iter()
             .map(From::from)
             .collect(),
-        allowed_headers: AllowedHeaders::some(&["Authorization", "Accept"]),
-        allow_credentials: false,
+        allow_credentials: true,
         ..Default::default()
     };
 
@@ -43,7 +42,7 @@ pub fn start_server() {
 }
 
 #[get("/portfolio?<query>")]
-fn portfolio(query: api::PortfolioStateQuery) -> ResultFinErr<String> {
+fn portfolio(query: api::PortfolioStateQuery) -> ResultFin<String> {
     let conn = Connection::connect(DB_URI, TlsMode::None)
         .expect("cannot connect to postgres");
 
@@ -71,7 +70,7 @@ fn portfolio(query: api::PortfolioStateQuery) -> ResultFinErr<String> {
 }
 
 #[get("/buy?<query>")]
-fn get_buy_next<'r>(query: api::BuyNextQuery) -> ResultFinErr<String> {
+fn get_buy_next<'r>(query: api::BuyNextQuery) -> ResultFin<String> {
     let conn = Connection::connect(DB_URI, TlsMode::None)
         .expect("cannot connect to postgres");
 
@@ -95,13 +94,15 @@ fn get_buy_next<'r>(query: api::BuyNextQuery) -> ResultFinErr<String> {
         &query.goal_id,
     );
 
+    let resp = api::BuyNextResp::from_data(resp, query.amount);
+
     Ok(serde_json::to_string(&resp).unwrap())
 }
 
 #[post("/buy", data = "<form>")]
 fn post_buy_next(
     form: Json<api::BuyNextForm>,
-) -> ResultFinErr<status::Created<String>> {
+) -> ResultFin<status::Created<String>> {
     let conn = Connection::connect(DB_URI, TlsMode::None)
         .expect("cannot connect to postgres");
 
@@ -117,7 +118,7 @@ fn post_buy_next(
     // get port
     let actual = db.get_actual(&form.user_id, &form.goal_id)?;
 
-    let resp = portfolio::Portfolio::exec_buy_next(
+    let resp = portfolio::Portfolio::do_buy_next(
         &mut db,
         &actual,
         form.amount,

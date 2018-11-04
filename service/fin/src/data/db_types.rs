@@ -2,13 +2,15 @@ use chrono::prelude::*;
 use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "users")]
 pub struct UserData {
     pub id: i64,
     pub username: String,
 }
 
 #[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "tickers")]
 pub struct TickerData {
     pub id: i64,
     pub symbol: String,
@@ -83,6 +85,7 @@ impl TickerGoalData {
 }
 
 #[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "tic_actual")]
 pub struct TickerActualData {
     pub id: i64,
     pub fk_user_id: i64,
@@ -108,6 +111,7 @@ impl TickerActualData {
 }
 
 #[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "old_tic_actual")]
 pub struct OldPortActualData {
     pub fk_user_id: i64,
     pub fk_port_g_id: i64,

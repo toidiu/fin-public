@@ -7,7 +7,8 @@
     "axios": "^0.18.0",
     "vue": "^2.5.17",
     "vue-hot-reload-api": "^2.3.0",
-    "vue-router": "^3.0.1"
+    "vue-router": "^3.0.1",
+    "vue-spinner": "^1.0.3"
   },
   "devDependencies": {
     "@vue/component-compiler-utils": "^2.2.0",
@@ -17,10 +18,8 @@
     "vue-template-compiler": "^2.5.17"
   },
   "scripts": {
-
     "start": "npm run purdy & parcel src/index.html",
     "purdy": "npx onchange 'src/**/*.{js,vue}' -- npx prettier 'src/**/*.{js,vue}' --write",
-
     "watch": "parcel watch index.html",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "parcel build src/index.html --public-url ./ --no-minify"
