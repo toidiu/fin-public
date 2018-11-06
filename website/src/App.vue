@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import Portfolio from "./components/Portfolio.vue";
+import Portfolio from "./components/portfolio-view/index.vue";
 
 export default {
   name: "app",

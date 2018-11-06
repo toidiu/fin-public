@@ -6,6 +6,7 @@ use super::meta::{self, *};
 use super::ticker::{self, *};
 use chrono::prelude::*;
 
+use crate::errors::ResultFin;
 use crate::{api, data, std_ext::*};
 use std::{cmp::Ordering, collections::HashMap, num};
 
@@ -46,25 +47,62 @@ impl Portfolio {
         }
     }
 
+    pub fn execute_action<T: data::TickerBackend>(
+        db: &mut T,
+        user_id: &i64,
+        port_g_id: &i64,
+        actions: &Vec<action::Action>,
+    ) -> ResultFin<Portfolio> {
+        // get port
+        let actual = db.get_actual(user_id, port_g_id)?;
+        let goal_tickers = db.get_goal(port_g_id);
+        let port_goal = db
+            .get_port_goal(port_g_id)
+            .unwrap()
+            .to_port_goal(goal_tickers);
+        let mut port = Self::new(db, &actual, &port_goal);
+
+        // let mut port = buy_next.init_state;
+        for a in actions {
+            port = port.evolve(&a);
+        }
+
+        // update
+        let init_tic_actual = actual.values().collect();
+        // get evolved values
+        let evolved_tic_actual = port.get_actual_tickers();
+        let evolved_tic_actual = evolved_tic_actual.values().collect();
+        let inserted_tic_actual = db.update_actual(&init_tic_actual, &evolved_tic_actual);
+
+        Ok(port)
+    }
+
     pub fn do_buy_next<T: data::TickerBackend>(
         db: &mut T,
         actual: &HashMap<TickerId, TickerActual>,
         buy_amount: f32,
         port_g_id: &i64,
-    ) -> buy_next::BuyNext {
+    ) -> Portfolio {
         let mut buy_next =
             Self::get_buy_next(db, actual, buy_amount, port_g_id);
 
+        // get init values to store history
         let init = buy_next.init_state.get_actual_tickers();
         let init = init.values().collect();
+
+        // get evolved values
         let evolved = buy_next.evolved_actual.values().collect();
+
+        // update
         let inserted_tic_actual = db.update_actual(&init, &evolved);
-        buy_next.evolved_actual = inserted_tic_actual
-            .unwrap()
-            .into_iter()
-            .map(|x| (tic_id!(x.id), x))
-            .collect();
-        buy_next
+
+        // get actions
+        let actions = buy_next.actions.clone();
+        let mut port = buy_next.init_state;
+        for a in actions {
+            port = port.evolve(&a);
+        }
+        port
     }
 
     pub fn get_buy_next<T: data::TickerBackend>(
@@ -171,6 +209,7 @@ impl Portfolio {
                 let ticker = self.get_ticker(x.0);
                 let tg = self.goal.get_ticker(x.0);
                 let tm = self.meta.get_ticker(x.0);
+                let ta = self.actual.get_ticker(x.0);
 
                 api::TickerResp {
                     id: x.0.clone(),
@@ -179,6 +218,7 @@ impl Portfolio {
                     fee: ticker.fee,
                     goal_percent: tg.goal_percent,
                     actual_percent: tm.ticker_percent,
+                    actual_shares: ta.actual_shares,
                     actual_value: tm.ticker_value,
                     price: ticker.price,
                     order: tg.order,

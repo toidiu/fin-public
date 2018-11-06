@@ -93,7 +93,6 @@ fn get_buy_next<'r>(query: api::BuyNextQuery) -> ResultFin<String> {
         query.amount,
         &query.goal_id,
     );
-
     let resp = api::BuyNextResp::from_data(resp, query.amount);
 
     Ok(serde_json::to_string(&resp).unwrap())
@@ -115,17 +114,16 @@ fn post_buy_next(
         lru: lru_cache,
     };
 
-    // get port
-    let actual = db.get_actual(&form.user_id, &form.goal_id)?;
 
-    let resp = portfolio::Portfolio::do_buy_next(
+    let port = portfolio::Portfolio::execute_action(
         &mut db,
-        &actual,
-        form.amount,
+        &form.user_id,
         &form.goal_id,
+        &form.actions,
     );
+    let port = port.unwrap().get_state();
 
-    Ok(status::Created("".to_owned(), None))
+    Ok(status::Created("/portfolio?user_id=_&goal_id=_".to_string(), Some(serde_json::to_string(&port).unwrap())))
 }
 
 #[catch(500)]

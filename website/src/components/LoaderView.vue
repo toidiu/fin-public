@@ -13,24 +13,22 @@
 </template>
 
 <script lang="ts">
-import PulseLoader from 'vue-spinner/src/PulseLoader.vue'
+import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 
 export default {
   components: {
-    PulseLoader,
+    PulseLoader
   },
   props: {
-    isLoading: Boolean,
+    isLoading: Boolean
   },
   data() {
     return {
-      portState: <FinPortfolioResp>{
-        tickers: []
-      },
       loadColor: "#234",
-      loadSize: "10px",
-    }
+      loadSize: "10px"
+    };
   }
+};
 </script>
 
 

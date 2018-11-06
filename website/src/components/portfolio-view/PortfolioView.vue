@@ -1,6 +1,9 @@
 <template>
-
   <div>
+
+    <h1>
+      {{ portState.name }}
+    </h1>
 
     <table>
       <tr v-for="([colName, colKey], idx) in columns">
@@ -15,17 +18,27 @@
         </td>
     </table>
 
-    <span>
-      TOTAL
-      ${{ portState.total_value }}
-    </span>
+    <div>
+      Total Portfolio Value: ${{ portState.total_value }}
+    </div>
+    <div>
+      Goal bond distribution: {{ portState.goal_stock_percent }}%
+    </div>
+    <div>
+      Actual bond distribution: {{ portState.actual_stock_percent }}%
+    </div>
+
+    <form @submit.prevent="calcInvestmentEvent">
+      <span>How much would you like to invest? </span>
+      <input id="calcInvestmentInput" type="number" placeholder="1000" name="amount">
+      <button type="submit">Calculate Investment</button>
+    </form>
 
   </div>
-
 </template>
 
 <script lang="ts">
-import { FinPortfolioResp } from "../models";
+import { FinPortfolioResp } from "../../models";
 
 export default {
   props: {
@@ -39,9 +52,10 @@ export default {
         ["Kind", "kind"],
         ["Fee", "fee"],
         ["Price", "price"],
+        ["Shares", "actual_shares"],
+        ["Actual $", "actual_value"],
         ["Goal %", "goal_percent"],
-        ["Actual %", "actual_percent"],
-        ["Actual $", "actual_value"]
+        ["Actual %", "actual_percent"]
       ]
     };
   },
@@ -63,6 +77,12 @@ export default {
       } else {
         return "balance";
       }
+    },
+    calcInvestmentEvent: function(submitEvent) {
+      this.$emit(
+        "calcInvestmentEvent",
+        submitEvent.target.elements.amount.value
+      );
     }
   },
   computed: {}

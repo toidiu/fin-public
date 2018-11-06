@@ -15,17 +15,18 @@
     </table>
 
     <span>
-      BUY VALUE
-      ${{ buyNextState.buy_value }}
+      Buy value: ${{ buyNextState.buy_value }}
     </span>
-    <button v-on:click="executeOrder" type="submit">Execute order</button>
+    <button
+      v-on:click="buyNextEvent"
+      type="submit">Execute order</button>
 
   </div>
 
 </template>
 
 <script lang="ts">
-import { Action, BuyNextResp, FinPortfolioResp } from "../models";
+import { Action, BuyNextResp, FinPortfolioResp } from "../../models";
 import axios from "axios";
 
 export default {
@@ -43,21 +44,8 @@ export default {
         return action["shares"];
       }
     },
-    executeOrder() {
-      axios
-        .post("http://localhost:8000/buy", {
-          user_id: 1,
-          goal_id: 1,
-          amount: this.buyNextState.requested_value
-        })
-        .then(resp => {
-          console.log(resp);
-          this.isLoading = false;
-        })
-        .catch(error => {
-          console.log(error.response);
-          this.isLoading = false;
-        });
+    buyNextEvent: function() {
+      this.$emit("buyNextEvent", this.buyNextState.actions);
     }
   }
 };

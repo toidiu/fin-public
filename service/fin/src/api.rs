@@ -23,6 +23,7 @@ pub struct TickerResp {
     pub goal_percent: f32,
     pub actual_percent: f32,
     pub actual_value: f32,
+    pub actual_shares: f32,
     pub price: f32,
     pub order: i32,
 }
@@ -77,5 +78,5 @@ pub struct BuyNextQuery {
 pub struct BuyNextForm {
     pub user_id: i64,
     pub goal_id: i64,
-    pub amount: f32,
+    pub actions: Vec<portfolio::Action>,
 }

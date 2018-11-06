@@ -1,7 +1,7 @@
 use super::ticker::*;
 use std::ops::Add;
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(tag = "action")]
 pub enum Action {
     Buy(ActionInfo),
@@ -55,7 +55,7 @@ impl Add for Action {
     }
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ActionInfo {
     pub id: TickerId,
     pub shares: f32,
