@@ -276,7 +276,7 @@ version = "0.1.0"
 dependencies = [
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.5.13 (registry+https://github.com/rust-lang/crates.io-index)",
- "iex-rs 0.1.0",
+ "iex-rs 0.1.1",
  "lazy_static 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "lru_time_cache 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -472,7 +472,7 @@ dependencies = [
 
 [[package]]
 name = "iex-rs"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "log 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest 0.9.3 (registry+https://github.com/rust-lang/crates.io-index)",

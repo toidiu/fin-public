@@ -1,15 +1,12 @@
-cargo-features = ["edition"]
-
 [package]
 name = "iex-rs"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["toidiu <apoorv@toidiu.com>"]
 description = "A rather simple wapper at the moment for the iex api."
-keyworks = ["iex", "api", "finance"]
+keywords = ["iex", "api", "finance"]
 categories = ["api-bindings"]
 license = "MIT"
 edition = '2018'
-maintenance = { status = "passively-maintained" }
 
 [dependencies]
 serde = "~1.0"
