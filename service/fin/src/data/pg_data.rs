@@ -26,7 +26,7 @@ impl super::TickerBackend for PgTickerDatabase {
     fn get_tickers(&mut self, ids: &Vec<i64>) -> HashMap<TickerId, Ticker> {
         let res_tickers = self.get_tickers_by_ids(ids);
         let mut tic_map = HashMap::new();
-        let iex = iex_rust::Iex {};
+        let iex = iex_rs::Iex {};
 
         // get
         if let Ok(tickers) = res_tickers {
