@@ -4,6 +4,8 @@ export interface Ticker {
   fee: number;
   currentGoal: number;
   currentPercent: number;
+  goal_percent: number;
+  actual_percent: number;
 }
 
 export interface FinTableState {
@@ -38,6 +40,7 @@ export interface Action {
 }
 
 export interface BuyNextResp {
-  actions: Array<>;
+  actions: Array<Action>;
   buy_value: number;
+  action_summary: Map<Number, String>;
 }

@@ -9,6 +9,14 @@ use std::collections::HashMap;
 
 pub use self::pg_data::PgTickerDatabase;
 
+pub trait UserBackend {
+    fn get_login_user(
+        &self,
+        email: &String,
+        pass: &String,
+    ) -> ResultFin<db_types::UserData>;
+}
+
 pub trait TickerBackend {
     fn get_tickers(&mut self, ids: &Vec<i64>) -> HashMap<TickerId, Ticker>;
 
@@ -39,7 +47,7 @@ trait TickerDb {
     //========== (login) -> user
     fn get_user(
         &self,
-        username: &String,
+        email: &String,
         pass: &String,
     ) -> ResultFin<db_types::UserData>;
 

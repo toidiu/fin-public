@@ -2,7 +2,7 @@
 
 CREATE TABLE users (
   id bigserial PRIMARY KEY,
-  username text UNIQUE NOT NULL,
+  email text UNIQUE NOT NULL,
   password text NOT NULL,
   CHECK(length(password) >= 6)
 );

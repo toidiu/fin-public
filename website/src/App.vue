@@ -1,20 +1,9 @@
 <template>
-
-  <div id="app">
-    <portfolio />
-  </div>
-
+  <div id="app"><router-view></router-view></div>
 </template>
 
 <script>
-import Portfolio from "./components/portfolio-view/index.vue";
-
-export default {
-  name: "app",
-  components: {
-    Portfolio
-  }
-};
+export default {};
 </script>
 
 <style lang="css">

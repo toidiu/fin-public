@@ -2,7 +2,7 @@
 
 ----------- users
 INSERT INTO users VALUES
-  (DEFAULT, 'toidiu', '123456');
+  (DEFAULT, 'apoorv@toidiu.com', '123456');
 
 ----------- tickers
 INSERT INTO exchanges VALUES

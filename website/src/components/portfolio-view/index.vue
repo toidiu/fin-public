@@ -1,30 +1,29 @@
 <template>
   <div>
+    <template>
+      <loader-view class="loader" v-show="isLoading" :is-loading="isLoading" />
+    </template>
+    <template>
+      <errors-view :errors="errors" v-show="errors.length" />
+    </template>
 
-    <loader-view class="loader"
-      v-show="isLoading"
-      :isLoading="isLoading" />
+    <scroll-view>
+      <template>
+        <portfolio-view
+          v-if="portState != null"
+          :port-state="portState"
+          @calc-investment-event="calcInvestmentHandler"
+        />
+      </template>
 
-    <errors-view :errors="errors" />
-
-    <div id="table-wrapper">
-      <div id="table-scroll">
-
-        <template v-if="portState.tickers.length" >
-          <portfolio-view
-            :portState="portState"
-            @calcInvestmentEvent="calcInvestmentHandler" />
-        </template>
-
-        <buy-next-view v-if="buyNextState.actions.length"
-          :portState="portState"
-          :buyNextState="buyNextState"
-          @buyNextEvent="buyNextHandler" />
-
-        </div>
-      </div>
-    </div>
-
+      <buy-next-view
+        v-if="buyNextState != null"
+        :port-state="portState"
+        :buy-next-state="buyNextState"
+        @buy-next-event="buyNextHandler"
+      />
+    </scroll-view>
+  </div>
 </template>
 
 <script lang="ts">
@@ -32,27 +31,32 @@ import LoaderView from "../LoaderView.vue";
 import ErrorsView from "../ErrorsView.vue";
 import PortfolioView from "./PortfolioView.vue";
 import BuyNextView from "./BuyNextView.vue";
-import { BuyNextResp, Ticker, FinPortfolioResp } from "../../models";
+import ScrollView from "./ScrollView.vue";
+import { BuyNextResp, Ticker, FinPortfolioResp, Action } from "../models";
 import axios from "axios";
+import Vue from "vue";
 
-export default {
+const ax = axios.create({
+  baseURL: "http://localhost:8000/portfolio",
+  timeout: 10000,
+  withCredentials: true
+  //headers: { "Access-Control-Max-Age": "1" },
+});
+
+export default Vue.extend({
   components: {
     ErrorsView,
     LoaderView,
     PortfolioView,
-    BuyNextView
+    BuyNextView,
+    ScrollView
   },
   data() {
     return {
-      portState: <FinPortfolioResp>{
-        tickers: []
-      },
+      portState: null, //FinPortfolioResp
       isLoading: true,
-      buyNextState: <BuyNextResp>{
-        actions: [],
-        buy_value: 0
-      },
-      errors: []
+      buyNextState: null, //BuyNextResp
+      errors: [] as String[]
     };
   },
   created() {
@@ -63,21 +67,18 @@ export default {
       this.clearErrors();
       /* get portfolio */
       this.isLoading = true;
-      axios
-        .get("http://localhost:8000/portfolio?user_id=1&goal_id=1")
+      ax.get("/?user_id=1&goal_id=1")
         .then(resp => {
           this.portState = resp.data;
           this.isLoading = false;
         })
         .catch(error => {
-          this.errors.push(error.response.data);
+          this.errors.push(error);
           this.isLoading = false;
         });
     },
-    calcInvestmentHandler(amount) {
+    calcInvestmentHandler(amount: Number) {
       this.clearErrors();
-      //var amount = submitEvent.target.elements.amount.value;
-      console.log(23);
       if (amount <= 0) {
         this.errors.push("enter a positive amount to invest");
         return;
@@ -88,8 +89,7 @@ export default {
       }
 
       this.isLoading = true;
-      axios
-        .get(`http://localhost:8000/buy?user_id=1&goal_id=1&amount=${amount}`)
+      ax.get(`/buy?user_id=1&goal_id=1&amount=${amount}`)
         .then(resp => {
           var actions = resp.data.actions;
           if (!Array.isArray(actions) || !actions.length) {
@@ -105,15 +105,14 @@ export default {
           this.isLoading = false;
         });
     },
-    buyNextHandler(actions) {
+    buyNextHandler(actions: Action) {
       this.clearErrors();
       this.isLoading = true;
-      axios
-        .post("http://localhost:8000/buy", {
-          user_id: 1,
-          goal_id: 1,
-          actions: actions
-        })
+      ax.post("/buy", {
+        user_id: 1,
+        goal_id: 1,
+        actions: actions
+      })
         .then(resp => {
           this.portState = resp.data;
           this.clearBuyNext();
@@ -125,42 +124,11 @@ export default {
         });
     },
     clearBuyNext() {
-      this.buyNextState.actions = [];
+      this.buyNextState = null;
     },
     clearErrors() {
       this.errors = [];
     }
   }
-};
+});
 </script>
-
-<style lang="scss">
-.errors {
-  color: #b74b4b;
-  ul {
-    list-style: disc;
-    padding: 10px 20px;
-  }
-}
-.loader {
-  z-index: 2;
-}
-#table-wrapper {
-  position: relative;
-}
-#table-scroll {
-  width: 100%;
-  overflow: auto;
-  padding: 20px 0px;
-}
-#table-wrapper table {
-  width: 100%;
-}
-table {
-  table-layout: fixed;
-}
-th,
-td {
-  width: 80px;
-}
-</style>

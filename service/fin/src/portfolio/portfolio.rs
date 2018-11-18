@@ -72,7 +72,8 @@ impl Portfolio {
         // get evolved values
         let evolved_tic_actual = port.get_actual_tickers();
         let evolved_tic_actual = evolved_tic_actual.values().collect();
-        let inserted_tic_actual = db.update_actual(&init_tic_actual, &evolved_tic_actual);
+        let inserted_tic_actual =
+            db.update_actual(&init_tic_actual, &evolved_tic_actual);
 
         Ok(port)
     }
@@ -223,7 +224,8 @@ impl Portfolio {
                     price: ticker.price,
                     order: tg.order,
                 }
-            }).collect();
+            })
+            .collect();
         tickers.sort_by(|a, b| a.order.cmp(&b.order));
         api::PortfolioStateResp {
             name: self.name.clone(),

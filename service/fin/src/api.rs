@@ -44,7 +44,10 @@ pub struct BuyNextResp {
 }
 
 impl BuyNextResp {
-    pub fn from_data(buy_next: portfolio::BuyNext, requested_value: f32) -> Self {
+    pub fn from_data(
+        buy_next: portfolio::BuyNext,
+        requested_value: f32,
+    ) -> Self {
         let mut map: HashMap<TickerId, portfolio::Action> = HashMap::new();
         for action in buy_next.actions.iter() {
             let id = action.get_id();
@@ -79,4 +82,10 @@ pub struct BuyNextForm {
     pub user_id: i64,
     pub goal_id: i64,
     pub actions: Vec<portfolio::Action>,
+}
+
+#[derive(Deserialize)]
+pub struct LoginForm {
+    pub email: String,
+    pub password: String,
 }

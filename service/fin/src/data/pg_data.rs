@@ -15,6 +15,16 @@ pub struct PgTickerDatabase {
     pub lru: LruCache<String, f32>,
 }
 
+impl super::UserBackend for PgTickerDatabase {
+    fn get_login_user(
+        &self,
+        email: &String,
+        pass: &String,
+    ) -> ResultFin<db_types::UserData> {
+        self.get_user(email, pass)
+    }
+}
+
 impl super::TickerBackend for PgTickerDatabase {
     fn get_port_goal(
         &self,
@@ -47,7 +57,8 @@ impl super::TickerBackend for PgTickerDatabase {
                         }
                         None => true,
                     }
-                }).collect();
+                })
+                .collect();
             debug!("symbol list after filtered: {:?}", filtered_symb);
 
             if (filtered_symb.len() > 0) {
@@ -114,25 +125,31 @@ impl TickerDb for PgTickerDatabase {
     //========== (login) -> user
     fn get_user(
         &self,
-        username: &String,
+        email: &String,
         pass: &String,
     ) -> ResultFin<db_types::UserData> {
         // table users
         let stmt = &format!(
-            "SELECT {} FROM {} WHERE username = $1 AND password = $2",
+            "SELECT {} FROM {} WHERE email = $1 AND password = $2",
             &db_types::UserData::sql_fields(),
             &db_types::UserData::sql_table(),
         );
 
-        let rows = &self.conn.query(stmt, &[username, pass]).unwrap();
+        let rows = &self
+            .conn
+            .query(stmt, &[email, pass])
+            // .unwrap();
+            .map_err(|err| FinError::DatabaseErr(err.to_string()))?;
 
         let ret: ResultFin<db_types::UserData> = rows
             .iter()
             .next()
             .map(|row| {
-                db_types::UserData::from_postgres_row(row)
-                    .map_err(|err| FinError::DatabaseErr(err.to_string()))
-            }).unwrap();
+                db_types::UserData::from_postgres_row(row).map_err(|err| {
+                    FinError::DatabaseErr("bad data".to_string())
+                })
+            })
+            .ok_or(FinError::DatabaseErr("no user found".to_string()))?;
 
         ret
     }
@@ -165,7 +182,6 @@ impl TickerDb for PgTickerDatabase {
                     id: row.get_opt("id").ok_or_else(|| {
                         FinError::DatabaseErr("asdf".to_string())
                     })??,
-                    // id: row.get_opt("id").unwrap(),
                     fk_user_id: row
                         .get_opt("fk_user_id")
                         .ok_or(FinError::DatabaseErr("asdf".to_string()))??,
@@ -186,7 +202,8 @@ impl TickerDb for PgTickerDatabase {
                     })??,
                 };
                 Ok(ret)
-            }).collect::<ResultFin<Vec<db_types::TickerActualData>>>();
+            })
+            .collect::<ResultFin<Vec<db_types::TickerActualData>>>();
 
         ret
     }
@@ -244,7 +261,8 @@ impl TickerDb for PgTickerDatabase {
                                 &new_version,
                                 &updated_tic.tsz,
                             ],
-                        ).map_err(|err| {
+                        )
+                        .map_err(|err| {
                             FinError::DatabaseErr(err.to_string())
                         })?;
 
@@ -258,10 +276,12 @@ impl TickerDb for PgTickerDatabase {
                                 .map_err(|err| {
                                     FinError::DatabaseErr(err.to_string())
                                 })
-                        }).unwrap();
+                        })
+                        .unwrap();
 
                     ret
-                }).collect();
+                })
+                .collect();
 
         tx.set_commit();
         d.into_iter().collect()
@@ -289,7 +309,8 @@ impl TickerDb for PgTickerDatabase {
                 deviation: row.get(2),
                 name: row.get(3),
                 description: row.get(4),
-            }).ok_or_else(|| FinError::DatabaseErr("no record".to_string()));
+            })
+            .ok_or_else(|| FinError::DatabaseErr("no record".to_string()));
 
         ret
     }
@@ -304,7 +325,8 @@ impl TickerDb for PgTickerDatabase {
                 "SELECT fk_port_g_id, fk_tic_id, goal_per, ord FROM tic_goal
                 WHERE fk_port_g_id = $1",
                 &[port_g_id],
-            ).map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+            )
+            .map_err(|err| FinError::DatabaseErr(err.to_string()))?;
 
         let ret = rows
             .iter()
@@ -313,7 +335,8 @@ impl TickerDb for PgTickerDatabase {
                 fk_tic_id: row.get(1),
                 goal_per: row.get(2),
                 ord: row.get(3),
-            }).collect::<Vec<db_types::TickerGoalData>>();
+            })
+            .collect::<Vec<db_types::TickerGoalData>>();
 
         Ok(ret)
     }

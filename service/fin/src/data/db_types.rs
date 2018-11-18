@@ -2,11 +2,11 @@ use chrono::prelude::*;
 use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
 use std::collections::HashMap;
 
-#[derive(Debug, PostgresMapper)]
+#[derive(Serialize, Deserialize, Debug, PostgresMapper)]
 #[pg_mapper(table = "users")]
 pub struct UserData {
     pub id: i64,
-    pub username: String,
+    pub email: String,
 }
 
 #[derive(Debug, PostgresMapper)]

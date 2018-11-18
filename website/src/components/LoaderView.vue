@@ -1,23 +1,23 @@
 <template>
-  <div class="outer">
-    <div class="middle">
-      <div class="inner">
-        <pulse-loader class="_loader"
-          :loading="isLoading"
-          :color="loadColor"
-          :size="loadSize" />
-
-        </div>
-      </div>
-    </div>
+  <center-view class="center">
+    <pulse-loader
+      class="_loader"
+      :loading="isLoading"
+      :color="loadColor"
+      :size="loadSize"
+    />
+  </center-view>
 </template>
 
 <script lang="ts">
 import PulseLoader from "vue-spinner/src/PulseLoader.vue";
+import CenterView from "./CenterView.vue";
+import Vue from "vue";
 
-export default {
+export default Vue.extend({
   components: {
-    PulseLoader
+    PulseLoader,
+    CenterView
   },
   props: {
     isLoading: Boolean
@@ -28,29 +28,18 @@ export default {
       loadSize: "10px"
     };
   }
-};
+});
 </script>
-
 
 <style lang="scss" scoped>
 ._loader {
   display: inline-block;
+  z-index: 2;
+  opacity: 1;
 }
-.outer {
+.center {
   background: #e9e9e9;
   opacity: 0.5;
-  display: table;
   position: absolute;
-  height: 100%;
-  width: 100%;
-}
-.middle {
-  display: table-cell;
-  vertical-align: middle;
-  text-align: center;
-}
-.inner {
-  padding: 20px 0;
-  margin: 50px auto;
 }
 </style>

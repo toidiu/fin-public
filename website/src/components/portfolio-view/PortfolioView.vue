@@ -1,46 +1,47 @@
 <template>
   <div>
-
-    <h1>
-      {{ portState.name }}
-    </h1>
+    <h1>{{ portState.name }}</h1>
 
     <table>
-      <tr v-for="([colName, colKey], idx) in columns">
-          <th>{{ colName }}</th>
-          <template v-for="(ticker, idx) in portState.tickers">
-            <td v-bind:class="[colKey, ticker_state(ticker), ticker['kind'].toLowerCase()]">
-              {{ ticker[colKey] }}
-            </td>
-          </template>
-        </tr>
-
-        </td>
+      <tr v-for="([colName, colKey], idx) in columns" :key="idx">
+        <th>{{ colName }}</th>
+        <template v-for="(ticker, tidx) in portState.tickers">
+          <td
+            v-bind:class="[
+              colKey,
+              ticker_state(ticker),
+              ticker['kind'].toLowerCase()
+            ]"
+            :key="tidx"
+          >
+            {{ ticker[colKey] }}
+          </td>
+        </template>
+      </tr>
     </table>
 
-    <div>
-      Total Portfolio Value: ${{ portState.total_value }}
-    </div>
-    <div>
-      Goal bond distribution: {{ portState.goal_stock_percent }}%
-    </div>
-    <div>
-      Actual bond distribution: {{ portState.actual_stock_percent }}%
-    </div>
+    <div>Total Portfolio Value: ${{ portState.total_value }}</div>
+    <div>Goal bond distribution: {{ portState.goal_stock_percent }}%</div>
+    <div>Actual bond distribution: {{ portState.actual_stock_percent }}%</div>
 
     <form @submit.prevent="calcInvestmentEvent">
       <span>How much would you like to invest? </span>
-      <input id="calcInvestmentInput" type="number" placeholder="1000" name="amount">
+      <input
+        id="calcInvestmentInput"
+        type="number"
+        placeholder="1000"
+        name="amount"
+      />
       <button type="submit">Calculate Investment</button>
     </form>
-
   </div>
 </template>
 
 <script lang="ts">
-import { FinPortfolioResp } from "../../models";
+import { FinPortfolioResp, Ticker } from "../../models";
+import Vue from "vue";
 
-export default {
+export default Vue.extend({
   props: {
     portState: Object as () => FinPortfolioResp
   },
@@ -68,7 +69,7 @@ export default {
         deviation
       );
     },
-    high_or_low: function(goal, actual, deviation) {
+    high_or_low: function(goal: number, actual: number, deviation: number) {
       var diff = goal - actual;
       if (diff > 0 && Math.abs(diff) > deviation) {
         return "high";
@@ -80,15 +81,13 @@ export default {
     },
     calcInvestmentEvent: function(submitEvent) {
       this.$emit(
-        "calcInvestmentEvent",
+        "calc-investment-event",
         submitEvent.target.elements.amount.value
       );
     }
-  },
-  computed: {}
-};
+  }
+});
 </script>
-
 
 <style lang="scss" scoped>
 table {
