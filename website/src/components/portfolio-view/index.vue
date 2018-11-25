@@ -3,6 +3,11 @@
     <template>
       <loader-view class="loader" v-show="isLoading" :is-loading="isLoading" />
     </template>
+
+    <template>
+      <nav-view />
+    </template>
+
     <template>
       <errors-view :errors="errors" v-show="errors.length" />
     </template>
@@ -27,24 +32,44 @@
 </template>
 
 <script lang="ts">
+import NavView from "../NavView.vue";
 import LoaderView from "../LoaderView.vue";
 import ErrorsView from "../ErrorsView.vue";
 import PortfolioView from "./PortfolioView.vue";
 import BuyNextView from "./BuyNextView.vue";
 import ScrollView from "./ScrollView.vue";
-import { BuyNextResp, Ticker, FinPortfolioResp, Action } from "../models";
+import router from "../../index.js";
+import {
+  BuyNextResp,
+  Ticker,
+  FinPortfolioResp,
+  Action
+} from "../../data/models";
 import axios from "axios";
 import Vue from "vue";
 
 const ax = axios.create({
   baseURL: "http://localhost:8000/portfolio",
-  timeout: 10000,
+  timeout: 5000,
   withCredentials: true
   //headers: { "Access-Control-Max-Age": "1" },
 });
 
+ax.interceptors.response.use(
+  function(response) {
+    return response;
+  },
+  function(error) {
+    if (401 === error.response.status) {
+      router.push({ name: "login" });
+      return Promise.reject(error);
+    }
+  }
+);
+
 export default Vue.extend({
   components: {
+    NavView,
     ErrorsView,
     LoaderView,
     PortfolioView,
@@ -67,41 +92,33 @@ export default Vue.extend({
       this.clearErrors();
       /* get portfolio */
       this.isLoading = true;
-      ax.get("/?user_id=1&goal_id=1")
+      ax.get("/?goal_id=1")
         .then(resp => {
           this.portState = resp.data;
           this.isLoading = false;
         })
         .catch(error => {
-          this.errors.push(error);
+          this.errors.push(error.response);
           this.isLoading = false;
         });
     },
     calcInvestmentHandler(amount: Number) {
       this.clearErrors();
-      if (amount <= 0) {
-        this.errors.push("enter a positive amount to invest");
-        return;
-      }
-      if (amount > 10000) {
-        this.errors.push("enter an amount less than $10,000");
-        return;
-      }
-
       this.isLoading = true;
-      ax.get(`/buy?user_id=1&goal_id=1&amount=${amount}`)
+      ax.get(`/buy?goal_id=1&amount=${amount}`)
         .then(resp => {
+          this.isLoading = false;
           var actions = resp.data.actions;
           if (!Array.isArray(actions) || !actions.length) {
             this.errors.push(
               "enter a higher amount to invest; unable to buy anything at this price"
             );
+            return;
           }
           this.buyNextState = resp.data;
-          this.isLoading = false;
         })
         .catch(error => {
-          this.errors.push(error.response.data);
+          this.errors.push(error.response);
           this.isLoading = false;
         });
     },
@@ -109,7 +126,6 @@ export default Vue.extend({
       this.clearErrors();
       this.isLoading = true;
       ax.post("/buy", {
-        user_id: 1,
         goal_id: 1,
         actions: actions
       })
@@ -119,7 +135,7 @@ export default Vue.extend({
           this.isLoading = false;
         })
         .catch(error => {
-          this.errors.push(error.response.data);
+          this.errors.push(error.response);
           this.isLoading = false;
         });
     },

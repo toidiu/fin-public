@@ -17,7 +17,12 @@
 </template>
 
 <script lang="ts">
-import { Action, BuyNextResp, FinPortfolioResp, Ticker } from "../models";
+import {
+  Action,
+  BuyNextResp,
+  FinPortfolioResp,
+  Ticker
+} from "../../data/models";
 
 export default {
   props: {

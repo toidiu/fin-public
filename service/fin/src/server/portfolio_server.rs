@@ -2,9 +2,11 @@ use crate::api;
 use crate::data::{self, TickerBackend, UserBackend};
 use crate::errors::{FinError, ResultFin};
 use crate::portfolio::{self, Ticker, TickerId};
+use rocket::http::Status;
 use rocket::request::Form;
+use rocket::request::{self, FromRequest, Request};
 use rocket::response::status;
-use rocket::Request;
+use rocket::Outcome;
 use rocket::{http::Method, State};
 use rocket_contrib::Json;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
@@ -16,8 +18,37 @@ use postgres::{Connection, TlsMode};
 
 use super::{CACHE_MAX_COUNT, CACHE_TTL, DB_URI};
 
+pub struct UserAuth {
+    user_id: i64,
+}
+
+impl<'a, 'r> FromRequest<'a, 'r> for UserAuth {
+    type Error = ();
+
+    fn from_request(
+        request: &'a Request<'r>,
+    ) -> request::Outcome<UserAuth, ()> {
+        request.cookies().get("sess").map_or(
+            Outcome::Failure((Status::Unauthorized, ())),
+            |cookie| {
+                if (cookie.value() == "") {
+                    Outcome::Failure((Status::Unauthorized, ()))
+                } else {
+                    match cookie.value().parse::<i64>() {
+                        Ok(id) => Outcome::Success(UserAuth { user_id: id }),
+                        Err(_) => Outcome::Failure((Status::Unauthorized, ())),
+                    }
+                }
+            },
+        )
+    }
+}
+
 #[get("/?<query>")]
-pub(super) fn portfolio(query: api::PortfolioStateQuery) -> ResultFin<String> {
+pub(super) fn portfolio(
+    query: api::PortfolioStateQuery,
+    auth: UserAuth,
+) -> ResultFin<String> {
     let conn = Connection::connect(DB_URI, TlsMode::None)
         .expect("cannot connect to postgres");
 
@@ -31,7 +62,7 @@ pub(super) fn portfolio(query: api::PortfolioStateQuery) -> ResultFin<String> {
     };
 
     // get port
-    let actual = db.get_actual(&query.user_id, &query.goal_id)?;
+    let actual = db.get_actual(&auth.user_id, &query.goal_id)?;
     let goal_tickers = db.get_goal(&query.goal_id);
     let port_goal = db
         .get_port_goal(&query.goal_id)
@@ -45,7 +76,10 @@ pub(super) fn portfolio(query: api::PortfolioStateQuery) -> ResultFin<String> {
 }
 
 #[get("/buy?<query>")]
-pub(super) fn get_buy_next<'r>(query: api::BuyNextQuery) -> ResultFin<String> {
+pub(super) fn get_buy_next<'r>(
+    query: api::BuyNextQuery,
+    auth: UserAuth,
+) -> ResultFin<String> {
     let conn = Connection::connect(DB_URI, TlsMode::None)
         .expect("cannot connect to postgres");
 
@@ -59,7 +93,7 @@ pub(super) fn get_buy_next<'r>(query: api::BuyNextQuery) -> ResultFin<String> {
     };
 
     // get port
-    let actual = db.get_actual(&query.user_id, &query.goal_id)?;
+    let actual = db.get_actual(&auth.user_id, &query.goal_id)?;
 
     debug!("amount to buy for: {}", query.amount);
     let resp = portfolio::Portfolio::get_buy_next(
@@ -76,6 +110,7 @@ pub(super) fn get_buy_next<'r>(query: api::BuyNextQuery) -> ResultFin<String> {
 #[post("/buy", data = "<form>")]
 pub(super) fn post_buy_next(
     form: Json<api::BuyNextForm>,
+    auth: UserAuth,
 ) -> ResultFin<status::Created<String>> {
     let conn = Connection::connect(DB_URI, TlsMode::None)
         .expect("cannot connect to postgres");
@@ -91,7 +126,7 @@ pub(super) fn post_buy_next(
 
     let port = portfolio::Portfolio::execute_action(
         &mut db,
-        &form.user_id,
+        &auth.user_id,
         &form.goal_id,
         &form.actions,
     );

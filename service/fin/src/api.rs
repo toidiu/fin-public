@@ -30,7 +30,6 @@ pub struct TickerResp {
 
 #[derive(FromForm)]
 pub struct PortfolioStateQuery {
-    pub user_id: i64,
     pub goal_id: i64,
 }
 
@@ -72,14 +71,12 @@ impl BuyNextResp {
 
 #[derive(FromForm)]
 pub struct BuyNextQuery {
-    pub user_id: i64,
     pub goal_id: i64,
     pub amount: f32,
 }
 
 #[derive(Deserialize)]
 pub struct BuyNextForm {
-    pub user_id: i64,
     pub goal_id: i64,
     pub actions: Vec<portfolio::Action>,
 }

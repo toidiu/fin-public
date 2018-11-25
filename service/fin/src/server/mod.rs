@@ -1,8 +1,8 @@
 use crate::api;
+use rocket::http::{self, Method};
 use rocket::request::Form;
-use rocket::response::status;
+use rocket::response::{status, Redirect, Response};
 use rocket::Request;
-use rocket::{http::Method, State};
 use rocket_contrib::Json;
 use rocket_cors::{AllowedHeaders, AllowedOrigins};
 use std::ops::Deref;
@@ -23,17 +23,11 @@ const DB_URI: &'static str = "postgres://postgres@localhost:5432/test-fin";
 
 pub fn start_server() {
     let (allowed_origins, failed_origins) =
-        // AllowedOrigins::all();
         AllowedOrigins::some(&["http://localhost:1234"]);
     assert!(failed_origins.is_empty());
 
-    // You can also deserialize this
     let options = rocket_cors::Cors {
         allowed_origins: allowed_origins,
-        // allowed_methods: vec![Method::Get, Method::Post, Method::Options]
-            // .into_iter()
-            // .map(From::from)
-            // .collect(),
         allow_credentials: true,
         ..Default::default()
     };
@@ -48,7 +42,10 @@ pub fn start_server() {
                 portfolio_server::post_buy_next
             ],
         )
-        .mount("/users", routes![user_server::post_login])
+        .mount(
+            "/users",
+            routes![user_server::post_login, user_server::get_logout],
+        )
         .attach(options)
         .launch();
 }

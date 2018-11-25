@@ -1,6 +1,10 @@
 <template>
   <div>
     <template>
+      <nav-view />
+    </template>
+
+    <template>
       <errors-view :errors="errors" v-show="errors.length" />
     </template>
 
@@ -25,6 +29,7 @@
 </template>
 
 <script lang="ts">
+import NavView from "../NavView.vue";
 import CenterView from "../CenterView.vue";
 import PulseLoader from "vue-spinner/src/PulseLoader.vue";
 import LoaderView from "../LoaderView.vue";
@@ -44,6 +49,7 @@ const ax = axios.create({
 
 export default Vue.extend({
   components: {
+    NavView,
     CenterView,
     LoaderView,
     ErrorsView,
@@ -64,7 +70,7 @@ export default Vue.extend({
         password: pw
       })
         .then(resp => {
-          router.push({ name: "portfolio.index" });
+          router.push({ name: "portfolio" });
         })
         .catch(error => {
           var status = error.response.status;

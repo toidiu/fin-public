@@ -31,6 +31,9 @@
         type="number"
         placeholder="1000"
         name="amount"
+        required
+        min="1"
+        max="10000"
       />
       <button type="submit">Calculate Investment</button>
     </form>
@@ -38,7 +41,7 @@
 </template>
 
 <script lang="ts">
-import { FinPortfolioResp, Ticker } from "../../models";
+import { FinPortfolioResp, Ticker } from "../../data/models";
 import Vue from "vue";
 
 export default Vue.extend({

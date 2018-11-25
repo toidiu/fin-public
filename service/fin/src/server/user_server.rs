@@ -3,6 +3,7 @@ use crate::data::{self, TickerBackend, UserBackend};
 use crate::errors::{FinError, ResultFin};
 use crate::portfolio::{self, Ticker, TickerId};
 use rocket::http;
+use rocket::http::{Cookie, Cookies};
 use rocket::request::Form;
 use rocket::response::{status, Response};
 use rocket::Request;
@@ -44,10 +45,22 @@ fn post_login<'r>(form: Json<api::LoginForm>) -> Response<'r> {
                 .sized_body(Cursor::new(body))
                 .finalize()
         }
-        Err(err) => {
-            Response::build()
-                .status(http::Status::Unauthorized)
-                .finalize()
-        }
+        Err(err) => Response::build()
+            .status(http::Status::Unauthorized)
+            .finalize(),
     }
+}
+
+#[get("/logout")]
+fn get_logout<'r>() -> Response<'r> {
+    let cookie = http::Cookie::build("sess", "")
+        .path("/")
+        .max_age(time::Duration::zero())
+        .expires(time::now() - time::Duration::days(100))
+        .http_only(true)
+        .finish();
+    Response::build()
+        .status(http::Status::Unauthorized)
+        .header(&cookie)
+        .finalize()
 }
