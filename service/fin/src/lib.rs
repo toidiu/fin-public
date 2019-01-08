@@ -22,8 +22,5 @@ mod api;
 mod data;
 mod errors;
 mod portfolio;
-mod server;
 
-pub fn bla() {
-    server::start_server();
-}
+pub mod server;

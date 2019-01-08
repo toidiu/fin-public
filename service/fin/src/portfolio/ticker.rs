@@ -71,7 +71,9 @@ mod test {
     impl Helper {
         fn get_stock() -> Ticker {
             Ticker {
+                id: 1,
                 symbol: symbol!("vwo"),
+                exchange: "ex".to_string(),
                 fee: 0.14,
                 price: 43.0,
                 kind: InvestmentKind::Stock,
@@ -80,7 +82,9 @@ mod test {
 
         fn get_bond() -> Ticker {
             Ticker {
+                id: 1,
                 symbol: symbol!("vtip"),
+                exchange: "ex".to_string(),
                 fee: 0.06,
                 price: 49.0,
                 kind: InvestmentKind::Bond,

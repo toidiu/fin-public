@@ -88,14 +88,14 @@ impl TickerActual {
 mod test {
     use super::*;
 
-    #[test]
-    fn ta_new() {
-        let ta1 = TickerActual::new(symbol!("vti"), 1.5);
-        assert_eq!(ta1.symbol, symbol!("vti"));
-        assert_eq!(ta1.actual_shares, 1.5);
-        // assert_eq!(ta1.aavv, 0.0);
-        // assert_eq!(ta1.actual_percent, 0.0);
-    }
+    // #[test]
+    // fn ta_new() {
+    //     let ta1 = TickerActual::new(symbol!("vti"), 1.5);
+    //     assert_eq!(ta1.symbol, symbol!("vti"));
+    //     assert_eq!(ta1.actual_shares, 1.5);
+    //     // assert_eq!(ta1.aavv, 0.0);
+    //     // assert_eq!(ta1.actual_percent, 0.0);
+    // }
 
     // #[test]
     // fn ta_get_percent() {
@@ -197,7 +197,7 @@ mod test {
     //     // assert_eq!(updated_bond.aavv, calc_ta_b_val);
     // }
 
-    #[test]
+    // #[test]
     // fn pa_update_ticker_actual_percent() {
     //     let tic_actual_map = Helper::get_ticker_actual_map();
     //     let total_val = 330.0;
@@ -217,84 +217,85 @@ mod test {
     // let calc_ta_b_per = ((calc_ta_b_per) * 100.00).round() / 100.00;
     // assert_eq!(updated_bond.actual_percent, calc_ta_b_per);
     // }
-    #[test]
-    fn pa_buy_share() {
-        let sym = symbol!("stock");
-        let mut pa = Helper::get_portfolio_actual();
-        let tickers = Helper::get_ticker_map();
-        let orig_shares = pa.get_ta(&sym).actual_shares;
 
-        let updated_pa = pa.buy_share(&sym, 2.5, &tickers);
+    // #[test]
+    // fn pa_buy_share() {
+    //     let sym = symbol!("stock");
+    //     let mut pa = Helper::get_portfolio_actual();
+    //     let tickers = Helper::get_ticker_map();
+    //     let orig_shares = pa.get_ta(&sym).actual_shares;
 
-        assert_eq!(updated_pa.get_ta(&sym).actual_shares, orig_shares + 2.5);
-    }
+    //     let updated_pa = pa.buy_share(&sym, 2.5, &tickers);
+
+    //     assert_eq!(updated_pa.get_ta(&sym).actual_shares, orig_shares + 2.5);
+    // }
 
     // ==============================
     // Helper
     // ===============================
     struct Helper {}
     impl Helper {
-        fn stock() -> Ticker {
-            Ticker {
-                symbol: symbol!("stock"),
-                fee: 0.04,
-                price: 20.0,
-                kind: InvestmentKind::Stock,
-            }
-        }
+        // fn stock() -> Ticker {
+        //     Ticker {
+        //         symbol: symbol!("stock"),
+        //         fee: 0.04,
+        //         price: 20.0,
+        //         kind: InvestmentKind::Stock,
+        //     }
+        // }
 
-        fn bond() -> Ticker {
-            Ticker {
-                symbol: symbol!("bond"),
-                fee: 0.04,
-                price: 10.0,
-                kind: InvestmentKind::Bond,
-            }
-        }
+        // fn bond() -> Ticker {
+        //     Ticker {
+        //         symbol: symbol!("bond"),
+        //         fee: 0.04,
+        //         price: 10.0,
+        //         kind: InvestmentKind::Bond,
+        //     }
+        // }
 
-        fn get_ta_stock() -> TickerActual {
-            TickerActual {
-                symbol: symbol!("stock"),
-                // aavv: 5.0,
-                actual_shares: 1.5,
-                // actual_percent: 2.6,
-            }
-        }
+        //         fn get_ta_stock() -> TickerActual {
+        //             TickerActual {
+        //                 symbol: symbol!("stock"),
+        //                 // aavv: 5.0,
+        //                 actual_shares: 1.5,
+        //                 // actual_percent: 2.6,
+        //             }
+        //         }
 
-        fn get_ta_bond() -> TickerActual {
-            TickerActual {
-                symbol: symbol!("bond"),
-                // aavv: 10.0,
-                actual_shares: 2.0,
-                // actual_percent: 5.4,
-            }
-        }
+        //         fn get_ta_bond() -> TickerActual {
+        //             TickerActual {
+        //                 symbol: symbol!("bond"),
+        //                 // aavv: 10.0,
+        //                 actual_shares: 2.0,
+        //                 // actual_percent: 5.4,
+        //             }
+        //         }
 
-        fn get_ticker_map() -> HashMap<TickerId, Ticker> {
-            let t1 = Helper::stock();
-            let t2 = Helper::bond();
-            let mut map = HashMap::new();
-            map.insert(t1.symbol.clone(), t1);
-            map.insert(t2.symbol.clone(), t2);
-            map
-        }
+        // fn get_ticker_map() -> HashMap<TickerId, Ticker> {
+        //     let t1 = Helper::stock();
+        //     let t2 = Helper::bond();
+        //     let mut map = HashMap::new();
+        //     map.insert(t1.symbol.clone(), t1);
+        //     map.insert(t2.symbol.clone(), t2);
+        //     map
+        // }
 
-        fn get_ticker_actual_map() -> HashMap<TickerId, TickerActual> {
-            let ta1 = Helper::get_ta_bond();
-            let ta2 = Helper::get_ta_stock();
-            let mut map = HashMap::new();
-            map.insert(ta1.symbol.clone(), ta1);
-            map.insert(ta2.symbol.clone(), ta2);
-            map
-        }
+        // fn get_ticker_actual_map() -> HashMap<TickerId, TickerActual> {
+        //     let ta1 = Helper::get_ta_bond();
+        //     let ta2 = Helper::get_ta_stock();
+        //     let mut map = HashMap::new();
+        //     map.insert(ta1.symbol.clone(), ta1);
+        //     map.insert(ta2.symbol.clone(), ta2);
+        //     map
+        // }
 
-        fn get_portfolio_actual() -> PortfolioActual {
-            let map = Self::get_ticker_actual_map();
-            PortfolioActual {
-                tickers_actual: map,
-                /* total_value: 200.0,
-                 * actual_stock_percent: 5.5, */
-            }
-        }
+        // fn get_portfolio_actual() -> PortfolioActual {
+        //     let map = Self::get_ticker_actual_map();
+        //     PortfolioActual {
+        //         tickers_actual: map,
+        //         /* total_value: 200.0,
+        //          * actual_stock_percent: 5.5, */
+        //     }
+        // }
     }
 }

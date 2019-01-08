@@ -55,7 +55,9 @@ where
     ///
     /// Example:
     ///
-    /// ```
+    /// ```ignore
+    /// extern crate fin;
+    /// use fin::std_ext::ExtIterator;
     /// let v = vec![1, 2, 3];
     /// let check = v
     ///     .iter()
@@ -75,7 +77,7 @@ impl<I: Iterator> ExtIterator for I {}
 mod test {
 
     use super::ExtIterator;
-    use crate::ticker::*;
+    use crate::portfolio::*;
 
     enum TestMacro {
         Foo,
