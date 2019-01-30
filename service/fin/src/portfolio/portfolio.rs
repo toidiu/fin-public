@@ -20,6 +20,33 @@ pub struct Portfolio {
 }
 
 impl Portfolio {
+    pub fn new_efficient<T: data::TickerBackend>(
+        db: &mut T,
+        actual: &HashMap<TickerId, TickerActual>,
+        tickers_map: &HashMap<TickerId, Ticker>,
+        pg: &PortfolioGoal,
+    ) -> Portfolio {
+        // get tickers map
+        // todo eventually only request those we care about (ones in goal)
+        // let keys = actual.keys().map(|x| x.0).collect();
+        // let tickers_map: HashMap<TickerId, Ticker> = db.get_tickers(&keys);
+
+        let actual = actual.clone();
+        // get actual
+        let pa = actual::PortfolioActual::new(actual, tickers_map);
+
+        // get meta
+        let meta = PortfolioMeta::new(tickers_map, &pg, &pa);
+
+        Portfolio {
+            name: pg.name.clone(),
+            goal: pg.clone(),
+            actual: pa,
+            meta: meta,
+            tickers: tickers_map.clone(),
+        }
+    }
+
     // todo test!!
     pub fn new<T: data::TickerBackend>(
         db: &mut T,
@@ -60,7 +87,7 @@ impl Portfolio {
             .get_port_goal(port_g_id)
             .unwrap()
             .to_port_goal(goal_tickers);
-        let mut port = Self::new(db, &actual, &port_goal);
+        let mut port = Portfolio::new(db, &actual, &port_goal);
 
         // let mut port = buy_next.init_state;
         for a in actions {
@@ -117,7 +144,12 @@ impl Portfolio {
             .get_port_goal(port_g_id)
             .unwrap()
             .to_port_goal(goal_tickers);
-        let mut port = Portfolio::new(db, &actual, &port_goal);
+
+        let keys = actual.keys().map(|x| x.0).collect();
+        let tickers_map: HashMap<TickerId, Ticker> = db.get_tickers(&keys);
+
+        let mut port =
+            Portfolio::new_efficient(db, &actual, &tickers_map, &port_goal);
         let mut buy_next_resp = buy_next::BuyNext::new(port);
 
         // todo do based on buy_value and the desired value
@@ -127,6 +159,7 @@ impl Portfolio {
                 buy_amount,
                 db,
                 &port_goal,
+                &tickers_map,
             ) {
                 break;
             }
@@ -139,9 +172,15 @@ impl Portfolio {
         buy_amount: f32,
         db: &mut T,
         port_goal: &PortfolioGoal,
+        tickers_map: &HashMap<TickerId, Ticker>,
     ) -> Option<Action> {
         // get port from action actual
-        let port = Portfolio::new(db, &buy_next_resp.evolved_actual, port_goal);
+        let port = Portfolio::new_efficient(
+            db,
+            &buy_next_resp.evolved_actual,
+            &tickers_map,
+            port_goal,
+        );
 
         // get action
         let action = port.get_buy_next_action();

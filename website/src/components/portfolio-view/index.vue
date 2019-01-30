@@ -92,7 +92,8 @@ export default Vue.extend({
       this.clearErrors();
       /* get portfolio */
       this.isLoading = true;
-      ax.get("/?goal_id=1")
+      //ax.get("/?goal_id=1")
+      ax.get("/1")
         .then(resp => {
           this.portState = resp.data;
           this.isLoading = false;
@@ -104,6 +105,7 @@ export default Vue.extend({
     },
     calcInvestmentHandler(amount: Number) {
       this.clearErrors();
+      this.buyNextState = null;
       this.isLoading = true;
       ax.get(`/buy?goal_id=1&amount=${amount}`)
         .then(resp => {

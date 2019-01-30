@@ -11,15 +11,19 @@ env_logger = "~0.5"
 iex-rs = { path = "../iex-rs" }
 log = "~0.4"
 lru_time_cache = "~0.8"
-lazy_static = "~1.1"
+lazy_static = "~1.2"
 time = "~0.1"
 
 postgres = { version = "~0.15", features = ["with-serde_json", "with-chrono"] }
+r2d2 = "~0.8"
+r2d2_postgres = "~0.14"
 
-rocket = "0.3.17"
-rocket_codegen = "0.3.17"
-rocket_contrib = { version = "0.3.17", default-features = false, features = ["json"] }
-rocket_cors = "0.3.0"
+# rocket = "0.3.17"
+# rocket_codegen = "0.3.17"
+# rocket_contrib = { version = "0.3.17", default-features = false, features = ["json"] }
+# rocket_cors = "0.3.0"
+warp = "0.1.11"
+http = "~0.1"
 
 serde = "~1.0"
 serde_derive = "~1.0"

@@ -1,7 +1,7 @@
 <template>
   <nav>
-    <!-- <a href="#" v-on:click="logout">logout</a> -->
-    <router-link to="/login"> <a>login</a> </router-link>
+    <a href="#" v-if="!isUserAuth" v-on:click="logout">logout</a>
+    <router-link v-if="isUserAuth" to="/login"> <a>login</a> </router-link>
     <router-link to="/portfolio"> <a>portfolio</a> </router-link>
   </nav>
 </template>
@@ -30,10 +30,17 @@ ax.interceptors.response.use(
 );
 
 export default Vue.extend({
+  props: {
+    isUserAuth: {
+      type: Boolean,
+      default: false
+    }
+  },
   methods: {
     logout: function(event) {
       event.preventDefault();
-      ax.get("/logout").catch(error => {});
+      ax.post("/logout").catch(error => {});
+      router.push({ name: "login" });
     }
   }
 });

@@ -1,6 +1,5 @@
 #![feature(plugin, custom_derive)]
 #![feature(nll)]
-#![plugin(rocket_codegen)]
 #![allow(unused)]
 #![feature(custom_attribute)]
 

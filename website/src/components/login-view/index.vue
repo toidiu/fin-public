@@ -1,7 +1,7 @@
 <template>
   <div>
     <template>
-      <nav-view />
+      <nav-view :is-user-auth="true" />
     </template>
 
     <template>

@@ -1,6 +1,5 @@
 use crate::portfolio::{self, Ticker, TickerId};
 use crate::std_ext::ExtIterator;
-use lru_time_cache::LruCache;
 use postgres::Connection;
 use std::collections::HashMap;
 
@@ -9,10 +8,10 @@ use super::TickerDb;
 use crate::errors::{FinError, ResultFin};
 use postgres_mapper;
 use postgres_mapper::FromPostgresRow;
+use r2d2;
 
 pub struct PgTickerDatabase {
-    pub conn: Connection,
-    pub lru: LruCache<String, f32>,
+    pub conn: r2d2::PooledConnection<r2d2_postgres::PostgresConnectionManager>,
 }
 
 impl super::UserBackend for PgTickerDatabase {
@@ -45,36 +44,22 @@ impl super::TickerBackend for PgTickerDatabase {
 
             let mut p_map: HashMap<String, f32> = HashMap::new();
             debug!("symbol list pre filter: {:?}", symbol_list);
-            let filtered_symb: Vec<String> = symbol_list
-                .into_iter()
-                .filter(|sym| {
-                    // we peek so as not to reset the timestamp
-                    let opt_exists = self.lru.peek(sym);
-                    match opt_exists {
-                        Some(price) => {
-                            p_map.insert(sym.clone(), *price);
-                            false
-                        }
-                        None => true,
-                    }
-                })
-                .collect();
-            debug!("symbol list after filtered: {:?}", filtered_symb);
 
-            if (filtered_symb.len() > 0) {
-                let filtered_p_map = iex.get_price(filtered_symb).unwrap();
-                // add filtered_p_map to p_map and also lru
+            if (symbol_list.len() > 0) {
+                let filtered_p_map = iex.get_price(symbol_list).unwrap();
+                // add filtered_p_map to p_map
                 for (s, p) in filtered_p_map {
                     p_map.insert(s.clone(), p.price);
-                    self.lru.insert(s.clone(), p.price);
                 }
             }
 
             for x in tickers {
-                // if let Some(price) = p_map.get(&x.symbol) {
-                let price = p_map.get(&x.symbol).expect("expected ticker price to be here either through iex or lru");
-                tic_map.insert(tic_id!(x.id.clone()), x.to_ticker(*price));
-                // }
+                if let Some(price) = p_map.get(&x.symbol) {
+                    let price = p_map.get(&x.symbol).expect(
+                        "expected ticker price to be here either through iex",
+                    );
+                    tic_map.insert(tic_id!(x.id.clone()), x.to_ticker(*price));
+                }
             }
         };
 
@@ -139,17 +124,21 @@ impl TickerDb for PgTickerDatabase {
             .conn
             .query(stmt, &[email, pass])
             // .unwrap();
-            .map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+            .map_err(|err| {
+                error!("{}", err);
+                FinError::DatabaseErr
+            })?;
 
         let ret: ResultFin<db_types::UserData> = rows
             .iter()
             .next()
             .map(|row| {
                 db_types::UserData::from_postgres_row(row).map_err(|err| {
-                    FinError::DatabaseErr("bad data".to_string())
+                    error!("{}", err);
+                    FinError::DatabaseErr
                 })
             })
-            .ok_or(FinError::DatabaseErr("no user found".to_string()))?;
+            .ok_or(FinError::DatabaseErr)?;
 
         ret
     }
@@ -170,36 +159,40 @@ impl TickerDb for PgTickerDatabase {
             tic_actual.tsz
             FROM tic_actual
             WHERE fk_user_id = $1 AND fk_port_g_id = $2";
-        let rows = &self
-            .conn
-            .query(stmt, &[user_id, port_g_id])
-            .map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+        let rows =
+            &self
+                .conn
+                .query(stmt, &[user_id, port_g_id])
+                .map_err(|err| {
+                    error!("{}", err);
+                    FinError::DatabaseErr
+                })?;
 
         let ret = rows
             .iter()
             .map(|row| {
                 let ret = db_types::TickerActualData {
-                    id: row.get_opt("id").ok_or_else(|| {
-                        FinError::DatabaseErr("asdf".to_string())
-                    })??,
+                    id: row
+                        .get_opt("id")
+                        .ok_or_else(|| FinError::DatabaseErr)??,
                     fk_user_id: row
                         .get_opt("fk_user_id")
-                        .ok_or(FinError::DatabaseErr("asdf".to_string()))??,
-                    fk_port_g_id: row.get_opt("fk_port_g_id").ok_or_else(
-                        || FinError::DatabaseErr("asdf".to_string()),
-                    )??,
-                    fk_tic_id: row.get_opt("fk_tic_id").ok_or_else(
-                        || FinError::DatabaseErr("asdf".to_string()),
-                    )??,
-                    actual_shares: row.get_opt("actual_shares").ok_or_else(
-                        || FinError::DatabaseErr("asdf".to_string()),
-                    )??,
-                    version: row.get_opt("version").ok_or_else(|| {
-                        FinError::DatabaseErr("asdf".to_string())
-                    })??,
-                    tsz: row.get_opt("tsz").ok_or_else(|| {
-                        FinError::DatabaseErr("asdf".to_string())
-                    })??,
+                        .ok_or(FinError::DatabaseErr)??,
+                    fk_port_g_id: row
+                        .get_opt("fk_port_g_id")
+                        .ok_or_else(|| FinError::DatabaseErr)??,
+                    fk_tic_id: row
+                        .get_opt("fk_tic_id")
+                        .ok_or_else(|| FinError::DatabaseErr)??,
+                    actual_shares: row
+                        .get_opt("actual_shares")
+                        .ok_or_else(|| FinError::DatabaseErr)??,
+                    version: row
+                        .get_opt("version")
+                        .ok_or_else(|| FinError::DatabaseErr)??,
+                    tsz: row
+                        .get_opt("tsz")
+                        .ok_or_else(|| FinError::DatabaseErr)??,
                 };
                 Ok(ret)
             })
@@ -234,10 +227,10 @@ impl TickerDb for PgTickerDatabase {
         let user_id = tic.user_id;
         let port_g_id = tic.port_goal_id;
 
-        let tx = &self
-            .conn
-            .transaction()
-            .map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+        let tx = &self.conn.transaction().map_err(|err| {
+            error!("{}", err);
+            FinError::DatabaseErr
+        })?;
 
         // set old
         let data = serde_json::to_value(init_tickers_actual).unwrap();
@@ -263,7 +256,8 @@ impl TickerDb for PgTickerDatabase {
                             ],
                         )
                         .map_err(|err| {
-                            FinError::DatabaseErr(err.to_string())
+                            error!("{}", err);
+                            FinError::DatabaseErr
                         })?;
 
                     let ret: ResultFin<
@@ -274,7 +268,8 @@ impl TickerDb for PgTickerDatabase {
                         .map(|row| {
                             db_types::TickerActualData::from_postgres_row(row)
                                 .map_err(|err| {
-                                    FinError::DatabaseErr(err.to_string())
+                                    error!("{}", err);
+                                    FinError::DatabaseErr
                                 })
                         })
                         .unwrap();
@@ -298,7 +293,10 @@ impl TickerDb for PgTickerDatabase {
                 "SELECT id, stock_per, deviation, name, description FROM port_goal
                 WHERE id = $1",
                 &[port_g_id],
-            ).map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+            ).map_err(|err| {
+                error!("{}", err);
+                FinError::DatabaseErr
+            })?;
 
         let ret = rows
             .iter()
@@ -310,7 +308,7 @@ impl TickerDb for PgTickerDatabase {
                 name: row.get(3),
                 description: row.get(4),
             })
-            .ok_or_else(|| FinError::DatabaseErr("no record".to_string()));
+            .ok_or_else(|| FinError::DatabaseErr);
 
         ret
     }
@@ -326,7 +324,10 @@ impl TickerDb for PgTickerDatabase {
                 WHERE fk_port_g_id = $1",
                 &[port_g_id],
             )
-            .map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+            .map_err(|err| {
+                error!("{}", err);
+                FinError::DatabaseErr
+            })?;
 
         let ret = rows
             .iter()
@@ -352,17 +353,20 @@ impl TickerDb for PgTickerDatabase {
             &db_types::TickerData::sql_table()
         );
 
-        let rows = &self
-            .conn
-            .query(stmt, &[ids])
-            .map_err(|err| FinError::DatabaseErr(err.to_string()))?;
+        let rows = &self.conn.query(stmt, &[ids]).map_err(|err| {
+            error!("{}", err);
+            FinError::DatabaseErr
+        })?;
 
         rows
             .iter()
             .map(|row| {
                 db_types::TickerData::from_postgres_row(row)
             }).collect::<Result<Vec<db_types::TickerData>, postgres_mapper::Error>>()
-            .map_err(|err| FinError::DatabaseErr(err.to_string()))
+            .map_err(|err|{
+                error!("{}", err);
+                FinError::DatabaseErr
+            })
     }
 
     //========== (buy) -> Actual -> Goal -> T
