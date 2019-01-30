@@ -260,9 +260,7 @@ impl TickerDb for PgTickerDatabase {
                             FinError::DatabaseErr
                         })?;
 
-                    let ret: ResultFin<
-                        db_types::TickerActualData,
-                    > = rows
+                    let ret: ResultFin<db_types::TickerActualData> = rows
                         .into_iter()
                         .next()
                         .map(|row| {

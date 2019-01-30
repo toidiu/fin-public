@@ -1,5 +1,5 @@
-use chrono::prelude::*;
 use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
+use chrono::prelude::*;
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug, PostgresMapper)]

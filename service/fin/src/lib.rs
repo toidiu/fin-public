@@ -1,7 +1,4 @@
-#![feature(plugin, custom_derive)]
-#![feature(nll)]
 #![allow(unused)]
-#![feature(custom_attribute)]
 
 #[macro_use]
 extern crate lazy_static;
