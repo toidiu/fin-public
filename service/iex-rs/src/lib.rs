@@ -15,7 +15,10 @@ impl Iex {
     ) -> Result<IexTickersPrice, ()> {
         let s = tickers.join(",");
 
-        let uri = format!("https://api.iextrading.com/1.0/stock/market/batch?symbols={}&types=price", s);
+        let uri = format!(
+            "https://api.iextrading.com/1.0/stock/market/batch?symbols={}&types=price",
+            s
+        );
 
         let body = reqwest::get(uri.as_str()).unwrap().text().unwrap();
 

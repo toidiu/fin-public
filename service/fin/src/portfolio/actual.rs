@@ -1,4 +1,4 @@
-use super::ticker::*;
+use crate::ticker::*;
 use chrono::prelude::*;
 use std::collections::HashMap;
 

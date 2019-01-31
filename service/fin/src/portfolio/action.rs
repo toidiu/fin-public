@@ -1,4 +1,4 @@
-use super::ticker::*;
+use crate::ticker::*;
 use std::ops::Add;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

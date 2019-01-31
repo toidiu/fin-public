@@ -291,7 +291,8 @@ impl TickerDb for PgTickerDatabase {
                 "SELECT id, stock_per, deviation, name, description FROM port_goal
                 WHERE id = $1",
                 &[port_g_id],
-            ).map_err(|err| {
+            )
+            .map_err(|err| {
                 error!("{}", err);
                 FinError::DatabaseErr
             })?;
@@ -356,12 +357,10 @@ impl TickerDb for PgTickerDatabase {
             FinError::DatabaseErr
         })?;
 
-        rows
-            .iter()
-            .map(|row| {
-                db_types::TickerData::from_postgres_row(row)
-            }).collect::<Result<Vec<db_types::TickerData>, postgres_mapper::Error>>()
-            .map_err(|err|{
+        rows.iter()
+            .map(|row| db_types::TickerData::from_postgres_row(row))
+            .collect::<Result<Vec<db_types::TickerData>, postgres_mapper::Error>>()
+            .map_err(|err| {
                 error!("{}", err);
                 FinError::DatabaseErr
             })

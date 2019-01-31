@@ -1,8 +1,10 @@
 use super::CONNECTION;
 use crate::api;
+use crate::buy_next;
 use crate::data::{self, TickerBackend, UserBackend};
 use crate::errors::{FinError, ResultFin};
-use crate::portfolio::{self, Ticker, TickerId};
+use crate::portfolio;
+use crate::ticker::{Ticker, TickerId};
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::RwLock;
@@ -30,7 +32,11 @@ pub fn get_portfolio(
         .get_port_goal(&goal_id)
         .unwrap()
         .to_port_goal(goal_tickers);
-    let mut port = portfolio::Portfolio::new(&mut db, &actual, &port_goal);
+
+    let keys = actual.keys().map(|x| x.0).collect();
+    let tickers_map: HashMap<TickerId, Ticker> = db.get_tickers(&keys);
+    let mut port =
+        portfolio::Portfolio::new(&mut db, &actual, &tickers_map, &port_goal);
 
     // get state
     let port_state = port.get_state();
@@ -55,7 +61,7 @@ pub fn get_buy_next(
     })?;
 
     debug!("amount to buy for: {}", data.amount);
-    let resp = portfolio::Portfolio::get_buy_next(
+    let resp = buy_next::BuyNext::get_buy_next(
         &mut db,
         &actual,
         data.amount,

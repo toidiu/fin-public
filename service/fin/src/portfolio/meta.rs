@@ -1,5 +1,6 @@
-use super::{actual::*, goal::*, ticker::*};
+use super::{actual::*, goal::*};
 use crate::std_ext::*;
+use crate::ticker::*;
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
