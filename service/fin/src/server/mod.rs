@@ -1,11 +1,13 @@
 use crate::api;
+use crate::std_ext::*;
 use std::collections::BTreeSet;
 use std::env;
 use std::fmt::{self, Display};
 use std::ops::Deref;
 use std::sync::RwLock;
 
-use crate::data::{self, TickerBackend, UserBackend};
+use crate::backend::{self, PortfolioBackend, UserBackend};
+use crate::data;
 use crate::errors::{ErrMessage, FinError, ResultFin};
 use crate::portfolio::{self, Ticker, TickerId};
 use postgres::Connection;
@@ -43,8 +45,32 @@ pub fn start_server() {
         .allow_credentials(true)
         .allow_headers(vec!["content-type"])
         .allow_methods(vec!["GET", "POST", "DELETE", "OPTIONS"]);
-    let with_credentials =
-        warp::reply::with::header("access-control-allow-credentials", "true");
+
+    let with_user_backend = {
+        warp::any().map(|| match CONNECTION.get() {
+            Ok(conn) => Ok(backend::DefaultUserBackend::new(data::PgFinDb {
+                conn: conn,
+            })),
+            Err(err) => {
+                error!("{}", err);
+                Err(warp::reject::custom(FinError::DatabaseErr))
+            }
+        })
+    };
+
+    let with_portfolio_backend = {
+        warp::any().map(|| match CONNECTION.get() {
+            Ok(conn) => {
+                Ok(backend::DefaultPortfolioBackend::new(data::PgFinDb {
+                    conn: conn,
+                }))
+            }
+            Err(err) => {
+                error!("{}", err);
+                Err(warp::reject::custom(FinError::DatabaseErr))
+            }
+        })
+    };
 
     // AUTH
     let sess_cookie_name = "sess";
@@ -57,46 +83,65 @@ pub fn start_server() {
     );
     let with_opt_auth = warp::cookie::optional(&sess_cookie_name);
 
-    // PORTFOLIO
+    // PORTFOLIO===============
     let portfolio_path = warp::path("portfolio");
-    let get_port = warp::get2()
+    let get_port_g_list = warp::get2()
         .and(portfolio_path)
+        .and(warp::path("goal"))
+        .and(with_portfolio_backend)
+        .and_then(portfolio_server::get_portfolio_g_list);
+    let get_port_a_by_id = warp::get2()
+        .and(portfolio_path)
+        .and(warp::path("actual"))
         .and(warp::path::param::<i64>())
         .and(with_auth)
-        .and_then(portfolio_server::get_portfolio);
+        .and(with_portfolio_backend)
+        .and_then(portfolio_server::get_portfolio_a);
     let get_buy_next = warp::get2()
         .and(portfolio_path)
+        .and(warp::path("actual"))
         .and(warp::path("buy"))
         .and(with_auth)
         .and(warp::query())
+        .and(with_portfolio_backend)
         .and_then(portfolio_server::get_buy_next);
     let post_buy_next = warp::post2()
         .and(portfolio_path)
+        .and(warp::path("actual"))
         .and(warp::path("buy"))
         .and(with_auth)
         .and(warp::body::json())
+        .and(with_portfolio_backend)
         .and_then(portfolio_server::post_buy_next);
-    let port_api = get_port.or(get_buy_next).or(post_buy_next);
+    let port_api = get_port_a_by_id
+        .or(get_port_g_list)
+        .or(get_buy_next)
+        .or(post_buy_next);
 
-    // USERS
+    // USERS===============
     let user_path = warp::path("users");
     let post_login = warp::post2()
         .and(user_path)
         .and(warp::path("login"))
         .and(warp::body::json())
+        .and(with_user_backend)
         .and_then(user_server::login);
 
     let post_logout = warp::post2()
         .and(user_path)
         .and(warp::path("logout"))
         .and_then(user_server::logout);
-    let user_api = post_login.or(post_logout);
+    let post_signup = warp::post2()
+        .and(user_path)
+        .and(warp::path("signup"))
+        .and(warp::body::json())
+        .and(with_user_backend)
+        .and_then(user_server::signup);
 
-    // OTHER
-    let seth = warp::get2().and(warp::path("seth")).map(auth::f_seth);
+    let user_api = post_login.or(post_logout).or(post_signup);
 
     // combine apis
-    let api = port_api.or(user_api).or(seth);
+    let api = port_api.or(user_api);
 
     let routes = api.recover(recover_error).with(with_cors);
     warp::serve(routes).run(([127, 0, 0, 1], port));

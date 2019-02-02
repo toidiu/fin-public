@@ -1,8 +1,11 @@
+use super::auth;
 use super::{CONNECTION, DB_URI};
 use crate::api;
-use crate::data::{self, TickerBackend, UserBackend};
+use crate::backend::{self, PortfolioBackend, UserBackend};
+use crate::data;
 use crate::errors::{FinError, ResultFin};
 use crate::portfolio::{self, Ticker, TickerId};
+use libpasta;
 use std::io::Cursor;
 use std::ops::Deref;
 use std::sync::RwLock;
@@ -13,30 +16,32 @@ use postgres::{Connection, TlsMode};
 
 pub fn login(
     data: api::LoginForm,
+    res_user_backend: Result<impl backend::UserBackend, warp::Rejection>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
-    let conn = CONNECTION.get().map_err(|err| {
-        error!("{}", err);
-        warp::reject::custom(FinError::DatabaseErr)
-    })?;
-    let mut db = data::PgTickerDatabase { conn: conn };
+    // get user with password
+    let user_with_pass = res_user_backend?
+        .get_user_with_pass(&data.email)
+        .map_err(|err| warp::reject::custom(err))?;
 
-    // res_e_p.and_then(|(email, password)| {
-    match db.get_login_user(&data.email, &data.password) {
-        Ok(user_data) => {
-            let response = Response::builder()
-                .status(StatusCode::ACCEPTED)
-                .header(
-                    http::header::SET_COOKIE,
-                    format!(
-                        "sess={};HttpOnly;path=/",
-                        user_data.id.to_string()
-                    ),
-                )
-                .body("logged in".to_string())
-                .unwrap();
-            Ok(response)
-        }
-        Err(err) => {
+    // verify password
+    let opt_user_data = match libpasta::verify_password(
+        &user_with_pass.password,
+        &data.password,
+    ) {
+        true => Some(data::UserData {
+            id: user_with_pass.id,
+            email: user_with_pass.email,
+        }),
+        false => None,
+    };
+
+    match opt_user_data {
+        Some(user_data) => auth::resp_with_auth(
+            user_data,
+            "logged in".to_string(),
+            StatusCode::ACCEPTED,
+        ),
+        None => {
             let response = Response::builder()
                 .status(StatusCode::NOT_FOUND)
                 .body("user not found".to_string())
@@ -44,11 +49,8 @@ pub fn login(
             Ok(response)
         }
     }
-    // }
-    // )
 }
 
-// document.cookie = 'foo=; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
 pub fn logout() -> Result<impl warp::Reply, warp::Rejection> {
     let response = Response::builder()
         .status(StatusCode::ACCEPTED)
@@ -61,16 +63,35 @@ pub fn logout() -> Result<impl warp::Reply, warp::Rejection> {
     Ok(response)
 }
 
-// #[get("/logout")]
-// fn get_logout<'r>() -> Response<'r> {
-//     let cookie = http::Cookie::build("sess", "")
-//         .path("/")
-//         .max_age(time::Duration::zero())
-//         .expires(time::now() - time::Duration::days(100))
-//         .http_only(true)
-//         .finish();
-//     Response::build()
-//         .status(http::Status::Unauthorized)
-//         .header(&cookie)
-//         .finalize()
-// }
+pub fn signup(
+    data: api::LoginForm,
+    res_user_backend: Result<impl backend::UserBackend, warp::Rejection>,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let user_backend = res_user_backend?;
+
+    // check email doesnt already exist
+    let user_exists = user_backend
+        .does_user_exist(&data.email)
+        .map_err(|err| warp::reject::custom(err))?;
+
+    // hash password
+    let hash_pass = libpasta::hash_password(&data.password);
+
+    // add user
+    match user_exists {
+        true => {
+            let response = Response::builder()
+                .status(StatusCode::CONFLICT)
+                .body("user with email already exists".to_string())
+                .unwrap();
+            Ok(response)
+        }
+        false => {
+            let new_user = user_backend
+                .create_user(&data.email, &hash_pass)
+                .map_err(|err| warp::reject::custom(err))?;
+
+            auth::resp_with_auth(new_user, "".to_string(), StatusCode::CREATED)
+        }
+    }
+}

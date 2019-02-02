@@ -26,3 +26,12 @@ pub struct TickerGoal {
     pub goal_percent: f32,
     pub order: i32,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct TickerGoalDetailed {
+    pub port_goal_id: i64,
+    pub ticker_id: i64,
+    pub goal_percent: f32,
+    pub order: i32,
+    pub symbol: TickerSymbol,
+}

@@ -1,3 +1,4 @@
+use crate::data;
 use crate::portfolio::{
     self, InvestmentKind, Ticker, TickerActual, TickerId, TickerSymbol,
 };
@@ -85,4 +86,31 @@ pub struct BuyNextData {
 pub struct LoginForm {
     pub email: String,
     pub password: String,
+}
+
+// ============ Portfolio Detail
+#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+pub struct PortfolioGoalDetailResp {
+    pub id: i64,
+    pub tickers_goal: HashMap<TickerId, portfolio::TickerGoalDetailed>,
+    pub goal_stock_percent: f32,
+    pub deviation_percent: f32,
+    pub name: String,
+    pub description: Option<String>,
+}
+
+impl PortfolioGoalDetailResp {
+    pub fn new(
+        data: data::PortGoalData,
+        tickers_goal: HashMap<TickerId, portfolio::TickerGoalDetailed>,
+    ) -> Self {
+        PortfolioGoalDetailResp {
+            id: data.id,
+            tickers_goal: tickers_goal,
+            goal_stock_percent: data.stock_per,
+            deviation_percent: data.deviation,
+            name: data.name,
+            description: data.description,
+        }
+    }
 }

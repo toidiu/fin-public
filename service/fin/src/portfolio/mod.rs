@@ -13,7 +13,7 @@ pub use self::{
     action::{Action, ActionInfo},
     actual::TickerActual,
     buy_next::BuyNext,
-    goal::{PortfolioGoal, TickerGoal},
+    goal::{PortfolioGoal, TickerGoal, TickerGoalDetailed},
     portfolio::Portfolio,
     ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol},
 };

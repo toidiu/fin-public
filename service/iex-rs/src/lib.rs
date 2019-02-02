@@ -2,6 +2,10 @@
 
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate log;
+#[macro_use]
+mod std_ext;
 
 use reqwest;
 use std::collections::HashMap;
@@ -20,9 +24,17 @@ impl Iex {
             s
         );
 
-        let body = reqwest::get(uri.as_str()).unwrap().text().unwrap();
+        let body =
+            reqwest::get(uri.as_str()).unwrap().text().map_err(|err| {
+                loge!(err);
+                ()
+            })?;
 
-        let ret: IexTickersPrice = serde_json::from_str(&body).unwrap();
+        let ret: IexTickersPrice =
+            serde_json::from_str(&body).map_err(|err| {
+                loge!(err);
+                ()
+            })?;
 
         Ok(ret)
     }

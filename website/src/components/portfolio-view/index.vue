@@ -63,6 +63,9 @@ ax.interceptors.response.use(
     if (401 === error.response.status) {
       router.push({ name: "login" });
       return Promise.reject(error);
+    } else if (404 === error.response.status) {
+      router.push({ name: "portfolio", params: { id: "1" } });
+      return Promise.reject(error);
     }
   }
 );
@@ -84,7 +87,7 @@ export default Vue.extend({
       errors: [] as String[]
     };
   },
-  created() {
+  mounted() {
     this.getPortfolio();
   },
   methods: {
@@ -92,8 +95,7 @@ export default Vue.extend({
       this.clearErrors();
       /* get portfolio */
       this.isLoading = true;
-      //ax.get("/?goal_id=1")
-      ax.get("/1")
+      ax.get("actual/" + this.$route.params.id)
         .then(resp => {
           this.portState = resp.data;
           this.isLoading = false;
@@ -107,7 +109,7 @@ export default Vue.extend({
       this.clearErrors();
       this.buyNextState = null;
       this.isLoading = true;
-      ax.get(`/buy?goal_id=1&amount=${amount}`)
+      ax.get(`actual/buy?goal_id=1&amount=${amount}`)
         .then(resp => {
           this.isLoading = false;
           var actions = resp.data.actions;
@@ -127,7 +129,7 @@ export default Vue.extend({
     buyNextHandler(actions: Action) {
       this.clearErrors();
       this.isLoading = true;
-      ax.post("/buy", {
+      ax.post("actual/buy", {
         goal_id: 1,
         actions: actions
       })

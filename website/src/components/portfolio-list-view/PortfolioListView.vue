@@ -1,55 +1,25 @@
 <template>
   <div>
-    <h1>{{ portState.name }}</h1>
-
-    <table>
-      <tr v-for="([colName, colKey], idx) in columns" :key="idx">
-        <th>{{ colName }}</th>
-        <template v-for="(ticker, tidx) in portState.tickers">
-          <td
-            v-bind:class="[
-              colKey,
-              ticker_state(ticker),
-              ticker['kind'].toLowerCase()
-            ]"
-            :key="tidx"
-          >
-            {{ ticker[colKey] }}
-          </td>
-        </template>
-      </tr>
-    </table>
-
-    <div>Total Portfolio Value: ${{ portState.total_value }}</div>
-    <div>Goal stock distribution: {{ portState.goal_stock_percent }}%</div>
-    <div>
-      Actual stock distribution:
-      <strong>{{ portState.actual_stock_percent }}%</strong>
+    <div v-for="(goal, idx) in portListState" :key="idx">
+      <div>
+        {{ goal.name }}
+        {{ goal.goal_stock_percent }}%
+        {{ goal.description }}
+        <div v-for="(tickers_goal, idx) in goal.tickers_goal" :key="idx">
+          {{ tickers_goal }}
+        </div>
+      </div>
     </div>
-
-    <form @submit.prevent="calcInvestmentEvent">
-      <span>How much would you like to invest? </span>
-      <input
-        id="calcInvestmentInput"
-        type="number"
-        placeholder="1000"
-        name="amount"
-        required
-        min="1"
-        max="10000"
-      />
-      <button type="submit">Calculate Investment</button>
-    </form>
   </div>
 </template>
 
 <script lang="ts">
-import { FinPortfolioResp, Ticker } from "../../data/models";
+import { PortfolioGoalList, Ticker } from "../../data/models";
 import Vue from "vue";
 
 export default Vue.extend({
   props: {
-    portState: Object as () => FinPortfolioResp
+    portListState: Array as () => PortfolioGoalList[]
   },
   data: function() {
     return {
@@ -68,7 +38,7 @@ export default Vue.extend({
   },
   methods: {
     ticker_state: function(ticker: Ticker) {
-      var deviation = this.portState.deviation_percent;
+      var deviation = this.portListState.deviation_percent;
       return this.high_or_low(
         ticker.goal_percent,
         ticker.actual_percent,

@@ -2,6 +2,8 @@
   <nav>
     <a href="#" v-if="!isUserAuth" v-on:click="logout">logout</a>
     <router-link v-if="isUserAuth" to="/login"> <a>login</a> </router-link>
+    <router-link v-if="isUserAuth" to="/signup"><a>signup</a></router-link>
+    <router-link to="/plan/portfolio"> <a>plan</a> </router-link>
     <router-link to="/portfolio"> <a>portfolio</a> </router-link>
   </nav>
 </template>

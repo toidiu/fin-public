@@ -1,0 +1,104 @@
+<template>
+  <div>
+    <template>
+      <nav-view :is-user-auth="true" />
+    </template>
+
+    <template>
+      <errors-view :errors="errors" v-show="errors.length" />
+    </template>
+
+    <center-view>
+      <div class="welcome">Signup for a new Account</div>
+
+      <div>
+        <form @submit.prevent="signup">
+          <div class="input-text">
+            <label for="email">email</label>
+            <input id="email" type="email" name="email" required />
+          </div>
+          <div class="input-text">
+            <label for="password">password</label>
+            <input id="password" type="password" name="password" required />
+          </div>
+          <div class="input-text"><button type="submit">signup</button></div>
+        </form>
+      </div>
+    </center-view>
+  </div>
+</template>
+
+<script lang="ts">
+import NavView from "../NavView.vue";
+import CenterView from "../CenterView.vue";
+import PulseLoader from "vue-spinner/src/PulseLoader.vue";
+import LoaderView from "../LoaderView.vue";
+import ErrorsView from "../ErrorsView.vue";
+import router from "../../index.js";
+
+import axios from "axios";
+import Vue from "vue";
+import { EventEmitter } from "events";
+
+const ax = axios.create({
+  baseURL: "http://localhost:8000/users",
+  timeout: 10000,
+  withCredentials: true
+  //headers: { "Access-Control-Max-Age": "1" },
+});
+
+export default Vue.extend({
+  components: {
+    NavView,
+    CenterView,
+    LoaderView,
+    ErrorsView,
+    PulseLoader
+  },
+  data() {
+    return {
+      errors: [] as String[]
+    };
+  },
+  methods: {
+    signup(submitEvent) {
+      this.clearErrors();
+      var email = submitEvent.target.elements.email.value;
+      var pw = submitEvent.target.elements.password.value;
+      ax.post("/signup", {
+        email: email,
+        password: pw
+      })
+        .then(resp => {
+          router.push({ name: "portfolio" });
+        })
+        .catch(error => {
+          var status = error.response.status;
+          switch (status) {
+            case 401:
+              return this.errors.push("invalid signup");
+            default:
+              return this.errors.push(`error ${status}. please try later`);
+          }
+        });
+    },
+    clearErrors() {
+      this.errors = [];
+    }
+  }
+});
+</script>
+
+<style lang="scss" scoped>
+.welcome {
+  padding: 20px;
+  font-size: 30px;
+}
+.input-text {
+  margin: 10px 0px;
+  & label {
+    display: block;
+    margin-bottom: 5px;
+  }
+}
+</style>

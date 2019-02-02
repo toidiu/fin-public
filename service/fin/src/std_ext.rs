@@ -1,4 +1,5 @@
 // Helper macros to make life easier.
+use log;
 
 macro_rules! matches(
     ($e:expr, $p:pat) => (

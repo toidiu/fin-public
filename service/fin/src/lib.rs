@@ -15,6 +15,7 @@ use postgres::{Connection, TlsMode};
 #[macro_use]
 mod std_ext;
 mod api;
+mod backend;
 mod buy_next;
 mod data;
 mod errors;

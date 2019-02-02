@@ -1,6 +1,15 @@
 use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
+use crate::ticker::*;
 use chrono::prelude::*;
 use std::collections::HashMap;
+
+#[derive(Serialize, Deserialize, Debug, PostgresMapper)]
+#[pg_mapper(table = "users")]
+pub struct UserDataWithPass {
+    pub id: i64,
+    pub email: String,
+    pub password: String,
+}
 
 #[derive(Serialize, Deserialize, Debug, PostgresMapper)]
 #[pg_mapper(table = "users")]
@@ -40,7 +49,8 @@ impl TickerData {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "port_goal")]
 pub struct PortGoalData {
     pub id: i64,
     pub stock_per: f32,
@@ -65,7 +75,8 @@ impl PortGoalData {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "tic_goal")]
 pub struct TickerGoalData {
     pub fk_port_g_id: i64,
     pub fk_tic_id: i64,
@@ -80,6 +91,28 @@ impl TickerGoalData {
             ticker_id: self.fk_tic_id,
             goal_percent: self.goal_per,
             order: self.ord,
+        }
+    }
+}
+
+#[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "")]
+pub struct TickerGoalDetailData {
+    pub fk_port_g_id: i64,
+    pub fk_tic_id: i64,
+    pub goal_per: f32,
+    pub ord: i32,
+    pub symbol: String,
+}
+
+impl TickerGoalDetailData {
+    pub fn to_tic_goal(self) -> portfolio::TickerGoalDetailed {
+        portfolio::TickerGoalDetailed {
+            port_goal_id: self.fk_port_g_id,
+            ticker_id: self.fk_tic_id,
+            goal_percent: self.goal_per,
+            order: self.ord,
+            symbol: symbol!(self.symbol),
         }
     }
 }
@@ -117,4 +150,18 @@ pub struct OldPortActualData {
     pub fk_port_g_id: i64,
     pub version: i32,
     pub port_a_data: serde_json::Value, // PortfolioActualData
+}
+
+#[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "tic_actual")]
+pub struct PortfolioGoalDetail {
+    pub id: i64,
+    pub stock_per: f32,
+    // pub deviation: f32,
+    pub name: String,
+    pub description: Option<String>,
+    pub fk_port_g_id: i64,
+    pub fk_tic_id: i64,
+    pub goal_per: f32,
+    pub ord: i32,
 }

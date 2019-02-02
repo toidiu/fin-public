@@ -44,3 +44,12 @@ export interface BuyNextResp {
   buy_value: number;
   action_summary: Map<Number, String>;
 }
+
+//======== portfolio list
+export PortfolioGoalList {
+  id: number;
+  name: string;
+  goal_stock_percent: number;
+  deviation_percent: number;
+  description: string;
+}

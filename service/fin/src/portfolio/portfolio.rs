@@ -3,6 +3,7 @@ use super::actual::{self, *};
 use super::buy_next::{self, *};
 use super::goal::{self, *};
 use super::meta::{self, *};
+use crate::backend;
 use crate::ticker::{self, *};
 use chrono::prelude::*;
 
@@ -20,8 +21,8 @@ pub struct Portfolio {
 }
 
 impl Portfolio {
-    pub fn new<T: data::TickerBackend>(
-        db: &mut T,
+    pub fn new<T: backend::PortfolioBackend>(
+        db: &T,
         actual: &HashMap<TickerId, TickerActual>,
         tickers_map: &HashMap<TickerId, Ticker>,
         pg: &PortfolioGoal,
@@ -42,15 +43,15 @@ impl Portfolio {
         }
     }
 
-    pub fn execute_action<T: data::TickerBackend>(
-        db: &mut T,
+    pub fn execute_action<T: backend::PortfolioBackend>(
+        db: &T,
         user_id: &i64,
         port_g_id: &i64,
         actions: &Vec<action::Action>,
     ) -> ResultFin<Portfolio> {
         // get port
         let actual = db.get_actual(user_id, port_g_id)?;
-        let goal_tickers = db.get_goal(port_g_id);
+        let goal_tickers = db.get_tic_goal(port_g_id);
         let port_goal = db
             .get_port_goal(port_g_id)
             .unwrap()
