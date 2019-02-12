@@ -1,39 +1,88 @@
-use crate::api;
+use crate::algo::{self, BuyNext};
+use crate::algo::{Action, ActionInfo};
 use crate::data::{self, *};
 use crate::errors::*;
-use crate::portfolio::{self, Ticker, TickerId};
+use crate::portfolio;
+use crate::server;
 use crate::std_ext::ExtIterator;
+use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
+use chrono::prelude::*;
 use postgres::Connection;
 use std::collections::HashMap;
 
 pub trait PortfolioBackend {
     fn get_tickers(&self, ids: &Vec<i64>) -> HashMap<TickerId, Ticker>;
 
-    fn get_port_goals(&self) -> ResultFin<Vec<api::PortfolioGoalDetailResp>>;
+    fn get_port_goals(&self)
+        -> ResultFin<Vec<server::PortfolioGoalDetailResp>>;
 
+    // FIXME return ResultFin
     fn get_tic_goal(
         &self,
         port_g_id: &i64,
-    ) -> HashMap<TickerId, portfolio::TickerGoal>;
+    ) -> HashMap<TickerId, portfolio::GoalTicker>;
 
+    // FIXME return ResultFin
     fn get_tic_goal_detailed(
         &self,
         port_g_id: &i64,
     ) -> HashMap<TickerId, portfolio::TickerGoalDetailed>;
 
-    fn get_actual(
+    fn get_port_actual_list_by_user_id(
         &self,
         user_id: &i64,
+    ) -> ResultFin<Vec<server::PortfolioActualDetailResp>>;
+
+    fn get_port_actual(
+        &self,
+        port_a_id: &i64,
+        actual_tickers: &HashMap<TickerId, portfolio::TickerActual>,
+    ) -> ResultFin<portfolio::PortfolioActual>;
+
+    fn get_actual_tickers(
+        &self,
         port_g_id: &i64,
+        port_a_id: &i64,
     ) -> ResultFin<HashMap<TickerId, portfolio::TickerActual>>;
 
-    fn get_port_goal(&self, port_g_id: &i64) -> ResultFin<data::PortGoalData>;
+    fn get_port_goal(
+        &self,
+        port_g_id: &i64,
+        goal_tickers: &HashMap<TickerId, portfolio::GoalTicker>,
+        tickers_map: &HashMap<TickerId, Ticker>,
+        actual_stock_percent: &f32,
+    ) -> ResultFin<portfolio::PortfolioGoal>;
 
     fn update_actual(
         &self,
+        user_id: &i64,
+        current_port_version: &i32,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
         updated_tickers_actual: &Vec<&portfolio::TickerActual>,
     ) -> ResultFin<Vec<portfolio::TickerActual>>;
+
+    fn create_port_a(
+        &self,
+        user_id: &i64,
+        goal_id: &i64,
+        stock_percent: &f32,
+    ) -> ResultFin<server::PortfolioActualResp>;
+
+    fn get_buy_next(
+        &self,
+        user_id: &i64,
+        port_g_id: &i64,
+        port_a_id: &i64,
+        buy_amount: f64,
+    ) -> ResultFin<BuyNext>;
+
+    fn execute_actions(
+        &self,
+        user_id: &i64,
+        port_g_id: &i64,
+        port_a_id: &i64,
+        actions: &Vec<Action>,
+    ) -> ResultFin<portfolio::PortfolioState>;
 }
 
 pub struct DefaultPortfolioBackend<T: data::FinDb> {
@@ -47,8 +96,16 @@ impl<T: data::FinDb> DefaultPortfolioBackend<T> {
 }
 
 impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
-    fn get_port_goal(&self, port_g_id: &i64) -> ResultFin<data::PortGoalData> {
-        self.db.get_port_goal(port_g_id)
+    fn get_port_goal(
+        &self,
+        port_g_id: &i64,
+        goal_tickers: &HashMap<TickerId, portfolio::GoalTicker>,
+        tickers_map: &HashMap<TickerId, Ticker>,
+        actual_stock_percent: &f32,
+    ) -> ResultFin<portfolio::PortfolioGoal> {
+        self.db.get_port_goal(port_g_id).map(|p| {
+            p.to_port_goal(goal_tickers, tickers_map, actual_stock_percent)
+        })
     }
 
     fn get_tickers(&self, ids: &Vec<i64>) -> HashMap<TickerId, Ticker> {
@@ -61,8 +118,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
             let symbol_list: Vec<String> =
                 tickers.iter().map(|x| x.symbol.clone()).collect();
 
-            let mut p_map: HashMap<String, f32> = HashMap::new();
-            debug!("symbol list pre filter: {:?}", symbol_list);
+            let mut p_map: HashMap<String, f64> = HashMap::new();
 
             if (symbol_list.len() > 0) {
                 let filtered_p_map = iex.get_price(symbol_list).unwrap();
@@ -85,14 +141,15 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         tic_map
     }
 
-    fn get_port_goals(&self) -> ResultFin<Vec<api::PortfolioGoalDetailResp>> {
+    fn get_port_goals(
+        &self,
+    ) -> ResultFin<Vec<server::PortfolioGoalDetailResp>> {
         //todo eventually just do a join at the postgres level and have 1 query
         self.db.get_port_goals().map(|v| {
             v.into_iter()
                 .map(|data| {
-                    error!("{}", &data.id);
                     let goal_tickers = self.get_tic_goal_detailed(&data.id);
-                    api::PortfolioGoalDetailResp::new(data, goal_tickers)
+                    server::PortfolioGoalDetailResp::new(data, goal_tickers)
                 })
                 .collect()
         })
@@ -101,12 +158,12 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
     fn get_tic_goal(
         &self,
         port_g_id: &i64,
-    ) -> HashMap<TickerId, portfolio::TickerGoal> {
-        let tg = self.db.get_ticker_goal(port_g_id);
+    ) -> HashMap<TickerId, portfolio::GoalTicker> {
+        let tg = self.db.get_ticker_goal_by_id(port_g_id);
         let mut map = HashMap::new();
         if let Ok(g_tickers) = tg {
             for x in g_tickers {
-                map.insert(tic_id!(x.fk_tic_id.clone()), x.to_tic_goal());
+                map.insert(tic_id!(x.fk_tic_id.clone()), x.into());
             }
         };
 
@@ -128,17 +185,35 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         map
     }
 
-    fn get_actual(
+    fn get_port_actual_list_by_user_id(
         &self,
         user_id: &i64,
+    ) -> ResultFin<Vec<server::PortfolioActualDetailResp>> {
+        self.db
+            .get_port_actual_list_by_user_id(user_id)
+            .map(|list| list.into_iter().map(|item| item.to_resp()).collect())
+    }
+
+    fn get_port_actual(
+        &self,
+        port_a_id: &i64,
+        actual_tickers: &HashMap<TickerId, portfolio::TickerActual>,
+    ) -> ResultFin<portfolio::PortfolioActual> {
+        self.db
+            .get_port_actual(port_a_id)
+            .map(|pa| pa.to_actual_port(actual_tickers))
+    }
+
+    fn get_actual_tickers(
+        &self,
         port_g_id: &i64,
+        port_a_id: &i64,
     ) -> ResultFin<HashMap<TickerId, portfolio::TickerActual>> {
-        let ta = self.db.get_ticker_actual(user_id, port_g_id)?;
-        debug!("==========={:?}", ta);
+        let ta = self.db.get_actual_tickers(port_g_id, port_a_id)?;
         let mut map = HashMap::new();
 
         for x in ta {
-            map.insert(tic_id!(x.fk_tic_id.clone()), x.to_tic_actual());
+            map.insert(tic_id!(x.fk_tic_id.clone()), x.into());
         }
 
         Ok(map)
@@ -146,33 +221,139 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn update_actual(
         &self,
+        user_id: &i64,
+        current_port_version: &i32,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
         updated_tickers_actual: &Vec<&portfolio::TickerActual>,
     ) -> ResultFin<Vec<portfolio::TickerActual>> {
         self.db
-            .update_tickers_actual(init_tickers_actual, updated_tickers_actual)
-            .map(|res| res.into_iter().map(|x| x.to_tic_actual()).collect())
+            .update_tickers_actual(
+                user_id,
+                current_port_version,
+                &Utc::now(),
+                init_tickers_actual,
+                updated_tickers_actual,
+            )
+            .map(|res| res.tics.into_iter().map(|x| x.into()).collect())
     }
-    //     fn get_user(&self, email: &String) -> ResultFin<data::UserData> {
-    //         self.db.get_user(email)
-    //     }
 
-    //     fn get_user_with_pass(
-    //         &self,
-    //         email: &String,
-    //     ) -> ResultFin<data::UserDataWithPass> {
-    //         self.db.get_user_with_pass(email)
-    //     }
+    fn create_port_a(
+        &self,
+        user_id: &i64,
+        goal_id: &i64,
+        stock_percent: &f32,
+    ) -> ResultFin<server::PortfolioActualResp> {
+        let port_a =
+            self.db
+                .create_portfolio_actual(user_id, goal_id, stock_percent)?;
+        let a_tickers = self
+            .db
+            .get_actual_tickers(goal_id, &port_a.id)?
+            .into_iter()
+            .map(|t| t.into())
+            .collect();
 
-    //     fn does_user_exist(&self, email: &String) -> ResultFin<bool> {
-    //         self.db.does_user_exist(email)
-    //     }
+        Ok(port_a.to_actual_port_resp(&a_tickers))
+    }
 
-    //     fn create_user(
-    //         &self,
-    //         email: &String,
-    //         password: &String,
-    //     ) -> ResultFin<data::UserData> {
-    //         self.db.create_user(email, password)
-    //     }
+    fn get_buy_next(
+        &self,
+        user_id: &i64,
+        port_g_id: &i64,
+        port_a_id: &i64,
+        buy_amount: f64,
+    ) -> ResultFin<BuyNext> {
+        // actual info
+        let tic_actual = self.get_actual_tickers(port_g_id, port_a_id)?;
+        let port_actual = self.get_port_actual(port_a_id, &tic_actual)?;
+
+        // tickers info
+        let actual_ticker_ids = tic_actual.keys().map(|x| x.0).collect();
+        let tickers_map: HashMap<TickerId, Ticker> =
+            self.get_tickers(&actual_ticker_ids);
+
+        // goal info
+        let goal_tickers = self.get_tic_goal(port_g_id);
+        let port_goal = self.get_port_goal(
+            port_g_id,
+            &goal_tickers,
+            &tickers_map,
+            &port_actual.stock_percent,
+        )?;
+
+        // TODO simplify by capturing above into one fn
+        // construct a port state and a BuyNext
+        let mut port = portfolio::PortfolioState::new(
+            &port_actual,
+            &port_goal,
+            &tickers_map,
+        );
+        let mut buy_next = BuyNext::new(port);
+
+        while (buy_next.buy_value < buy_amount) {
+            let port_actual =
+                self.get_port_actual(port_a_id, &buy_next.evolved_actual)?;
+            let mut port_state = portfolio::PortfolioState::new(
+                &port_actual,
+                &port_goal,
+                &tickers_map,
+            );
+            if let None =
+                BuyNext::get_next_action(&mut buy_next, buy_amount, port_state)
+            {
+                break;
+            }
+        }
+        Ok(buy_next)
+    }
+
+    fn execute_actions(
+        &self,
+        user_id: &i64,
+        port_g_id: &i64,
+        port_a_id: &i64,
+        actions: &Vec<Action>,
+    ) -> ResultFin<portfolio::PortfolioState> {
+        // actual info
+        let tic_actual = self.get_actual_tickers(port_g_id, port_a_id)?;
+        let port_actual = self.get_port_actual(port_a_id, &tic_actual)?;
+
+        // tickers info
+        let actual_ticker_ids = tic_actual.keys().map(|x| x.0).collect();
+        let tickers_map: HashMap<TickerId, Ticker> =
+            self.get_tickers(&actual_ticker_ids);
+
+        // goal info
+        let goal_tickers = self.get_tic_goal(port_g_id);
+        let port_goal = self.get_port_goal(
+            port_g_id,
+            &goal_tickers,
+            &tickers_map,
+            &port_actual.stock_percent,
+        )?;
+
+        let mut port = portfolio::PortfolioState::new(
+            &port_actual,
+            &port_goal,
+            &tickers_map,
+        );
+
+        for a in actions {
+            port = port.apply_action(&a);
+        }
+
+        // initial ticker values
+        let init_tic_actual = tic_actual.values().collect();
+        // evolved ticker values
+        let evolved_tic_actual = port.get_actual_tickers().clone();
+        let evolved_tic_actual = evolved_tic_actual.values().collect();
+        let inserted_tic_actual = self.update_actual(
+            user_id,
+            port.get_current_version(),
+            &init_tic_actual,
+            &evolved_tic_actual,
+        );
+
+        Ok(port)
+    }
 }

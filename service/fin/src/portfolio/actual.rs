@@ -2,86 +2,81 @@ use crate::ticker::*;
 use chrono::prelude::*;
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
-pub(super) struct PortfolioActual {
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct PortfolioActual {
+    pub id: i64,
+    pub fk_user_id: i64,
+    pub fk_port_g_id: i64,
+    pub stock_percent: f32,
+    pub deviation_percent: f32,
+    version: i32,
+    pub last_updated: DateTime<Utc>,
     pub tickers_actual: HashMap<TickerId, TickerActual>,
 }
 
 impl PortfolioActual {
-    // todo test!
     pub fn new(
-        mut tickers_actual: HashMap<TickerId, TickerActual>,
-        tickers: &HashMap<TickerId, Ticker>,
+        id: i64,
+        fk_user_id: i64,
+        fk_port_g_id: i64,
+        stock_percent: f32,
+        deviation_percent: f32,
+        version: i32,
+        last_updated: DateTime<Utc>,
+        tickers_actual: HashMap<TickerId, TickerActual>,
     ) -> Self {
         PortfolioActual {
+            id: id,
+            fk_user_id: fk_user_id,
+            fk_port_g_id: fk_port_g_id,
+            stock_percent: stock_percent,
+            deviation_percent: deviation_percent,
+            version: version,
+            last_updated: last_updated,
             tickers_actual: tickers_actual,
         }
     }
 
-    // todo test!!!
-    pub fn sell_share(
-        &self,
-        id: &TickerId,
-        amount: f32,
-        tickers: &HashMap<TickerId, Ticker>,
-    ) -> Self {
-        let mut pa = self.clone();
-        let mut tickers_actual = pa.tickers_actual;
-
-        // buy a share
-        tickers_actual
-            .get_mut(id)
-            .expect(&format!("add ticker to db: {:?}", id))
-            .actual_shares -= amount;
-
-        Self::new(tickers_actual, tickers)
-    }
-
-    // todo test!!!
-    pub fn buy_share(
-        &self,
-        id: &TickerId,
-        amount: f32,
-        tickers: &HashMap<TickerId, Ticker>,
-    ) -> Self {
-        let mut pa = self.clone();
-        let mut tickers_actual = pa.tickers_actual;
-
-        // buy a share
-        tickers_actual
-            .get_mut(id)
-            .expect(&format!("add ticker to db: {:?}", id))
-            .actual_shares += amount;
-
-        Self::new(tickers_actual, tickers)
-    }
-
-    pub fn get_ticker(&self, id: &TickerId) -> &TickerActual {
+    pub fn get_ticker_a(&self, id: &TickerId) -> &TickerActual {
         self.tickers_actual
             .get(&id)
             .expect(&format!("add ticker to db: {:?}", &id))
+    }
+
+    pub fn get_version(&self) -> &i32 {
+        &self.version
     }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TickerActual {
     pub id: i64,
-    pub user_id: i64,
     pub port_goal_id: i64,
-    pub ticker_id: i64,
-    pub actual_shares: f32,
-    pub version: i32,
-    pub tsz: DateTime<Utc>,
+    pub port_actual_id: i64,
+    ticker_id: i64,
+    pub actual_shares: f64,
 }
 
 impl TickerActual {
-    // // todo test!!!
-    // pub fn new(symbol: TickerId, shares: f32) -> Self {
-    //     TickerActual {
-    //         symbol: symbol,
-    //         actual_shares: shares,
-    //     }
-    // }
+    pub fn new(
+        id: i64,
+        port_goal_id: i64,
+        port_actual_id: i64,
+        ticker_id: i64,
+        actual_shares: f64,
+    ) -> Self {
+        TickerActual {
+            id,
+            port_goal_id,
+            port_actual_id,
+            ticker_id,
+            actual_shares,
+        }
+    }
+
+    pub fn get_ticker_id(&self) -> i64 {
+        self.ticker_id
+    }
 }
 
 #[cfg(test)]

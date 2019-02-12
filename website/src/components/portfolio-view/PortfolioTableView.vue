@@ -1,8 +1,6 @@
 <template>
   <div>
-    <h1>{{ portState.name }}</h1>
-
-    <table>
+    <table class="table">
       <tr v-for="([colName, colKey], idx) in columns" :key="idx">
         <th>{{ colName }}</th>
         <template v-for="(ticker, tidx) in portState.tickers">
@@ -19,32 +17,12 @@
         </template>
       </tr>
     </table>
-
-    <div>Total Portfolio Value: ${{ portState.total_value }}</div>
-    <div>Goal stock distribution: {{ portState.goal_stock_percent }}%</div>
-    <div>
-      Actual stock distribution:
-      <strong>{{ portState.actual_stock_percent }}%</strong>
-    </div>
-
-    <form @submit.prevent="calcInvestmentEvent">
-      <span>How much would you like to invest? </span>
-      <input
-        id="calcInvestmentInput"
-        type="number"
-        placeholder="1000"
-        name="amount"
-        required
-        min="1"
-        max="10000"
-      />
-      <button type="submit">Calculate Investment</button>
-    </form>
   </div>
 </template>
 
 <script lang="ts">
-import { FinPortfolioResp, Ticker } from "../../data/models";
+import { FinPortfolioResp } from "./models";
+import { Ticker } from "../../data/models";
 import Vue from "vue";
 
 export default Vue.extend({
@@ -84,24 +62,12 @@ export default Vue.extend({
       } else {
         return "balance";
       }
-    },
-    calcInvestmentEvent: function(submitEvent) {
-      this.$emit(
-        "calc-investment-event",
-        submitEvent.target.elements.amount.value
-      );
     }
   }
 });
 </script>
 
 <style lang="scss" scoped>
-table {
-  border: 1px solid #000;
-  border-radius: 3px;
-  margin: 10px 0px;
-}
-
 th,
 td {
   overflow: hidden;

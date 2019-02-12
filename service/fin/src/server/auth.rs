@@ -17,5 +17,5 @@ pub fn resp_with_auth(
             format!("sess={};HttpOnly;path=/", user_data.id),
         )
         .body(body)
-        .unwrap())
+        .expect(&format!("{} error adding auth to resp", line!())))
 }

@@ -1,7 +1,7 @@
 <template>
   <div>
     <template>
-      <loader-view class="loader" v-show="isLoading" :is-loading="isLoading" />
+      <loader-view class="" v-show="isLoading" :is-loading="isLoading" />
     </template>
 
     <template>
@@ -12,22 +12,31 @@
       <errors-view :errors="errors" v-show="errors.length" />
     </template>
 
-    <scroll-view>
+    <div class="bg">
       <template>
-        <portfolio-view
+        <portfolio-header-view
           v-if="portState != null"
           :port-state="portState"
-          @calc-investment-event="calcInvestmentHandler"
         />
       </template>
+      <scroll-view>
+        <template>
+          <portfolio-table-view
+            v-if="portState != null"
+            :port-state="portState"
+            @calc-investment-event="calcInvestmentHandler"
+          />
+        </template>
 
-      <buy-next-view
-        v-if="buyNextState != null"
-        :port-state="portState"
-        :buy-next-state="buyNextState"
-        @buy-next-event="buyNextHandler"
-      />
-    </scroll-view>
+        <buy-next-view
+          v-show="buyNextState != null"
+          :port-state="portState"
+          :buy-next-state="buyNextState"
+          @buy-next-event="buyNextHandler"
+        />
+      </scroll-view>
+      <calc-investment-view @calc-investment-event="calcInvestmentHandler" />
+    </div>
   </div>
 </template>
 
@@ -35,22 +44,20 @@
 import NavView from "../NavView.vue";
 import LoaderView from "../LoaderView.vue";
 import ErrorsView from "../ErrorsView.vue";
-import PortfolioView from "./PortfolioView.vue";
+import PortfolioTableView from "./PortfolioTableView.vue";
+import PortfolioHeaderView from "./PortfolioHeaderView.vue";
+import CalcInvestmentView from "./CalcInvestmentView.vue";
 import BuyNextView from "./BuyNextView.vue";
 import ScrollView from "./ScrollView.vue";
 import router from "../../index.js";
-import {
-  BuyNextResp,
-  Ticker,
-  FinPortfolioResp,
-  Action
-} from "../../data/models";
+import { BuyNextData, BuyNextResp, FinPortfolioResp } from "./models";
+import { Ticker, Action } from "../../data/models";
 import axios from "axios";
 import Vue from "vue";
 
 const ax = axios.create({
   baseURL: "http://localhost:8000/portfolio",
-  timeout: 5000,
+  timeout: 20000,
   withCredentials: true
   //headers: { "Access-Control-Max-Age": "1" },
 });
@@ -60,12 +67,15 @@ ax.interceptors.response.use(
     return response;
   },
   function(error) {
-    if (401 === error.response.status) {
+    if (error.response == undefined) {
+      console.log("THIS MIGHT BE CORS OR UNKNOWN STUFF");
+    } else if (401 === error.response.status) {
       router.push({ name: "login" });
       return Promise.reject(error);
-    } else if (404 === error.response.status) {
-      router.push({ name: "portfolio", params: { id: "1" } });
-      return Promise.reject(error);
+      // } else if (404 === error.response.status) {
+      //   // FIXME ==========================
+      //   router.push({ name: "dash" });
+      //   return Promise.reject(error);
     }
   }
 );
@@ -75,13 +85,16 @@ export default Vue.extend({
     NavView,
     ErrorsView,
     LoaderView,
-    PortfolioView,
+    PortfolioTableView,
+    PortfolioHeaderView,
+    CalcInvestmentView,
     BuyNextView,
     ScrollView
   },
   data() {
     return {
       portState: null, //FinPortfolioResp
+      actualId: this.$route.params.id,
       isLoading: true,
       buyNextState: null, //BuyNextResp
       errors: [] as String[]
@@ -89,13 +102,14 @@ export default Vue.extend({
   },
   mounted() {
     this.getPortfolio();
+    console.log();
   },
   methods: {
     getPortfolio() {
       this.clearErrors();
       /* get portfolio */
       this.isLoading = true;
-      ax.get("actual/" + this.$route.params.id)
+      ax.get(`actual/${this.actualId}`)
         .then(resp => {
           this.portState = resp.data;
           this.isLoading = false;
@@ -109,7 +123,12 @@ export default Vue.extend({
       this.clearErrors();
       this.buyNextState = null;
       this.isLoading = true;
-      ax.get(`actual/buy?goal_id=1&amount=${amount}`)
+      // FIXME ==========================
+      ax.get(
+        `actual/buy?goal_port_id=${this.portState.goal_id}&actual_port_id=${
+          this.actualId
+        }&amount=${amount}`
+      )
         .then(resp => {
           this.isLoading = false;
           var actions = resp.data.actions;
@@ -126,13 +145,20 @@ export default Vue.extend({
           this.isLoading = false;
         });
     },
-    buyNextHandler(actions: Action) {
+    buyNextHandler(actions: Action[]) {
       this.clearErrors();
       this.isLoading = true;
-      ax.post("actual/buy", {
-        goal_id: 1,
-        actions: actions
-      })
+
+      let data = new Object() as BuyNextData;
+      data.goal_id = parseInt(this.portState.goal_id);
+      data.port_a_id = parseInt(this.actualId);
+      data.actions = actions;
+      ax.post("actual/buy", data)
+        // ax.post("actual/buy", {
+        //   goal_id: this.portState.goal_id,
+        //   port_a_id: this.actualId,
+        //   actions: actions
+        // })
         .then(resp => {
           this.portState = resp.data;
           this.clearBuyNext();

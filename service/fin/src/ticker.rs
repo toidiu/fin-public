@@ -46,13 +46,35 @@ pub enum InvestmentKind {
 pub struct Ticker {
     pub id: i64,
     pub symbol: TickerSymbol,
-    pub exchange: String,
+    pub exchange: i32,
     pub fee: f32,
-    pub price: f32,
-    pub kind: InvestmentKind,
+    pub price: f64,
+    kind: InvestmentKind,
 }
 
 impl Ticker {
+    pub fn new(
+        id: i64,
+        symbol: TickerSymbol,
+        exchange: i32,
+        fee: f32,
+        price: f64,
+        kind: InvestmentKind,
+    ) -> Self {
+        Ticker {
+            id: id,
+            symbol: symbol,
+            exchange: exchange,
+            fee: fee,
+            price: price,
+            kind: kind,
+        }
+    }
+
+    pub fn get_kind(&self) -> &InvestmentKind {
+        &self.kind
+    }
+
     pub fn is_stock(&self) -> bool {
         self.kind.eq(&InvestmentKind::Stock)
     }
@@ -73,7 +95,7 @@ mod test {
             Ticker {
                 id: 1,
                 symbol: symbol!("vwo"),
-                exchange: "ex".to_string(),
+                exchange: 1,
                 fee: 0.14,
                 price: 43.0,
                 kind: InvestmentKind::Stock,
@@ -84,7 +106,7 @@ mod test {
             Ticker {
                 id: 1,
                 symbol: symbol!("vtip"),
-                exchange: "ex".to_string(),
+                exchange: 1,
                 fee: 0.06,
                 price: 49.0,
                 kind: InvestmentKind::Bond,

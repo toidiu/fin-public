@@ -22,16 +22,6 @@ interface Portfolio {
   deviation_percent: number;
 }
 
-export interface FinPortfolioResp {
-  name: string,
-  tickers: Array<Ticker>;
-  goal_stock_percent: number;
-  actual_stock_percent: number;
-  total_value: number;
-  deviation_percent: number;
-}
-
-
 //======== buy next
 export interface Action {
   id: number;
@@ -39,14 +29,8 @@ export interface Action {
   price: number;
 }
 
-export interface BuyNextResp {
-  actions: Array<Action>;
-  buy_value: number;
-  action_summary: Map<Number, String>;
-}
-
 //======== portfolio list
-export PortfolioGoalList {
+export interface PortfolioGoalList {
   id: number;
   name: string;
   goal_stock_percent: number;

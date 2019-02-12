@@ -1,12 +1,13 @@
 -- This file should undo anything in `up.sql`
 
 -----------
-DROP TABLE old_port_actual;
-DROP TABLE tic_actual;
+DROP TABLE old_actual_port;
+DROP TABLE actual_tic;
+DROP TABLE actual_port;
 
 -----------
-DROP TABLE tic_goal;
-DROP TABLE port_goal;
+DROP TABLE goal_tic;
+DROP TABLE goal_port;
 
 -----------
 DROP TABLE tickers;

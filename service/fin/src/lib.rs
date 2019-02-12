@@ -9,14 +9,10 @@ extern crate log;
 #[macro_use]
 extern crate postgres_mapper_derive;
 
-use crate::{data::*, portfolio::TickerId};
-use postgres::{Connection, TlsMode};
-
 #[macro_use]
 mod std_ext;
-mod api;
+mod algo;
 mod backend;
-mod buy_next;
 mod data;
 mod errors;
 mod portfolio;

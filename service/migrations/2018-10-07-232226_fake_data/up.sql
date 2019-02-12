@@ -1,84 +1,82 @@
--- Your SQL goes here
+-- -- Your SQL goes here
 
 ----------- users
 INSERT INTO users VALUES
-  (DEFAULT, 'apoorv@toidiu.com', '123456');
+  (DEFAULT, 'apoorv@toidiu.com', '$$scrypt$ln=14,r=8,p=1$Xvtx1zK+bcot3cjKfZR9+A$fAM+i/wFUfQaq+HQe2RgsyjgrT93cz/jUkPV+zRNF4I');
 
 ----------- tickers
 INSERT INTO exchanges VALUES
-  ('NYSE');
+  (DEFAULT, 'NYSE Arca');
+INSERT INTO exchanges VALUES
+  (DEFAULT, 'NASDAQ Global Market');
 
 INSERT INTO tickers VALUES
-  (DEFAULT, 'VTI', 'NYSE', .04, 'STOCK');
+  (DEFAULT, 'VTI', '1', .04, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'VTV', 'NYSE', .05, 'STOCK');
+  (DEFAULT, 'VTV', '1', .05, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'VOE', 'NYSE', .07, 'STOCK');
+  (DEFAULT, 'VOE', '1', .07, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'VBR', 'NYSE', .07, 'STOCK');
+  (DEFAULT, 'VBR', '1', .07, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'VEA', 'NYSE', .07, 'STOCK');
+  (DEFAULT, 'VEA', '1', .07, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'VWO', 'NYSE', .14, 'STOCK');
+  (DEFAULT, 'VWO', '1', .14, 'STOCK');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'VTIP', 'NYSE', .06, 'BOND');
+  (DEFAULT, 'VTIP', '2', .06, 'BOND');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'AGG', 'NYSE', .05, 'BOND');
+  (DEFAULT, 'AGG', '1', .05, 'BOND');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'MUB', 'NYSE', .07, 'BOND');
+  (DEFAULT, 'MUB', '1', .07, 'BOND');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'BNDX', 'NYSE', .11, 'BOND');
+  (DEFAULT, 'BNDX', '2', .11, 'BOND');
 INSERT INTO tickers VALUES
-  (DEFAULT, 'VWOB', 'NYSE', .32, 'BOND');
+  (DEFAULT, 'VWOB', '2', .32, 'BOND');
 
 ----------- goal
-INSERT INTO port_goal VALUES
-  (DEFAULT, 58.0, 1.5, 'Value Portfolio');
+INSERT INTO goal_port VALUES
+  (DEFAULT, 'Value Portfolio', 'A collection of funds that represent a value portfolio. The funds are chosen for their low fees.');
 
-INSERT INTO tic_goal VALUES
-  (1, 1, 20.0, 1);
-INSERT INTO tic_goal VALUES
-  (1, 2, 6.0, 2);
-INSERT INTO tic_goal VALUES
-  (1, 3, 4.0, 3);
-INSERT INTO tic_goal VALUES
-  (1, 4, 3.0, 4);
-INSERT INTO tic_goal VALUES
-  (1, 5, 15.0, 5);
-INSERT INTO tic_goal VALUES
-  (1, 6, 10.0, 6);
-INSERT INTO tic_goal VALUES
-  (1, 7, 3.0, 7);
-INSERT INTO tic_goal VALUES
-  (1, 8, 4.0, 8);
-INSERT INTO tic_goal VALUES
-  (1, 9, 14.0, 9);
-INSERT INTO tic_goal VALUES
-  (1, 10, 12.0, 10);
-INSERT INTO tic_goal VALUES
-  (1, 11, 9.0, 11);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 1  , 35.0 , 1);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 2  , 9.4  , 2);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 3  , 7.7  , 3);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 4  , 6.5  , 4);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 5  , 25.9 , 5);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 6  , 15.2 , 6);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 7  , 6.8  , 7);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 8  , 8.4  , 8);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 9  , 36   , 9);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 10 , 30.4 , 10);
+INSERT INTO goal_tic VALUES (DEFAULT, 1, 11 , 18.6 , 11);
 
 ----------- actual
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 1, 2.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 2, 1.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 3, 1.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 4, 1.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 5, 3.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 6, 2.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 7, 1.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 8, 1.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 9, 1.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 10, 2.0, 1, now());
-INSERT INTO tic_actual VALUES
-  (DEFAULT, 1, 1, 11, 1.0, 1, now());
+INSERT INTO actual_port VALUES
+  (DEFAULT, 1, 1, 58.0, 1.5, 1, now());
+INSERT INTO actual_port VALUES
+  (DEFAULT, 1, 1, 90.0, 1.5, 1, now());
 
+INSERT INTO actual_tic
+  (id, fk_port_g_id, fk_port_a_id, fk_tic_id, actual_shares)
+  VALUES (DEFAULT, 1, 1, 1, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 2, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 3, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 4, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 5, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 6, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 7, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 8, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 9, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 10, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 1, 11, 0.0);
+
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 1, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 2, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 3, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 4, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 5, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 6, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 7, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 8, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 9, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 10, 0.0);
+INSERT INTO actual_tic VALUES (DEFAULT, 1, 2, 11, 0.0);

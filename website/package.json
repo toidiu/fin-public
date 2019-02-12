@@ -5,15 +5,21 @@
   "main": "src/index.js",
   "dependencies": {
     "axios": "^0.18.0",
+    "bulma": "^0.7.4",
     "vue": "^2.5.17",
     "vue-hot-reload-api": "^2.3.0",
     "vue-router": "^3.0.1",
     "vue-spinner": "^1.0.3"
   },
+  "engines": {
+    "node": "11.10.0",
+    "npm": "6.7.0"
+  },
+  "engineStrict": true,
   "devDependencies": {
     "@vue/component-compiler-utils": "^2.2.0",
     "node-sass": "^4.9.3",
-    "parcel-bundler": "^1.10.3",
+    "parcel-bundler": "^1.11.0",
     "typescript": "^3.0.3",
     "vue-template-compiler": "^2.5.17"
   },

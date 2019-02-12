@@ -14,15 +14,41 @@
       <div>
         <form @submit.prevent="signup">
           <div class="input-text">
-            <label for="email">email</label>
-            <input id="email" type="email" name="email" required />
+            <label for="email">Email</label>
+            <input
+              class="input"
+              id="email"
+              type="email"
+              name="email"
+              placeholder="email"
+              required
+            />
           </div>
           <div class="input-text">
-            <label for="password">password</label>
-            <input id="password" type="password" name="password" required />
+            <label for="password">Password</label>
+            <input
+              class="input"
+              id="password"
+              type="password"
+              name="password"
+              placeholder="password"
+              required
+            />
           </div>
-          <div class="input-text"><button type="submit">signup</button></div>
+
+          <div class="signup-button input-text">
+            <button
+              v-bind:class="{ 'is-loading': tryingSignup }"
+              class="button is-primary"
+              type="submit"
+            >
+              Sign Up
+            </button>
+          </div>
         </form>
+        <router-link to="/login">
+          <a class="">Login</a>
+        </router-link>
       </div>
     </center-view>
   </div>
@@ -57,7 +83,8 @@ export default Vue.extend({
   },
   data() {
     return {
-      errors: [] as String[]
+      errors: [] as String[],
+      tryingSignup: false
     };
   },
   methods: {
@@ -70,7 +97,7 @@ export default Vue.extend({
         password: pw
       })
         .then(resp => {
-          router.push({ name: "portfolio" });
+          router.push({ name: "home" });
         })
         .catch(error => {
           var status = error.response.status;
@@ -90,6 +117,9 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+input {
+  max-width: 200px;
+}
 .welcome {
   padding: 20px;
   font-size: 30px;
@@ -100,5 +130,9 @@ export default Vue.extend({
     display: block;
     margin-bottom: 5px;
   }
+}
+.signup-button {
+  padding-top: 20px;
+  margin-bottom: 30px;
 }
 </style>

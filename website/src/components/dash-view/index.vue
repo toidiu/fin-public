@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="container">
     <template>
-      <loader-view class="loader" v-show="isLoading" :is-loading="isLoading" />
+      <loader-view class="" v-show="isLoading" :is-loading="isLoading" />
     </template>
 
     <template>
@@ -12,10 +12,13 @@
       <errors-view :errors="errors" v-show="errors.length" />
     </template>
 
-    <portfolio-list-view
-      v-if="portListState != null"
-      :port-list-state="portListState"
-    />
+    <div class="bg" v-if="portListState != null">
+      <dash-view
+        :port-list-state="portListState"
+        @go_to_portfolio="goToPortfolioHandler"
+        @add_portfolio="addPortfolioHandler"
+      />
+    </div>
   </div>
 </template>
 
@@ -23,7 +26,7 @@
 import NavView from "../NavView.vue";
 import LoaderView from "../LoaderView.vue";
 import ErrorsView from "../ErrorsView.vue";
-import PortfolioListView from "./PortfolioListView.vue";
+import DashView from "./DashView.vue";
 import router from "../../index.js";
 import { Ticker, PortfolioGoalList } from "../../data/models";
 import axios from "axios";
@@ -44,9 +47,6 @@ ax.interceptors.response.use(
     if (401 === error.response.status) {
       router.push({ name: "login" });
       return Promise.reject(error);
-    } else if (404 === error.response.status) {
-      router.push({ name: "portfolio", params: { id: "1" } });
-      return Promise.reject(error);
     }
   }
 );
@@ -56,7 +56,7 @@ export default Vue.extend({
     NavView,
     ErrorsView,
     LoaderView,
-    PortfolioListView
+    DashView
   },
   data() {
     return {
@@ -74,15 +74,25 @@ export default Vue.extend({
       this.clearErrors();
       /* get portfolio list */
       this.isLoading = true;
-      ax.get("goal")
+      ax.get("actual")
         .then(resp => {
-          this.portListState = resp.data;
+          if (resp != undefined) {
+            this.portListState = resp.data;
+          } else {
+            this.errors.push("oops,looks like we made a mistake");
+          }
           this.isLoading = false;
         })
         .catch(error => {
           this.errors.push(error.response);
           this.isLoading = false;
         });
+    },
+    goToPortfolioHandler(id) {
+      router.push({ name: "portfolio", params: { id: id } });
+    },
+    addPortfolioHandler() {
+      router.push({ name: "portAdd" });
     },
     clearErrors() {
       this.errors = [];

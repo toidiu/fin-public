@@ -1,8 +1,17 @@
 <template>
-  <div>
-    <table>
+  <div id="buy-next">
+    <div>Buy value: ${{ buyNextState.buy_value }}</div>
+    <table class="table">
       <tr>
-        <th>BUY</th>
+        <th>
+          <button
+            class="button is-primary is-small"
+            v-on:click="buyNextEvent"
+            type="submit"
+          >
+            BUY
+          </button>
+        </th>
         <template v-for="(ticker, idx) in portState.tickers">
           <td v-bind:class="ticker['kind'].toLowerCase()" :key="idx">
             {{ get_shares(ticker) }}
@@ -10,19 +19,12 @@
         </template>
       </tr>
     </table>
-
-    <span> Buy value: ${{ buyNextState.buy_value }} </span>
-    <button v-on:click="buyNextEvent" type="submit">Execute order</button>
   </div>
 </template>
 
 <script lang="ts">
-import {
-  Action,
-  BuyNextResp,
-  FinPortfolioResp,
-  Ticker
-} from "../../data/models";
+import { BuyNextResp, FinPortfolioResp } from "./models";
+import { Action, Ticker } from "../../data/models";
 
 export default {
   props: {
@@ -47,9 +49,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+#buy-next {
+  margin: 10px 0;
+}
 table {
-  border: 1px solid #000;
-  border-radius: 3px;
   margin: 10px 0px;
 }
 
@@ -63,8 +66,8 @@ td {
   font-size: 13px;
 }
 
-th {
-  background-color: #c9c9c9;
+.table th {
+  border: none;
 }
 
 td {

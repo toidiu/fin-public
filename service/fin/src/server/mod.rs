@@ -1,4 +1,3 @@
-use crate::api;
 use crate::std_ext::*;
 use std::collections::BTreeSet;
 use std::env;
@@ -9,7 +8,8 @@ use std::sync::RwLock;
 use crate::backend::{self, PortfolioBackend, UserBackend};
 use crate::data;
 use crate::errors::{ErrMessage, FinError, ResultFin};
-use crate::portfolio::{self, Ticker, TickerId};
+use crate::portfolio;
+use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use postgres::Connection;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
@@ -18,11 +18,14 @@ use http::{Request, Response, StatusCode};
 
 use warp::{http::Uri, Filter, Rejection, Reply};
 
+mod api;
 mod auth;
 mod portfolio_server;
 mod user_server;
 
-const DB_URI: &'static str = "postgres://postgres@localhost:5432/test-fin";
+pub use api::*;
+
+const DB_URI: &'static str = "postgres://postgres@localhost:5432/r-fin";
 
 lazy_static! {
     static ref CONNECTION: r2d2::Pool<PostgresConnectionManager> = {
@@ -52,7 +55,7 @@ pub fn start_server() {
                 conn: conn,
             })),
             Err(err) => {
-                error!("{}", err);
+                error!("{}: {}", line!(), err);
                 Err(warp::reject::custom(FinError::DatabaseErr))
             }
         })
@@ -66,7 +69,7 @@ pub fn start_server() {
                 }))
             }
             Err(err) => {
-                error!("{}", err);
+                error!("{}: {}", line!(), err);
                 Err(warp::reject::custom(FinError::DatabaseErr))
             }
         })
@@ -85,18 +88,40 @@ pub fn start_server() {
 
     // PORTFOLIO===============
     let portfolio_path = warp::path("portfolio");
+    // GET -> portfolio/goal
     let get_port_g_list = warp::get2()
         .and(portfolio_path)
         .and(warp::path("goal"))
+        .and(warp::path::end())
         .and(with_portfolio_backend)
         .and_then(portfolio_server::get_portfolio_g_list);
+    // GET -> portfolio/actual/:id
     let get_port_a_by_id = warp::get2()
         .and(portfolio_path)
         .and(warp::path("actual"))
-        .and(warp::path::param::<i64>())
+        .and(warp::path::param2::<i64>())
+        .and(warp::path::end())
         .and(with_auth)
         .and(with_portfolio_backend)
         .and_then(portfolio_server::get_portfolio_a);
+    // GET -> portfolio/actual
+    let get_port_a_list = warp::get2()
+        .and(portfolio_path)
+        .and(warp::path("actual"))
+        .and(warp::path::end())
+        .and(with_auth)
+        .and(with_portfolio_backend)
+        .and_then(portfolio_server::get_port_a_list);
+    // POST -> portfolio/actual
+    let create_port_a = warp::post2()
+        .and(portfolio_path)
+        .and(warp::path("actual"))
+        .and(warp::path::end())
+        .and(with_auth)
+        .and(warp::body::json())
+        .and(with_portfolio_backend)
+        .and_then(portfolio_server::create_port_a);
+    // GET -> portfolio/actual/buy/?goal_id=1&amount=1
     let get_buy_next = warp::get2()
         .and(portfolio_path)
         .and(warp::path("actual"))
@@ -105,16 +130,20 @@ pub fn start_server() {
         .and(warp::query())
         .and(with_portfolio_backend)
         .and_then(portfolio_server::get_buy_next);
+    // POST -> portfolio/actual/buy
     let post_buy_next = warp::post2()
         .and(portfolio_path)
         .and(warp::path("actual"))
         .and(warp::path("buy"))
+        .and(warp::path::end())
         .and(with_auth)
         .and(warp::body::json())
         .and(with_portfolio_backend)
         .and_then(portfolio_server::post_buy_next);
-    let port_api = get_port_a_by_id
-        .or(get_port_g_list)
+    let port_api = get_port_g_list
+        .or(get_port_a_by_id)
+        .or(get_port_a_list)
+        .or(create_port_a)
         .or(get_buy_next)
         .or(post_buy_next);
 
@@ -126,7 +155,6 @@ pub fn start_server() {
         .and(warp::body::json())
         .and(with_user_backend)
         .and_then(user_server::login);
-
     let post_logout = warp::post2()
         .and(user_path)
         .and(warp::path("logout"))
@@ -152,6 +180,7 @@ fn recover_error(err: Rejection) -> Result<impl warp::Reply, warp::Rejection> {
         let status_code = match err {
             FinError::NotLoggedIn => StatusCode::UNAUTHORIZED,
             FinError::BadRequestErr => StatusCode::BAD_REQUEST,
+            FinError::NotFoundErr => StatusCode::NOT_FOUND,
             FinError::DatabaseErr | FinError::ServerErr => {
                 StatusCode::INTERNAL_SERVER_ERROR
             }

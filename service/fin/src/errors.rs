@@ -10,6 +10,7 @@ pub enum FinError {
     NotLoggedIn,   // user is not logged in
     ServerErr,     // internal server error
     BadRequestErr, // a request is malformed (form has bad data)
+    NotFoundErr,   // resource not found
     DatabaseErr,   // any database related error
 }
 
@@ -30,8 +31,9 @@ impl StdError for FinError {
         match self {
             FinError::NotLoggedIn => "user log-in required",
             FinError::BadRequestErr => "bad request",
+            FinError::NotFoundErr => "not found",
             FinError::DatabaseErr | FinError::ServerErr => {
-                "oops, an error occured with the service"
+                "an error occured with the service"
             }
         }
     }
@@ -51,6 +53,7 @@ impl FinError {
             FinError::NotLoggedIn => 1,
             FinError::ServerErr => 20,
             FinError::BadRequestErr => 21,
+            FinError::NotFoundErr => 22,
             FinError::DatabaseErr => 25,
         }
     }

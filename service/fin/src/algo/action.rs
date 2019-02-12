@@ -16,7 +16,7 @@ impl Action {
         }
     }
 
-    pub fn get_price(&self) -> f32 {
+    pub fn get_price(&self) -> f64 {
         match self {
             Action::Buy(ab) => ab.price,
             Action::Sell(ab) => ab.price,
@@ -58,6 +58,6 @@ impl Add for Action {
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ActionInfo {
     pub id: TickerId,
-    pub shares: f32,
-    pub price: f32,
+    pub shares: f64,
+    pub price: f64,
 }

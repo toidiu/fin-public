@@ -1,6 +1,5 @@
 <template>
   <div class="errors">
-    <p>please fix the following errors:</p>
     <ul>
       <li v-for="(error, idx) in errors" :key="idx">{{ error }}</li>
     </ul>

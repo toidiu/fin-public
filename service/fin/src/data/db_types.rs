@@ -1,6 +1,8 @@
-use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
-use crate::ticker::*;
+use crate::portfolio;
+use crate::server;
+use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use chrono::prelude::*;
+use std::borrow::{Cow, ToOwned};
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize, Debug, PostgresMapper)]
@@ -23,20 +25,20 @@ pub struct UserData {
 pub struct TickerData {
     pub id: i64,
     pub symbol: String,
-    pub fk_exchange: String,
+    pub fk_exchange: i32,
     pub fee: f32,
     pub kind: String,
 }
 
 impl TickerData {
-    pub fn to_ticker(self, price: f32) -> Ticker {
-        Ticker {
-            id: self.id,
-            symbol: symbol!(self.symbol),
-            exchange: self.fk_exchange,
-            fee: self.fee,
-            price: price,
-            kind: {
+    pub fn to_ticker(self, price: f64) -> Ticker {
+        Ticker::new(
+            self.id,
+            symbol!(self.symbol),
+            self.fk_exchange,
+            self.fee,
+            price,
+            {
                 if (self.kind == "STOCK") {
                     InvestmentKind::Stock
                 } else if (self.kind == "BOND") {
@@ -45,30 +47,109 @@ impl TickerData {
                     panic!("expected either STOCK or BOND")
                 }
             },
-        }
+        )
     }
 }
 
 #[derive(Debug, PostgresMapper)]
-#[pg_mapper(table = "port_goal")]
-pub struct PortGoalData {
+#[pg_mapper(table = "goal_port")]
+pub struct GoalPortData {
     pub id: i64,
-    pub stock_per: f32,
-    pub deviation: f32,
     pub name: String,
     pub description: Option<String>,
 }
 
-impl PortGoalData {
+impl GoalPortData {
     pub fn to_port_goal(
         self,
-        tickers_goal: HashMap<TickerId, portfolio::TickerGoal>,
+        tickers_goal: &HashMap<TickerId, portfolio::GoalTicker>,
+        tickers_map: &HashMap<TickerId, Ticker>,
+        actual_stock_percent: &f32,
     ) -> portfolio::PortfolioGoal {
-        portfolio::PortfolioGoal {
+        portfolio::PortfolioGoal::new(
+            self.id,
+            self.name,
+            self.description,
+            tickers_goal,
+            tickers_map,
+            actual_stock_percent,
+        )
+    }
+}
+
+#[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "goal_tic")]
+pub struct GoalTickerData {
+    pub id: i64,
+    pub fk_port_g_id: i64,
+    pub fk_tic_id: i64,
+    pub tic_goal_per: f32, //ticker percent
+    pub ord: i32,
+}
+
+impl From<GoalTickerData> for portfolio::GoalTicker {
+    fn from(item: GoalTickerData) -> portfolio::GoalTicker {
+        portfolio::GoalTicker::new(
+            item.id,
+            item.fk_port_g_id,
+            item.fk_tic_id,
+            item.tic_goal_per,
+            item.ord,
+        )
+    }
+}
+
+#[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "")]
+pub struct GoalTickerDetailData {
+    pub fk_port_g_id: i64,
+    pub fk_tic_id: i64,
+    pub tic_goal_per: f32,
+    pub ord: i32,
+    pub symbol: String,
+}
+
+impl GoalTickerDetailData {
+    pub fn to_tic_goal(self) -> portfolio::TickerGoalDetailed {
+        portfolio::TickerGoalDetailed {
+            port_goal_id: self.fk_port_g_id,
+            ticker_id: self.fk_tic_id,
+            goal_percent: self.tic_goal_per,
+            order: self.ord,
+            symbol: symbol!(self.symbol),
+        }
+    }
+}
+
+pub struct ActualFullData {
+    pub port: ActualPortData,
+    pub tics: Vec<ActualTickerData>,
+}
+
+#[derive(Debug, PostgresMapper)]
+#[pg_mapper(table = "")]
+pub struct ActualPortDetailData {
+    pub id: i64,
+    pub fk_user_id: i64,
+    pub fk_port_g_id: i64,
+    pub stock_percent: f32,
+    pub deviation: f32,
+    pub version: i32,
+    pub last_updated: DateTime<Utc>,
+    pub name: String,
+    pub description: Option<String>,
+}
+
+impl ActualPortDetailData {
+    pub fn to_resp(self) -> server::PortfolioActualDetailResp {
+        server::PortfolioActualDetailResp {
             id: self.id,
-            tickers_goal: tickers_goal,
-            goal_stock_percent: self.stock_per,
-            deviation_percent: self.deviation,
+            fk_user_id: self.fk_user_id,
+            fk_port_g_id: self.fk_port_g_id,
+            stock_percent: self.stock_percent,
+            deviation: self.deviation,
+            version: self.version,
+            last_updated: self.last_updated,
             name: self.name,
             description: self.description,
         }
@@ -76,92 +157,79 @@ impl PortGoalData {
 }
 
 #[derive(Debug, PostgresMapper)]
-#[pg_mapper(table = "tic_goal")]
-pub struct TickerGoalData {
-    pub fk_port_g_id: i64,
-    pub fk_tic_id: i64,
-    pub goal_per: f32,
-    pub ord: i32,
-}
-
-impl TickerGoalData {
-    pub fn to_tic_goal(self) -> portfolio::TickerGoal {
-        portfolio::TickerGoal {
-            port_goal_id: self.fk_port_g_id,
-            ticker_id: self.fk_tic_id,
-            goal_percent: self.goal_per,
-            order: self.ord,
-        }
-    }
-}
-
-#[derive(Debug, PostgresMapper)]
-#[pg_mapper(table = "")]
-pub struct TickerGoalDetailData {
-    pub fk_port_g_id: i64,
-    pub fk_tic_id: i64,
-    pub goal_per: f32,
-    pub ord: i32,
-    pub symbol: String,
-}
-
-impl TickerGoalDetailData {
-    pub fn to_tic_goal(self) -> portfolio::TickerGoalDetailed {
-        portfolio::TickerGoalDetailed {
-            port_goal_id: self.fk_port_g_id,
-            ticker_id: self.fk_tic_id,
-            goal_percent: self.goal_per,
-            order: self.ord,
-            symbol: symbol!(self.symbol),
-        }
-    }
-}
-
-#[derive(Debug, PostgresMapper)]
-#[pg_mapper(table = "tic_actual")]
-pub struct TickerActualData {
+#[pg_mapper(table = "actual_port")]
+pub struct ActualPortData {
     pub id: i64,
     pub fk_user_id: i64,
     pub fk_port_g_id: i64,
-    pub fk_tic_id: i64,
-    pub actual_shares: f32,
+    pub stock_percent: f32,
+    pub deviation: f32,
     pub version: i32,
-    pub tsz: DateTime<Utc>,
+    pub last_updated: DateTime<Utc>,
 }
 
-impl TickerActualData {
-    pub fn to_tic_actual(self) -> portfolio::TickerActual {
-        portfolio::TickerActual {
+impl ActualPortData {
+    pub fn to_actual_port(
+        self,
+        tickers_actual: &HashMap<TickerId, portfolio::TickerActual>,
+    ) -> portfolio::PortfolioActual {
+        portfolio::PortfolioActual::new(
+            self.id,
+            self.fk_user_id,
+            self.fk_port_g_id,
+            self.stock_percent,
+            self.deviation,
+            self.version,
+            self.last_updated,
+            tickers_actual.clone(),
+        )
+    }
+
+    pub fn to_actual_port_resp(
+        self,
+        tickers_actual: &Vec<portfolio::TickerActual>,
+    ) -> server::PortfolioActualResp {
+        server::PortfolioActualResp {
             id: self.id,
-            user_id: self.fk_user_id,
-            port_goal_id: self.fk_port_g_id,
-            ticker_id: self.fk_tic_id,
-            actual_shares: self.actual_shares,
+            fk_user_id: self.fk_user_id,
+            fk_port_g_id: self.fk_port_g_id,
+            stock_percent: self.stock_percent,
+            deviation: self.deviation,
             version: self.version,
-            tsz: self.tsz,
+            last_updated: self.last_updated,
+            tickers_actual: tickers_actual.clone(),
         }
     }
 }
 
 #[derive(Debug, PostgresMapper)]
-#[pg_mapper(table = "old_tic_actual")]
-pub struct OldPortActualData {
-    pub fk_user_id: i64,
+#[pg_mapper(table = "actual_tic")]
+pub struct ActualTickerData {
+    pub id: i64,
     pub fk_port_g_id: i64,
-    pub version: i32,
-    pub port_a_data: serde_json::Value, // PortfolioActualData
+    pub fk_port_a_id: i64,
+    pub fk_tic_id: i64,
+    pub actual_shares: f64,
+}
+
+impl From<ActualTickerData> for portfolio::TickerActual {
+    fn from(item: ActualTickerData) -> Self {
+        portfolio::TickerActual::new(
+            item.id,
+            item.fk_port_g_id,
+            item.fk_port_a_id,
+            item.fk_tic_id,
+            item.actual_shares,
+        )
+    }
 }
 
 #[derive(Debug, PostgresMapper)]
-#[pg_mapper(table = "tic_actual")]
-pub struct PortfolioGoalDetail {
+#[pg_mapper(table = "old_actual_port")]
+pub struct OldActualPortData {
     pub id: i64,
-    pub stock_per: f32,
-    // pub deviation: f32,
-    pub name: String,
-    pub description: Option<String>,
-    pub fk_port_g_id: i64,
-    pub fk_tic_id: i64,
-    pub goal_per: f32,
-    pub ord: i32,
+    pub fk_port_a_id: i64,
+    pub version: i32,
+    pub port_a_data: serde_json::Value,
+    pub port_a_tic_data: serde_json::Value,
 }

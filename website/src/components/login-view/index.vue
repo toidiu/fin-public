@@ -14,15 +14,40 @@
       <div>
         <form @submit.prevent="login">
           <div class="input-text">
-            <label for="email">email</label>
-            <input id="email" type="email" name="email" required />
+            <label for="email">Email</label>
+            <input
+              class="input"
+              id="email"
+              type="email"
+              name="email"
+              placeholder="email"
+              required
+            />
           </div>
           <div class="input-text">
-            <label for="password">password</label>
-            <input id="password" type="password" name="password" required />
+            <label for="password">Password</label>
+            <input
+              class="input"
+              id="password"
+              type="password"
+              name="password"
+              placeholder="password"
+              required
+            />
           </div>
-          <div class="input-text"><button type="submit">login</button></div>
+          <div class="login-button input-text">
+            <button
+              v-bind:class="{ 'is-loading': tryingLogin }"
+              class="button is-primary"
+              type="submit"
+            >
+              Login
+            </button>
+          </div>
         </form>
+        <router-link to="/signup">
+          <a class="">Sign Up</a>
+        </router-link>
       </div>
     </center-view>
   </div>
@@ -57,7 +82,8 @@ export default Vue.extend({
   },
   data() {
     return {
-      errors: [] as String[]
+      errors: [] as String[],
+      tryingLogin: false
     };
   },
   methods: {
@@ -65,14 +91,17 @@ export default Vue.extend({
       this.clearErrors();
       var email = submitEvent.target.elements.email.value;
       var pw = submitEvent.target.elements.password.value;
+      this.tryingLogin = true;
       ax.post("/login", {
         email: email,
         password: pw
       })
         .then(resp => {
-          router.push({ name: "portfolio" });
+          this.tryingLogin = false;
+          router.push({ name: "dash" });
         })
         .catch(error => {
+          this.tryingLogin = false;
           var status = error.response.status;
           switch (status) {
             case 401:
@@ -90,6 +119,9 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+input {
+  max-width: 200px;
+}
 .welcome {
   padding: 20px;
   font-size: 30px;
@@ -100,5 +132,9 @@ export default Vue.extend({
     display: block;
     margin-bottom: 5px;
   }
+}
+.login-button {
+  padding-top: 20px;
+  margin-bottom: 30px;
 }
 </style>

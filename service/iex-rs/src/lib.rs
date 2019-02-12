@@ -1,5 +1,3 @@
-// #![feature(duration_as_u128)]
-
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
@@ -20,21 +18,39 @@ impl Iex {
         let s = tickers.join(",");
 
         let uri = format!(
-            "https://api.iextrading.com/1.0/stock/market/batch?symbols={}&types=price",
+            "https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=price&token=sk_e58c99951aa74caab7bb7ebbc6013551",
             s
         );
 
-        let body =
-            reqwest::get(uri.as_str()).unwrap().text().map_err(|err| {
-                loge!(err);
-                ()
-            })?;
+        // `source_debug` is used so we can work on the logic without
+        // an internet connection
+        let ret: IexTickersPrice = if cfg!(feature = "source_debug") {
+            dbg!("using dbg source for iex price");
+            let mut temp: IexTickersPrice = HashMap::new();
+            let mut fake_price: f64 = 100.0;
+            let mut go_up = true;
+            for t in tickers {
+                temp.insert(t, IexPrice { price: fake_price });
+                if go_up {
+                    fake_price += 15.0;
+                } else {
+                    fake_price -= 20.0;
+                }
+                go_up = !go_up;
+            }
+            temp
+        } else {
+            let body =
+                reqwest::get(uri.as_str()).unwrap().text().map_err(|err| {
+                    loge!(err);
+                    ()
+                })?;
 
-        let ret: IexTickersPrice =
             serde_json::from_str(&body).map_err(|err| {
                 loge!(err);
                 ()
-            })?;
+            })?
+        };
 
         Ok(ret)
     }
@@ -44,5 +60,5 @@ type IexTickersPrice = HashMap<String, IexPrice>;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IexPrice {
-    pub price: f32,
+    pub price: f64,
 }

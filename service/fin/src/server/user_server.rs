@@ -1,10 +1,11 @@
 use super::auth;
 use super::{CONNECTION, DB_URI};
-use crate::api;
 use crate::backend::{self, PortfolioBackend, UserBackend};
 use crate::data;
 use crate::errors::{FinError, ResultFin};
-use crate::portfolio::{self, Ticker, TickerId};
+use crate::portfolio;
+use crate::server;
+use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use libpasta;
 use std::io::Cursor;
 use std::ops::Deref;
@@ -15,7 +16,7 @@ use lru_time_cache::LruCache;
 use postgres::{Connection, TlsMode};
 
 pub fn login(
-    data: api::LoginForm,
+    data: server::LoginForm,
     res_user_backend: Result<impl backend::UserBackend, warp::Rejection>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     // get user with password
@@ -64,7 +65,7 @@ pub fn logout() -> Result<impl warp::Reply, warp::Rejection> {
 }
 
 pub fn signup(
-    data: api::LoginForm,
+    data: server::LoginForm,
     res_user_backend: Result<impl backend::UserBackend, warp::Rejection>,
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let user_backend = res_user_backend?;

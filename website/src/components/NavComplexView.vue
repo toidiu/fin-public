@@ -1,25 +1,37 @@
 <template>
-  <nav
-    class="navbar level is-mobile"
-    role="navigation"
-    aria-label="main navigation"
-  >
-    <div class="navbar-brand ">
-      <a class="navbar-item" v-on:click="goToDash">
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/">
         <img src="https://via.placeholder.com/150" width="112" height="28" />
+      </a>
+
+      <a
+        role="button"
+        class="navbar-burger burger"
+        aria-label="menu"
+        aria-expanded="false"
+        data-target="navbarBasicExample"
+      >
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
       </a>
     </div>
 
-    <div class="level-right">
-      <router-link to="/dash">
-        <a class="navbar-item">dash</a>
-      </router-link>
-      <router-link v-if="isUserAuth" to="/login">
-        <a class="navbar-item">login</a>
-      </router-link>
-      <a class="navbar-item" href="#" v-if="!isUserAuth" v-on:click="logout"
-        >logout</a
-      >
+    <div id="navbarBasicExample" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="#" v-if="!isUserAuth" v-on:click="logout"
+          >logout</a
+        >
+        <router-link v-if="isUserAuth" to="/login">
+          <a class="navbar-item">login</a>
+        </router-link>
+        <!-- <router-link v-if="isUserAuth" to="/signup" -->
+        <!--   ><a class="navbar-item">signup</a></router-link -->
+        <!-- > -->
+        <router-link to="/home"> <a class="navbar-item">home</a> </router-link>
+        <!-- <router-link to="/portfolio"> <a>portfolio</a> </router-link> -->
+      </div>
     </div>
   </nav>
 </template>
@@ -85,13 +97,6 @@ export default Vue.extend({
       event.preventDefault();
       ax.post("/logout").catch(error => {});
       router.push({ name: "login" });
-    },
-    goToDash() {
-      if (this.$router.currentRoute.name == "dash") {
-        this.$router.go(0);
-      } else {
-        router.push({ name: "dash" });
-      }
     }
   }
 });

@@ -44,6 +44,10 @@ impl StdExt {
     pub fn round_two_digits(val: &mut f32) {
         *val = (*val * 100.00).round() / 100.00;
     }
+
+    pub fn round_two_digits_64(val: &mut f64) {
+        *val = (*val * 100.00).round() / 100.00;
+    }
 }
 
 pub trait ExtIterator: Iterator
@@ -79,6 +83,7 @@ mod test {
 
     use super::ExtIterator;
     use crate::portfolio::*;
+    use crate::ticker::*;
 
     enum TestMacro {
         Foo,
