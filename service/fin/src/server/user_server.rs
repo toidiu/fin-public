@@ -1,19 +1,10 @@
 use super::auth;
-use super::{CONNECTION, DB_URI};
-use crate::backend::{self, PortfolioBackend, UserBackend};
+use crate::backend;
 use crate::data;
-use crate::errors::{FinError, ResultFin};
-use crate::portfolio;
 use crate::server;
-use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use libpasta;
-use std::io::Cursor;
-use std::ops::Deref;
-use std::sync::RwLock;
 
-use http::{self, Request, Response, StatusCode};
-use lru_time_cache::LruCache;
-use postgres::{Connection, TlsMode};
+use http::{self, Response, StatusCode};
 
 pub fn login(
     data: server::LoginForm,

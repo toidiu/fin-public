@@ -46,6 +46,11 @@ impl PortfolioState {
     }
 
     // todo test!!
+    pub fn get_actual_port(&self) -> &PortfolioActual {
+        &self.actual
+    }
+
+    // todo test!!
     pub fn get_actual_tickers(&self) -> &HashMap<TickerId, TickerActual> {
         &self.actual.tickers_actual
     }
@@ -94,6 +99,7 @@ impl PortfolioState {
             .actual_shares += amount;
     }
 
+    //TODO taking mut so could simply take a reference
     pub fn apply_action(mut self, action: &Action) -> Self {
         match action {
             Action::Buy(info) => {
@@ -112,7 +118,7 @@ impl PortfolioState {
         self
     }
 
-    pub fn get_current_version(&mut self) -> &i32 {
+    pub fn get_current_version(&self) -> &i32 {
         &self.actual.get_version()
     }
 }

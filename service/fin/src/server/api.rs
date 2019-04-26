@@ -1,8 +1,7 @@
-use crate::algo;
-use crate::algo::{Action, ActionInfo, BuyNext};
+use crate::algo::{Action, BuyNext};
 use crate::data;
 use crate::portfolio;
-use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
+use crate::ticker::{InvestmentKind, TickerId, TickerSymbol};
 use chrono::prelude::*;
 use std::collections::HashMap;
 

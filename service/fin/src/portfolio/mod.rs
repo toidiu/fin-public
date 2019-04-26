@@ -1,5 +1,3 @@
-#![allow(dead_code, unused)]
-
 use crate::algo;
 use crate::ticker::{self, *};
 

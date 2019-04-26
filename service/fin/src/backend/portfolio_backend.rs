@@ -1,6 +1,6 @@
 use crate::algo::{self, BuyNext};
 use crate::algo::{Action, ActionInfo};
-use crate::data::{self, *};
+use crate::data;
 use crate::errors::*;
 use crate::portfolio;
 use crate::server;
@@ -59,6 +59,9 @@ pub trait PortfolioBackend {
         current_port_version: &i32,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
         updated_tickers_actual: &Vec<&portfolio::TickerActual>,
+        init_port_data: &portfolio::PortfolioActual,
+        new_port_data: &portfolio::PortfolioActual,
+        actions: &Vec<Action>,
     ) -> ResultFin<Vec<portfolio::TickerActual>>;
 
     fn create_port_a(
@@ -225,7 +228,23 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         current_port_version: &i32,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
         updated_tickers_actual: &Vec<&portfolio::TickerActual>,
+        init_port: &portfolio::PortfolioActual,
+        new_port: &portfolio::PortfolioActual,
+        actions: &Vec<Action>,
     ) -> ResultFin<Vec<portfolio::TickerActual>> {
+        let init_port_data =
+            serde_json::to_value(init_port).map_err(|err| {
+                error!("{}: {}", line!(), err);
+                FinError::ServerErr
+            })?;
+        let new_port_data = serde_json::to_value(new_port).map_err(|err| {
+            error!("{}: {}", line!(), err);
+            FinError::ServerErr
+        })?;
+        let actions_data = serde_json::to_value(&actions).map_err(|err| {
+            error!("{}: {}", line!(), err);
+            FinError::ServerErr
+        })?;
         self.db
             .update_tickers_actual(
                 user_id,
@@ -233,6 +252,9 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
                 &Utc::now(),
                 init_tickers_actual,
                 updated_tickers_actual,
+                &init_port_data,
+                &new_port_data,
+                &actions_data,
             )
             .map(|res| res.tics.into_iter().map(|x| x.into()).collect())
     }
@@ -283,7 +305,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
         // TODO simplify by capturing above into one fn
         // construct a port state and a BuyNext
-        let mut port = portfolio::PortfolioState::new(
+        let port = portfolio::PortfolioState::new(
             &port_actual,
             &port_goal,
             &tickers_map,
@@ -293,7 +315,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         while (buy_next.buy_value < buy_amount) {
             let port_actual =
                 self.get_port_actual(port_a_id, &buy_next.evolved_actual)?;
-            let mut port_state = portfolio::PortfolioState::new(
+            let port_state = portfolio::PortfolioState::new(
                 &port_actual,
                 &port_goal,
                 &tickers_map,
@@ -332,28 +354,38 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
             &port_actual.stock_percent,
         )?;
 
-        let mut port = portfolio::PortfolioState::new(
+        let init_port = portfolio::PortfolioState::new(
+            &port_actual,
+            &port_goal,
+            &tickers_map,
+        );
+
+        let mut new_port = portfolio::PortfolioState::new(
             &port_actual,
             &port_goal,
             &tickers_map,
         );
 
         for a in actions {
-            port = port.apply_action(&a);
+            new_port = new_port.apply_action(&a);
         }
 
         // initial ticker values
         let init_tic_actual = tic_actual.values().collect();
         // evolved ticker values
-        let evolved_tic_actual = port.get_actual_tickers().clone();
+        let evolved_tic_actual = new_port.get_actual_tickers().clone();
         let evolved_tic_actual = evolved_tic_actual.values().collect();
+
         let inserted_tic_actual = self.update_actual(
             user_id,
-            port.get_current_version(),
+            new_port.get_current_version(),
             &init_tic_actual,
             &evolved_tic_actual,
+            &init_port.get_actual_port(),
+            &new_port.get_actual_port(),
+            &actions,
         );
 
-        Ok(port)
+        Ok(new_port)
     }
 }

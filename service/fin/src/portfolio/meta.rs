@@ -168,7 +168,7 @@ impl PortfolioMeta {
 
     pub(super) fn calc_total_value(&mut self) {
         let mut total_val = 0.0;
-        for (s, x) in self.tickers_meta.iter() {
+        for (_s, x) in self.tickers_meta.iter() {
             total_val += x.ticker_value;
         }
         self.total_value = total_val;

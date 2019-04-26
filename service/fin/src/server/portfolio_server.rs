@@ -1,18 +1,9 @@
-use super::CONNECTION;
-use crate::algo;
-use crate::backend::{self, PortfolioBackend};
-use crate::data;
-use crate::errors::{FinError, ResultFin};
+use crate::backend;
+use crate::errors::FinError;
 use crate::portfolio;
 use crate::server;
 use crate::ticker::{Ticker, TickerId};
 use std::collections::HashMap;
-use std::ops::Deref;
-use std::sync::RwLock;
-
-use http::{self, Request, Response, StatusCode};
-
-use super::auth;
 
 pub fn get_portfolio_g_list(
     res_portfolio_backend: Result<
@@ -85,7 +76,7 @@ pub fn get_portfolio_a(
             warp::reject::custom(err)
         })?;
 
-    let mut port =
+    let port =
         portfolio::PortfolioState::new(&port_actual, &port_goal, &tickers_map);
 
     // get state

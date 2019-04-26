@@ -1,5 +1,5 @@
 use crate::data;
-use http::{self, Request, Response, StatusCode};
+use http::{self, Response, StatusCode};
 
 pub fn parse_sess(sess: &str) -> Result<i64, ()> {
     sess.parse::<i64>().map_err(|err| ())

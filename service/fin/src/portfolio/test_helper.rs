@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 use super::{actual::*, goal::*, meta::*};
 use crate::std_ext::*;
 use crate::ticker::*;

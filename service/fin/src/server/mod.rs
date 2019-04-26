@@ -1,22 +1,11 @@
-use crate::std_ext::*;
-use std::collections::BTreeSet;
-use std::env;
-use std::fmt::{self, Display};
-use std::ops::Deref;
-use std::sync::RwLock;
-
-use crate::backend::{self, PortfolioBackend, UserBackend};
+use crate::backend;
 use crate::data;
-use crate::errors::{ErrMessage, FinError, ResultFin};
-use crate::portfolio;
-use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
-use postgres::Connection;
+use crate::errors::{ErrMessage, FinError};
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
-use http::header::HeaderValue;
-use http::{Request, Response, StatusCode};
+use http::StatusCode;
 
-use warp::{http::Uri, Filter, Rejection, Reply};
+use warp::{Filter, Rejection};
 
 mod api;
 mod auth;

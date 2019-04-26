@@ -1,12 +1,9 @@
-#![allow(dead_code, unused)]
-
 mod db_types;
 mod test_helper;
 
 use crate::backend;
 use crate::errors::{FinError, ResultFin};
 use crate::portfolio;
-use crate::std_ext::ExtIterator;
 use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use chrono::prelude::*;
 use postgres::Connection;
@@ -63,6 +60,9 @@ pub trait FinDb {
         updated_tsz: &DateTime<Utc>,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
         updated_tickers_actual: &Vec<&portfolio::TickerActual>,
+        init_port: &serde_json::Value,
+        new_port: &serde_json::Value,
+        actions: &serde_json::Value,
     ) -> ResultFin<db_types::ActualFullData>;
 
     fn create_portfolio_actual(
@@ -308,6 +308,9 @@ impl FinDb for PgFinDb {
         updated_tsz: &DateTime<Utc>,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
         updated_tickers_actual: &Vec<&portfolio::TickerActual>,
+        init_port_data: &serde_json::Value,
+        new_port_data: &serde_json::Value,
+        actions_data: &serde_json::Value,
     ) -> ResultFin<db_types::ActualFullData> {
         if (updated_tickers_actual.is_empty()) {
             error!("unable to update tickers because updated_tickers_actual is empty");
@@ -325,27 +328,29 @@ impl FinDb for PgFinDb {
             FinError::DatabaseErr
         })?;
 
-        // set old
-        let data =
-            serde_json::to_value(init_tickers_actual).map_err(|err| {
-                error!("{}: {}", line!(), err);
-                FinError::ServerErr
-            })?;
-
         // ===================
         // save old data
         // ===================
         let stmt_old_backup = format!(
             "INSERT INTO {}
-            (fk_port_a_id, version, port_a_data, port_a_tic_data)
-            VALUES ($1, $2, $3, $4);",
+            (fk_port_a_id, version, init_port_a_data, new_port_a_data,
+            actions_data, port_action)
+            VALUES ($1, $2, $3, $4, $5, $6);",
             &db_types::OldActualPortData::sql_table(),
         );
         tx.execute(
             &stmt_old_backup,
-            &[&port_a_id, &current_port_version, &data, &data],
+            &[
+                &port_a_id,
+                &current_port_version,
+                &init_port_data,
+                &new_port_data,
+                &actions_data,
+                &DomainPortAction::new("TICKER".to_string()),
+            ],
         )
         .map_err(|err| {
+            dbg!(&err);
             error!("{}: {}", line!(), err);
             FinError::DatabaseErr
         })?;
@@ -520,7 +525,7 @@ impl FinDb for PgFinDb {
             tx.execute(
                 &stmt_tic_a,
                 &[&port_g_id, &new_actual_port.id, &gt.fk_tic_id, &0.0],
-            );
+            )?;
         }
 
         tx.set_commit();
@@ -769,12 +774,16 @@ mod tests {
 
             let updated_tic =
                 portfolio::TickerActual::new(1, 1, 1, 1, new_shares);
+
             let res = db.update_tickers_actual(
                 &1,
                 &curr_version,
                 &new_time,
                 &vec![&init_tic],
                 &vec![&updated_tic],
+                &json!("init_port_data"),
+                &json!("new_port_data"),
+                &json!("actions_data"),
             );
 
             assert_eq!(res.is_ok(), true);
@@ -827,6 +836,9 @@ mod tests {
                 &new_time,
                 &vec![&init_tic],
                 &vec![&updated_tic],
+                &json!("init_port_data"),
+                &json!("new_port_data"),
+                &json!("actions_data"),
             );
 
             assert_eq!(res.is_ok(), true);
@@ -864,6 +876,9 @@ mod tests {
                 &new_time_2,
                 &vec![&init_tic_2],
                 &vec![&updated_tic_2],
+                &json!("init_port_data"),
+                &json!("new_port_data"),
+                &json!("actions_data"),
             );
 
             assert_eq!(res.is_ok(), true);

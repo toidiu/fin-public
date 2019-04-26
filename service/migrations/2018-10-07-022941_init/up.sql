@@ -68,12 +68,18 @@ CREATE TABLE actual_tic (
 );
 
 -----------
+CREATE DOMAIN dom_port_action
+  AS text NOT NULL
+  CONSTRAINT tk_check CHECK (VALUE IN('TICKER', 'PERCENT'));
+
 CREATE TABLE old_actual_port (
   id bigserial PRIMARY KEY,
   fk_port_a_id int8 NOT NULL REFERENCES actual_port(id),
   version int4 NOT NULL,
-  port_a_data jsonb,
-  port_a_tic_data jsonb,
+  init_port_a_data jsonb,
+  new_port_a_data jsonb,
+  actions_data jsonb,
+  port_action dom_port_action NOT NULL,
   UNIQUE(fk_port_a_id, version)
 );
 

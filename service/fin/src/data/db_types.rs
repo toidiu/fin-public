@@ -20,6 +20,10 @@ pub struct UserData {
     pub email: String,
 }
 
+#[derive(Debug, FromSql, ToSql)]
+#[postgres(name = "dom_tic_kind")]
+pub struct DomainTicKind(String);
+
 #[derive(Debug, PostgresMapper)]
 #[pg_mapper(table = "tickers")]
 pub struct TickerData {
@@ -27,7 +31,7 @@ pub struct TickerData {
     pub symbol: String,
     pub fk_exchange: i32,
     pub fee: f32,
-    pub kind: String,
+    pub kind: DomainTicKind,
 }
 
 impl TickerData {
@@ -39,9 +43,9 @@ impl TickerData {
             self.fee,
             price,
             {
-                if (self.kind == "STOCK") {
+                if (self.kind.0 == "STOCK") {
                     InvestmentKind::Stock
-                } else if (self.kind == "BOND") {
+                } else if (self.kind.0 == "BOND") {
                     InvestmentKind::Bond
                 } else {
                     panic!("expected either STOCK or BOND")
@@ -224,12 +228,29 @@ impl From<ActualTickerData> for portfolio::TickerActual {
     }
 }
 
+#[derive(Debug, FromSql, ToSql)]
+#[postgres(name = "dom_port_action")]
+pub struct DomainPortAction(String);
+
+impl DomainPortAction {
+    pub fn new(s: String) -> Self {
+        assert!(
+            s == "TICKER" || s == "PERCENT",
+            "dom_port_action was not valid: {}",
+            s
+        );
+        DomainPortAction(s)
+    }
+}
+
 #[derive(Debug, PostgresMapper)]
 #[pg_mapper(table = "old_actual_port")]
 pub struct OldActualPortData {
     pub id: i64,
     pub fk_port_a_id: i64,
     pub version: i32,
-    pub port_a_data: serde_json::Value,
-    pub port_a_tic_data: serde_json::Value,
+    pub init_port_a_data: serde_json::Value,
+    pub new_port_a_data: serde_json::Value,
+    pub actions_data: serde_json::Value,
+    pub port_action: DomainPortAction,
 }

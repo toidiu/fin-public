@@ -1,4 +1,4 @@
-use crate::data::{self, *};
+use crate::data;
 use crate::errors::*;
 
 pub trait UserBackend {

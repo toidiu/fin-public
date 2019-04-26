@@ -1,3 +1,5 @@
+#![allow(dead_code, unused)]
+
 use crate::data::*;
 use chrono::prelude::*;
 use postgres::{Connection, TlsMode};
@@ -74,8 +76,6 @@ impl TestHelper {
     }
 
     fn setup(db_name: &str) {
-        pretty_env_logger::try_init();
-
         // create database
         let db_conn = Connection::connect(CLUSTER_URI, TlsMode::None)
             .expect("unable to create db conn");
