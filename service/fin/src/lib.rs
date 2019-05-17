@@ -14,6 +14,7 @@ extern crate serde_json;
 extern crate log;
 #[macro_use]
 extern crate postgres_mapper_derive;
+extern crate paseto;
 
 #[macro_use]
 mod std_ext;

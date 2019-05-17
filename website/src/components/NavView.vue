@@ -6,7 +6,7 @@
   >
     <div class="navbar-brand ">
       <a class="navbar-item" v-on:click="goToDash">
-        <img src="https://via.placeholder.com/150" width="112" height="28" />
+        <img src="./../../static/images/fin-logo.png" width="112" height="28" />
       </a>
     </div>
 

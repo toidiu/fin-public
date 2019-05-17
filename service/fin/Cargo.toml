@@ -16,6 +16,7 @@ lru_time_cache = "~0.8"
 lazy_static = "~1.2"
 time = "~0.1"
 libpasta = "0.1"
+paseto = "~1.0"
 
 postgres = { version = "~0.15", features = ["with-serde_json", "with-chrono"] }
 postgres-derive = "~0.3"
