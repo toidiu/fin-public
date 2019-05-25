@@ -1,0 +1,8 @@
+[app]
+paseto_token = "ed3s$d@S8BMrRIrel1BnACrrWrZrqlrY"
+
+[database]
+url = "postgres://postgres@localhost:5432/r-fin"
+
+[iex]
+token = "_____"

@@ -23,6 +23,7 @@ mod backend;
 mod data;
 mod errors;
 mod portfolio;
+mod settings;
 mod ticker;
 
 pub mod server;

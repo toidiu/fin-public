@@ -1,6 +1,7 @@
 use crate::backend;
 use crate::data;
 use crate::errors::{ErrMessage, FinError};
+use crate::settings::CONFIG;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
 use http::StatusCode;
@@ -14,22 +15,22 @@ mod user_server;
 
 pub use api::*;
 
-const DB_URI: &'static str = "postgres://postgres@localhost:5432/r-fin";
-
 lazy_static! {
     static ref CONNECTION: r2d2::Pool<PostgresConnectionManager> = {
-        let manager =
-            PostgresConnectionManager::new(DB_URI, TlsMode::None).unwrap();
+        let manager = PostgresConnectionManager::new(
+            CONFIG.database.url.to_string(),
+            TlsMode::None,
+        )
+        .unwrap();
         r2d2::Pool::builder()
-            .max_size(15)
+            .max_size(CONFIG.database.pool_size)
             .build(manager)
             .expect("Failed to create pool")
     };
 }
 
 pub fn start_server() {
-    let port = 8000;
-    println!("Listening on http://localhost:{}", port);
+    println!("Listening on http://localhost:{}", CONFIG.app.port);
 
     // HEADERS
     let with_cors = warp::cors()
@@ -161,7 +162,7 @@ pub fn start_server() {
     let api = port_api.or(user_api);
 
     let routes = api.recover(recover_error).with(with_cors);
-    warp::serve(routes).run(([127, 0, 0, 1], port));
+    warp::serve(routes).run(([127, 0, 0, 1], CONFIG.app.port));
 }
 
 fn recover_error(err: Rejection) -> Result<impl warp::Reply, warp::Rejection> {

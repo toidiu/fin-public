@@ -2,5 +2,6 @@
 
 members = [
   "fin",
-  "iex-rs"
+  "iex_rs",
+  "fin_config"
 ]

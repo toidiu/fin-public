@@ -1,0 +1,9 @@
+[app]
+paseto_token = "ed3s$d@S8BMrRIrel1BnACrrWrZrqlrY"
+
+[database]
+pool_size = 15
+url = "postgres://postgres@________"
+
+[iex]
+token = "_________"

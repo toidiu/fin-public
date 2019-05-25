@@ -1,0 +1,21 @@
+[package]
+name = "iex_rs"
+version = "0.1.1"
+authors = ["toidiu <apoorv@toidiu.com>"]
+description = "A rather simple wapper at the moment for the iex api."
+keywords = ["iex", "api", "finance"]
+categories = ["api-bindings"]
+license = "MIT"
+edition = '2018'
+
+[dependencies]
+serde = "~1.0"
+serde_derive = "~1.0"
+serde_json = "~1.0"
+reqwest = "0.9.2"
+log = "~0.4"
+
+[features]
+source_debug = []
+
+default = []

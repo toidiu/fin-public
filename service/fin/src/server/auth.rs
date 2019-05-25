@@ -1,13 +1,13 @@
 use crate::data;
+use crate::settings::CONFIG;
 use http::{self, Response, StatusCode};
 
 use crate::errors::{self, FinError, ResultFin};
 use chrono::prelude::*;
 
 lazy_static! {
-    // FIXME get from config
-    static ref KEY: Vec<u8> =
-        Vec::from("YELLOW SUBMrRIrEr BLACrrWrZrRDRY".as_bytes(),);
+    static ref SECRET_KEY: Vec<u8> =
+        Vec::from(CONFIG.app.paseto_token.as_bytes());
 }
 
 #[derive(Deserialize, Debug)]
@@ -21,7 +21,7 @@ pub fn parse_sess(sess: &str) -> ResultFin<i64> {
         None,
         // TODO use session key to prevent replay attack.. timestamp helps
         // Some(String::from("key-id:gandalf0")),
-        KEY.to_vec(),
+        SECRET_KEY.to_vec(),
     )
     .map_err(|err| {
         error!("{}: {}", line!(), err);
@@ -47,7 +47,7 @@ pub fn resp_with_auth(
     let expire = curr + chrono::Duration::minutes(15);
 
     let token = paseto::tokens::PasetoBuilder::new()
-        .set_encryption_key(KEY.to_vec())
+        .set_encryption_key(SECRET_KEY.to_vec())
         .set_issued_at(None)
         .set_expiration(expire)
         .set_issuer(String::from("fin"))

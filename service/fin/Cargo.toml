@@ -6,15 +6,17 @@ edition = '2018'
 publish = false
 
 [dependencies]
+iex_rs = { path = "../iex_rs", features = ["source_debug"] }
+# iex_rs = { path = "../iex_rs" }
+fin_config = { path = "../fin_config" }
+
 chrono = { version = "~0.4", features = ["serde"] }
-iex-rs = { path = "../iex-rs", features = ["source_debug"] }
-# iex-rs = { path = "../iex-rs" }
 log = "~0.4"
 pretty_env_logger = "~0.3"
-# log4rs="~0.8"
 lru_time_cache = "~0.8"
 lazy_static = "~1.2"
 time = "~0.1"
+
 libpasta = "0.1"
 paseto = "~1.0"
 
@@ -23,10 +25,6 @@ postgres-derive = "~0.3"
 r2d2 = "~0.8"
 r2d2_postgres = "~0.14"
 
-# rocket = "0.3.17"
-# rocket_codegen = "0.3.17"
-# rocket_contrib = { version = "0.3.17", default-features = false, features = ["json"] }
-# rocket_cors = "0.3.0"
 warp = "0.1.11"
 http = "~0.1"
 

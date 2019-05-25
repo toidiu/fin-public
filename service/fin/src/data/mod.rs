@@ -350,7 +350,6 @@ impl FinDb for PgFinDb {
             ],
         )
         .map_err(|err| {
-            dbg!(&err);
             error!("{}: {}", line!(), err);
             FinError::DatabaseErr
         })?;
