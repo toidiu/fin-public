@@ -8,7 +8,9 @@ mod std_ext;
 use reqwest;
 use std::collections::HashMap;
 
-pub struct Iex {}
+pub struct Iex {
+    pub iex_config: fin_config::IexConfig,
+}
 
 impl Iex {
     pub fn get_price(
@@ -18,8 +20,8 @@ impl Iex {
         let s = tickers.join(",");
 
         let uri = format!(
-            "https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=price&token=sk_e58c99951aa74caab7bb7ebbc6013551",
-            s
+            "https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=price&token={}",
+            s, self.iex_config.token
         );
 
         // `source_debug` is used so we can work on the logic without

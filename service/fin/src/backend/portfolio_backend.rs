@@ -4,6 +4,7 @@ use crate::data;
 use crate::errors::*;
 use crate::portfolio;
 use crate::server;
+use crate::settings::CONFIG;
 use crate::std_ext::ExtIterator;
 use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use chrono::prelude::*;
@@ -114,7 +115,9 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
     fn get_tickers(&self, ids: &Vec<i64>) -> HashMap<TickerId, Ticker> {
         let res_tickers = self.db.get_tickers_by_ids(ids);
         let mut tic_map = HashMap::new();
-        let iex = iex_rs::Iex {};
+        let iex = iex_rs::Iex {
+            iex_config: CONFIG.iex.clone(),
+        };
 
         // get
         if let Ok(tickers) = res_tickers {

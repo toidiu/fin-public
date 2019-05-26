@@ -16,8 +16,8 @@ pub struct Database {
     pub pool_size: u32,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct Iex {
+#[derive(Clone, Debug, Deserialize)]
+pub struct IexConfig {
     pub token: String,
 }
 
@@ -26,7 +26,7 @@ pub struct FinConfig {
     pub app: App,
     // debug: bool,
     pub database: Database,
-    pub iex: Iex,
+    pub iex: IexConfig,
 }
 
 impl FinConfig {
