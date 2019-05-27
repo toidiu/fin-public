@@ -44,6 +44,8 @@ Rust
 ```
 cd service
 cargo run
+
+(optional) replace information in `fin_config/*.toml` to configure application
 ```
 
 ---
@@ -56,7 +58,7 @@ which generates deterministic fake prices for stocks. It is a good way to quickl
 started and work without an internet connection.
 
 - *real data*: for real data register for a free account at [iex cloud](https://iexcloud.io)
-and replace token in `fin/service/iex-rs/src/lib.rs`.
+and replace token in `fin_config/development.toml`.
 
 ---
 
