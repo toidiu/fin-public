@@ -1,9 +1,8 @@
 [app]
-paseto_token = "ed3s$d@S8BMrRIrel1BnACrrWrZrqlrY"
+paseto_token = "________"
 
 [database]
-pool_size = 15
-url = "postgres://postgres@________"
+url = "_______"
 
 [iex]
 token = "_________"

@@ -2,4 +2,4 @@
 port = 8000
 
 [database]
-pool_size = 15
+pool_size = 20
