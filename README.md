@@ -2,6 +2,8 @@
 
  Financial porfolio manager.
 
+![alt text](./screenshot.png)
+
 ---
 
 ### Website
