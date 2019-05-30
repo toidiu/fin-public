@@ -36,7 +36,7 @@ pub fn get_port_a_list(
     let port_actual = port_backend
         .get_port_actual_list_by_user_id(&user_id)
         .map_err(|err| {
-            error!(LOGGER, "{}: {}", line!(), err);
+            error!(LOGGER, "{}: {}. user_id: {}", line!(), err, &user_id);
             warp::reject::custom(err)
         })?;
     Ok(warp::reply::json(&port_actual))
@@ -44,7 +44,7 @@ pub fn get_port_a_list(
 
 pub fn get_portfolio_a(
     actual_id: i64,
-    user_id: i64,
+    _: i64,
     res_portfolio_backend: Result<
         impl backend::PortfolioBackend,
         warp::Rejection,
@@ -53,18 +53,15 @@ pub fn get_portfolio_a(
     let port_backend = res_portfolio_backend?;
 
     // actual info
-    let actual_tickers = port_backend
-        .get_actual_tickers(&user_id, &actual_id)
-        .map_err(|err| warp::reject::not_found())?;
     let port_actual = port_backend
-        .get_port_actual(&actual_id, &actual_tickers)
+        .get_port_actual_and_tickers(&actual_id)
         .map_err(|err| {
             error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::not_found()
         })?;
 
     // ticker info
-    let keys = actual_tickers.keys().map(|x| x.0).collect();
+    let keys = port_actual.tickers_actual.keys().map(|x| x.0).collect();
     let tickers_map: HashMap<TickerId, Ticker> =
         port_backend.get_tickers(&keys);
 
@@ -126,7 +123,6 @@ pub fn get_buy_next(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let port_backend = res_portfolio_backend?;
 
-    dbg!(data.amount);
     let resp = port_backend
         .get_buy_next(
             &user_id,

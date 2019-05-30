@@ -28,8 +28,9 @@ impl PortfolioGoal {
                 let is_stock = tickers_map
                     .get(&tic_id)
                     .expect(&format!(
-                        "{} ticker map should contain tic_id",
-                        line!()
+                        "{} ticker map should contain tic_id: {:?}",
+                        line!(),
+                        tic_id
                     ))
                     .is_stock();
 

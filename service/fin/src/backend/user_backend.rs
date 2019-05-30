@@ -18,6 +18,12 @@ pub trait UserBackend {
     ) -> ResultFin<data::UserData>;
 }
 
+impl UserBackend {
+    pub fn get_logger_context(logger: slog::Logger) -> slog::Logger {
+        logger.new(o!("mod" => "user_backend"))
+    }
+}
+
 pub struct DefaultUserBackend<T: data::FinDb> {
     db: T,
 }

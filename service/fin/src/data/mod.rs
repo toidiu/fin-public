@@ -240,7 +240,13 @@ impl FinDb for PgFinDb {
                 .map(|row| {
                     db_types::ActualPortDetailData::from_postgres_row(row)
                         .map_err(|err| {
-                            error!(self.logger, "{}: {}", line!(), err);
+                            error!(
+                                self.logger,
+                                "{}: {}. user_id: {}",
+                                line!(),
+                                err,
+                                &user_id
+                            );
                             FinError::DatabaseErr
                         })
                 })

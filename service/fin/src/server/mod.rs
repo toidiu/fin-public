@@ -37,16 +37,19 @@ pub fn start_server() {
 
     // HEADERS
     let with_cors = warp::cors()
-        .allow_origin("http://localhost:1234")
+        .allow_origin(CONFIG.app.cors_origin.as_str())
         .allow_credentials(true)
         .allow_headers(vec!["content-type"])
         .allow_methods(vec!["GET", "POST", "DELETE", "OPTIONS"]);
 
     let with_user_backend = {
         warp::any().map(|| match CONNECTION.get() {
-            Ok(conn) => Ok(backend::DefaultUserBackend::new(
-                data::PgFinDb::new(conn, (*LOGGER).clone()),
-            )),
+            Ok(conn) => {
+                Ok(backend::DefaultUserBackend::new(data::PgFinDb::new(
+                    conn,
+                    backend::UserBackend::get_logger_context((*LOGGER).clone()),
+                )))
+            }
             Err(err) => {
                 error!(LOGGER, "{}: {}", line!(), err);
                 Err(warp::reject::custom(FinError::DatabaseErr))
@@ -57,7 +60,12 @@ pub fn start_server() {
     let with_portfolio_backend = {
         warp::any().map(|| match CONNECTION.get() {
             Ok(conn) => Ok(backend::DefaultPortfolioBackend::new(
-                data::PgFinDb::new(conn, (*LOGGER).clone()),
+                data::PgFinDb::new(
+                    conn,
+                    backend::PortfolioBackend::get_logger_context(
+                        (*LOGGER).clone(),
+                    ),
+                ),
                 (*LOGGER).clone(),
             )),
             Err(err) => {

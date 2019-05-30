@@ -8,8 +8,8 @@ var config = {};
 // config.server.port = 'http://localhost:8000';
 
 config.api = {
-    host: 'localhost',
-    port: process.env.PORT || 8000,
+    host: process.env.HOST || 'localhost',
+    port: process.env.PORT || 4000,
     timeoutMs: 20000
 };
 // config.redis.host = 'hostname';

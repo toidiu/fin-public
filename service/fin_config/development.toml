@@ -1,5 +1,6 @@
 [app]
 paseto_token = "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+cors_origin = "http://localhost:1234"
 
 [database]
 url = "postgres://postgres@localhost:5432/r_fin"

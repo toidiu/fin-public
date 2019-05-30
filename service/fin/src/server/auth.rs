@@ -46,7 +46,8 @@ pub fn resp_with_auth(
     status: StatusCode,
 ) -> Result<Response<String>, warp::Rejection> {
     let curr = Utc::now();
-    let expire = curr + chrono::Duration::minutes(15);
+    let expire =
+        curr + chrono::Duration::minutes(CONFIG.app.paseto_timeout_min);
 
     let token = paseto::tokens::PasetoBuilder::new()
         .set_encryption_key(SECRET_KEY.to_vec())

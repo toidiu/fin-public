@@ -1,8 +1,9 @@
 [app]
-paseto_token = "________"
+paseto_token = "________________________________"
+cors_origin = "http://fin.toidiu.com"
 
 [database]
-url = "_______"
+url = "postgres://___:___:@localhost:5432/fin-prod"
 
 [iex]
-token = "_________"
+token = "___________________________________"

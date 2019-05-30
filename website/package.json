@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "my finances",
   "main": "src/index.js",
+  "author": "apoorv@toidiu.com",
+  "license": "MIT",
   "dependencies": {
     "axios": "^0.18.0",
     "bulma": "^0.7.4",
@@ -29,7 +31,5 @@
     "watch": "parcel watch src/index.html",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "parcel build src/index.html --public-url ./"
-  },
-  "author": "apoorv@toidiu.com",
-  "license": "MIT"
+  }
 }

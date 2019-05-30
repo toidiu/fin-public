@@ -46,6 +46,11 @@ pub trait PortfolioBackend {
         port_a_id: &i64,
     ) -> ResultFin<HashMap<TickerId, portfolio::TickerActual>>;
 
+    fn get_port_actual_and_tickers(
+        &self,
+        port_a_id: &i64,
+    ) -> ResultFin<portfolio::PortfolioActual>;
+
     fn get_port_goal(
         &self,
         port_g_id: &i64,
@@ -89,6 +94,12 @@ pub trait PortfolioBackend {
     ) -> ResultFin<portfolio::PortfolioState>;
 }
 
+impl PortfolioBackend {
+    pub fn get_logger_context(logger: slog::Logger) -> slog::Logger {
+        logger.new(o!("mod" => "portfolio_backend"))
+    }
+}
+
 pub struct DefaultPortfolioBackend<T: data::FinDb> {
     db: T,
     logger: slog::Logger,
@@ -98,7 +109,7 @@ impl<T: data::FinDb> DefaultPortfolioBackend<T> {
     pub fn new(db: T, logger: slog::Logger) -> DefaultPortfolioBackend<T> {
         DefaultPortfolioBackend {
             db: db,
-            logger: logger.new(o!("mod" => "portfolio_backend")),
+            logger: PortfolioBackend::get_logger_context(logger),
         }
     }
 }
@@ -227,6 +238,18 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         }
 
         Ok(map)
+    }
+
+    fn get_port_actual_and_tickers(
+        &self,
+        port_a_id: &i64,
+    ) -> ResultFin<portfolio::PortfolioActual> {
+        let db_port_actual = self.db.get_port_actual(port_a_id)?;
+
+        let actual_tickers =
+            self.get_actual_tickers(&db_port_actual.fk_port_g_id, port_a_id)?;
+
+        Ok(db_port_actual.to_actual_port(&actual_tickers))
     }
 
     fn update_actual(

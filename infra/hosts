@@ -1,0 +1,7 @@
+---
+[fin:children]
+fin-db
+
+[fin-db]
+fin.toidiu.com ansible_python_interpreter=/usr/bin/python3 ansible_user=root
+

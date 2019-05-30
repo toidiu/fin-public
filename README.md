@@ -68,3 +68,40 @@ http://localhost:1234/
 username: apoorv@toidu.com
 password: 123456
 ```
+
+
+
+---
+### Server setup
+
+```
+apt-get update && apt-get upgrade
+dpkg-reconfigure tzdata
+hostnamectl set-hostname example_hostname
+
+
+adduser toidiu - toidiur0cks
+adduser toidiu sudo
+/etc/sudoers file add this line:
+  toidiu     ALL=(ALL) NOPASSWD:ALL
+su toidiu
+mkdir ~/.ssh
+local - scp ~/.ssh/id_rsa.pub toidiu@____:~/.ssh/authorized_keys
+
+
+/etc/ssh/sshd_config
+    PermitRootLogin no
+    PasswordAuthentication no
+echo 'AddressFamily inet' | sudo tee -a /etc/ssh/sshd_config
+sudo systemctl restart sshd
+
+
+sudo apt-get install postgresql postgresql-contrib
+sudo passwd postgres
+su - postgres
+psql -d template1 -c "ALTER USER postgres WITH PASSWORD '____';"
+
+createdb fin-prod
+
+```
+

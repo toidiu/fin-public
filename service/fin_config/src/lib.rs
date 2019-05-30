@@ -8,6 +8,8 @@ use std::env;
 pub struct App {
     pub port: u16,
     pub paseto_token: String,
+    pub paseto_timeout_min: i64,
+    pub cors_origin: String,
 }
 
 #[derive(Debug, Deserialize)]
