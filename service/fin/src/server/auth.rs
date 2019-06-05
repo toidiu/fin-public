@@ -1,5 +1,5 @@
 use crate::data;
-use crate::settings::CONFIG;
+use crate::global::{CONFIG, ROOT};
 use http::{self, Response, StatusCode};
 
 use crate::errors::{self, FinError, ResultFin};
@@ -8,6 +8,7 @@ use chrono::prelude::*;
 lazy_static! {
     static ref SECRET_KEY: Vec<u8> =
         Vec::from(CONFIG.app.paseto_token.as_bytes());
+    static ref LOGGER: slog::Logger = (*ROOT).clone().new(o!("mod" => "auth"));
 }
 
 #[derive(Deserialize, Debug)]
@@ -24,7 +25,7 @@ pub fn parse_sess(sess: &str) -> ResultFin<i64> {
         SECRET_KEY.to_vec(),
     )
     .map_err(|err| {
-        error!("{}: {}", line!(), err);
+        error!(LOGGER, "{}: {}", line!(), err);
         FinError::BadRequestErr
     });
 
@@ -32,12 +33,13 @@ pub fn parse_sess(sess: &str) -> ResultFin<i64> {
         serde_json::from_value(verified_token)
             .map(|sess: Sess| sess.user_id)
             .map_err(|err| {
-                error!("{}: {}", line!(), err);
+                error!(LOGGER, "{}: {}", line!(), err);
                 FinError::BadRequestErr
             })
     })
 }
 
+//FIXME dont user expect
 pub fn resp_with_auth(
     user_data: data::UserData,
     body: String,

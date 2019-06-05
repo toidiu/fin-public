@@ -33,6 +33,7 @@ impl TestHelper {
 
         PgFinDb {
             conn: r2.get().expect("expected db connection"),
+            logger: slog::Logger::root(slog::Discard, o!("key" => "fake")),
         }
     }
 

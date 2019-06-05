@@ -1,7 +1,7 @@
 use crate::backend;
 use crate::data;
 use crate::errors::{ErrMessage, FinError};
-use crate::settings::CONFIG;
+use crate::global::{CONFIG, ROOT};
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
 use http::StatusCode;
@@ -27,10 +27,13 @@ lazy_static! {
             .build(manager)
             .expect("Failed to create pool")
     };
+    static ref LOGGER: slog::Logger =
+        (*ROOT).clone().new(o!("mod" => "server"));
 }
 
 pub fn start_server() {
     println!("Listening on http://localhost:{}", CONFIG.app.port);
+    info!(LOGGER, "Listening on http://localhost:{}", CONFIG.app.port);
 
     // HEADERS
     let with_cors = warp::cors()
@@ -41,11 +44,11 @@ pub fn start_server() {
 
     let with_user_backend = {
         warp::any().map(|| match CONNECTION.get() {
-            Ok(conn) => Ok(backend::DefaultUserBackend::new(data::PgFinDb {
-                conn: conn,
-            })),
+            Ok(conn) => Ok(backend::DefaultUserBackend::new(
+                data::PgFinDb::new(conn, (*LOGGER).clone()),
+            )),
             Err(err) => {
-                error!("{}: {}", line!(), err);
+                error!(LOGGER, "{}: {}", line!(), err);
                 Err(warp::reject::custom(FinError::DatabaseErr))
             }
         })
@@ -53,13 +56,12 @@ pub fn start_server() {
 
     let with_portfolio_backend = {
         warp::any().map(|| match CONNECTION.get() {
-            Ok(conn) => {
-                Ok(backend::DefaultPortfolioBackend::new(data::PgFinDb {
-                    conn: conn,
-                }))
-            }
+            Ok(conn) => Ok(backend::DefaultPortfolioBackend::new(
+                data::PgFinDb::new(conn, (*LOGGER).clone()),
+                (*LOGGER).clone(),
+            )),
             Err(err) => {
-                error!("{}: {}", line!(), err);
+                error!(LOGGER, "{}: {}", line!(), err);
                 Err(warp::reject::custom(FinError::DatabaseErr))
             }
         })

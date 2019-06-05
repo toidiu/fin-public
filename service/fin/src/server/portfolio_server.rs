@@ -1,9 +1,15 @@
 use crate::backend;
 use crate::errors::FinError;
+use crate::global::ROOT;
 use crate::portfolio;
 use crate::server;
 use crate::ticker::{Ticker, TickerId};
 use std::collections::HashMap;
+
+lazy_static! {
+    static ref LOGGER: slog::Logger =
+        (*ROOT).clone().new(o!("mod" => "portfolio_server"));
+}
 
 pub fn get_portfolio_g_list(
     res_portfolio_backend: Result<
@@ -13,7 +19,7 @@ pub fn get_portfolio_g_list(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let port_backend = res_portfolio_backend?;
     let port_goal = port_backend.get_port_goals().map_err(|err| {
-        error!("{}: {}", line!(), err);
+        error!(LOGGER, "{}: {}", line!(), err);
         warp::reject::custom(err)
     })?;
     Ok(warp::reply::json(&port_goal))
@@ -30,7 +36,7 @@ pub fn get_port_a_list(
     let port_actual = port_backend
         .get_port_actual_list_by_user_id(&user_id)
         .map_err(|err| {
-            error!("{}: {}", line!(), err);
+            error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::custom(err)
         })?;
     Ok(warp::reply::json(&port_actual))
@@ -53,7 +59,7 @@ pub fn get_portfolio_a(
     let port_actual = port_backend
         .get_port_actual(&actual_id, &actual_tickers)
         .map_err(|err| {
-            error!("{}: {}", line!(), err);
+            error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::not_found()
         })?;
 
@@ -72,7 +78,7 @@ pub fn get_portfolio_a(
             &port_actual.stock_percent,
         )
         .map_err(|err| {
-            error!("{}: {}", line!(), err);
+            error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::custom(err)
         })?;
 
@@ -96,12 +102,12 @@ pub fn create_port_a(
     let resp = port_backend
         .create_port_a(&user_id, &data.goal_id, &data.stock_percent)
         .map_err(|err| {
-            error!("{}: {}", line!(), err);
+            error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::custom(FinError::ServerErr)
         })?;
 
     let reply = serde_json::to_string(&resp).map_err(|err| {
-        error!("{}: {}", line!(), err);
+        error!(LOGGER, "{}: {}", line!(), err);
         warp::reject::custom(err)
     })?;
     Ok(warp::reply::with_status(
@@ -120,7 +126,7 @@ pub fn get_buy_next(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let port_backend = res_portfolio_backend?;
 
-    debug!("amount to buy for: {}", data.amount);
+    dbg!(data.amount);
     let resp = port_backend
         .get_buy_next(
             &user_id,
@@ -129,7 +135,7 @@ pub fn get_buy_next(
             data.amount,
         )
         .map_err(|err| {
-            error!("{}: {}", line!(), err);
+            error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::custom(err)
         })?;
     let resp = server::BuyNextResp::from_data(resp, data.amount);
@@ -155,13 +161,13 @@ pub(super) fn post_buy_next(
 
     let resp: server::PortfolioStateResp = port
         .map_err(|err| {
-            error!("{}: {}", line!(), err);
+            error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::custom(FinError::ServerErr)
         })?
         .into();
 
     let reply = serde_json::to_string(&resp).map_err(|err| {
-        error!("{}: {}", line!(), err);
+        error!(LOGGER, "{}: {}", line!(), err);
         warp::reject::custom(err)
     })?;
     Ok(warp::reply::with_status(

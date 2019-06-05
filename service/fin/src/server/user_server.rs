@@ -1,10 +1,16 @@
 use super::auth;
 use crate::backend;
 use crate::data;
+use crate::global::ROOT;
 use crate::server;
 use libpasta;
 
 use http::{self, Response, StatusCode};
+
+lazy_static! {
+    static ref LOGGER: slog::Logger =
+        (*ROOT).clone().new(o!("mod" => "user_server"));
+}
 
 pub fn login(
     data: server::LoginForm,

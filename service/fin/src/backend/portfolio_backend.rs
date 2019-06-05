@@ -2,9 +2,9 @@ use crate::algo::{self, BuyNext};
 use crate::algo::{Action, ActionInfo};
 use crate::data;
 use crate::errors::*;
+use crate::global::CONFIG;
 use crate::portfolio;
 use crate::server;
-use crate::settings::CONFIG;
 use crate::std_ext::ExtIterator;
 use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use chrono::prelude::*;
@@ -91,11 +91,15 @@ pub trait PortfolioBackend {
 
 pub struct DefaultPortfolioBackend<T: data::FinDb> {
     db: T,
+    logger: slog::Logger,
 }
 
 impl<T: data::FinDb> DefaultPortfolioBackend<T> {
-    pub fn new(db: T) -> DefaultPortfolioBackend<T> {
-        DefaultPortfolioBackend { db: db }
+    pub fn new(db: T, logger: slog::Logger) -> DefaultPortfolioBackend<T> {
+        DefaultPortfolioBackend {
+            db: db,
+            logger: logger.new(o!("mod" => "portfolio_backend")),
+        }
     }
 }
 
@@ -237,15 +241,15 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
     ) -> ResultFin<Vec<portfolio::TickerActual>> {
         let init_port_data =
             serde_json::to_value(init_port).map_err(|err| {
-                error!("{}: {}", line!(), err);
+                error!(self.logger, "{}: {}", line!(), err);
                 FinError::ServerErr
             })?;
         let new_port_data = serde_json::to_value(new_port).map_err(|err| {
-            error!("{}: {}", line!(), err);
+            error!(self.logger, "{}: {}", line!(), err);
             FinError::ServerErr
         })?;
         let actions_data = serde_json::to_value(&actions).map_err(|err| {
-            error!("{}: {}", line!(), err);
+            error!(self.logger, "{}: {}", line!(), err);
             FinError::ServerErr
         })?;
         self.db
