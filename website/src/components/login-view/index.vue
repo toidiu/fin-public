@@ -61,16 +61,8 @@ import LoaderView from "../LoaderView.vue";
 import ErrorsView from "../ErrorsView.vue";
 import router from "../../index.js";
 
-import axios from "axios";
 import Vue from "vue";
 import { EventEmitter } from "events";
-
-const ax = axios.create({
-  baseURL: "http://localhost:8000/users",
-  timeout: 10000,
-  withCredentials: true
-  //headers: { "Access-Control-Max-Age": "1" },
-});
 
 export default Vue.extend({
   components: {
@@ -92,10 +84,11 @@ export default Vue.extend({
       var email = submitEvent.target.elements.email.value;
       var pw = submitEvent.target.elements.password.value;
       this.tryingLogin = true;
-      ax.post("/login", {
-        email: email,
-        password: pw
-      })
+      this.$appGlobal.axi
+        .post("users/login", {
+          email: email,
+          password: pw
+        })
         .then(resp => {
           this.tryingLogin = false;
           router.push({ name: "dash" });

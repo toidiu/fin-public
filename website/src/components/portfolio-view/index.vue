@@ -52,33 +52,7 @@ import ScrollView from "./ScrollView.vue";
 import router from "../../index.js";
 import { BuyNextData, BuyNextResp, FinPortfolioResp } from "./models";
 import { Ticker, Action } from "../../data/models";
-import axios from "axios";
 import Vue from "vue";
-
-const ax = axios.create({
-  baseURL: "http://localhost:8000/portfolio",
-  timeout: 20000,
-  withCredentials: true
-  //headers: { "Access-Control-Max-Age": "1" },
-});
-
-ax.interceptors.response.use(
-  function(response) {
-    return response;
-  },
-  function(error) {
-    if (error.response == undefined) {
-      console.log("THIS MIGHT BE CORS OR UNKNOWN STUFF");
-    } else if (401 === error.response.status) {
-      router.push({ name: "login" });
-      return Promise.reject(error);
-      // } else if (404 === error.response.status) {
-      //   // FIXME ==========================
-      //   router.push({ name: "dash" });
-      //   return Promise.reject(error);
-    }
-  }
-);
 
 export default Vue.extend({
   components: {
@@ -109,7 +83,8 @@ export default Vue.extend({
       this.clearErrors();
       /* get portfolio */
       this.isLoading = true;
-      ax.get(`actual/${this.actualId}`)
+      this.$appGlobal.axi
+        .get(`portfolio/actual/${this.actualId}`)
         .then(resp => {
           this.portState = resp.data;
           this.isLoading = false;
@@ -124,11 +99,12 @@ export default Vue.extend({
       this.buyNextState = null;
       this.isLoading = true;
       // FIXME ==========================
-      ax.get(
-        `actual/buy?goal_port_id=${this.portState.goal_id}&actual_port_id=${
-          this.actualId
-        }&amount=${amount}`
-      )
+      this.$appGlobal.axi
+        .get(
+          `portfolio/actual/buy?goal_port_id=${
+            this.portState.goal_id
+          }&actual_port_id=${this.actualId}&amount=${amount}`
+        )
         .then(resp => {
           this.isLoading = false;
           var actions = resp.data.actions;
@@ -153,7 +129,8 @@ export default Vue.extend({
       data.goal_id = parseInt(this.portState.goal_id);
       data.port_a_id = parseInt(this.actualId);
       data.actions = actions;
-      ax.post("actual/buy", data)
+      this.$appGlobal.axi
+        .post("portfolio/actual/buy", data)
         // ax.post("actual/buy", {
         //   goal_id: this.portState.goal_id,
         //   port_a_id: this.actualId,

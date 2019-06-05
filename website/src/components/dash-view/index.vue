@@ -29,27 +29,7 @@ import ErrorsView from "../ErrorsView.vue";
 import DashView from "./DashView.vue";
 import router from "../../index.js";
 import { Ticker, PortfolioGoalList } from "../../data/models";
-import axios from "axios";
 import Vue from "vue";
-
-const ax = axios.create({
-  baseURL: "http://localhost:8000/portfolio/",
-  timeout: 5000,
-  withCredentials: true
-  //headers: { "Access-Control-Max-Age": "1" },
-});
-
-ax.interceptors.response.use(
-  function(response) {
-    return response;
-  },
-  function(error) {
-    if (401 === error.response.status) {
-      router.push({ name: "login" });
-      return Promise.reject(error);
-    }
-  }
-);
 
 export default Vue.extend({
   components: {
@@ -74,7 +54,8 @@ export default Vue.extend({
       this.clearErrors();
       /* get portfolio list */
       this.isLoading = true;
-      ax.get("actual")
+      this.$appGlobal.axi
+        .get("portfolio/actual")
         .then(resp => {
           if (resp != undefined) {
             this.portListState = resp.data;
