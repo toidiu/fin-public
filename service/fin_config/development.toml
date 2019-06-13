@@ -2,7 +2,7 @@
 paseto_token = "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
 
 [database]
-url = "postgres://postgres@localhost:5432/r-fin"
+url = "postgres://postgres@localhost:5432/r_fin"
 
 [iex]
 token = "_____"

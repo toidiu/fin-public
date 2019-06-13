@@ -29,7 +29,7 @@
         <!-- <router-link v-if="isUserAuth" to="/signup" -->
         <!--   ><a class="navbar-item">signup</a></router-link -->
         <!-- > -->
-        <router-link to="/home"> <a class="navbar-item">home</a> </router-link>
+        <router-link to="/dash"> <a class="navbar-item">dash</a> </router-link>
         <!-- <router-link to="/portfolio"> <a>portfolio</a> </router-link> -->
       </div>
     </div>

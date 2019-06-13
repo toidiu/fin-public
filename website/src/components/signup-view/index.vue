@@ -90,7 +90,7 @@ export default Vue.extend({
           password: pw
         })
         .then(resp => {
-          router.push({ name: "home" });
+          router.push({ name: "dash" });
         })
         .catch(error => {
           var status = error.response.status;

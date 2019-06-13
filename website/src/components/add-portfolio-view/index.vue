@@ -71,7 +71,8 @@ export default Vue.extend({
     addPortfolioHandler(data: AddData) {
       this.clearErrors();
       this.isLoading = true;
-      ax.post("actual", data)
+      this.$appGlobal.axi
+        .post("portfolio/actual", data)
         .then(resp => {
           router.push({ name: "dash" });
         })

@@ -1,4 +1,4 @@
-DB_URL='postgres://localhost/r-fin'
+DB_URL='postgres://localhost/r_fin'
 
 run:
 	export DATABASE_URL=${DB_URL}; diesel migration run

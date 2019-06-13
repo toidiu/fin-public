@@ -225,7 +225,7 @@ impl FinDb for PgFinDb {
         let stmt = &format!(
             "SELECT ap.id, ap.fk_user_id, ap.fk_port_g_id, ap.stock_percent,
             ap.deviation, ap.version, ap.last_updated, gp.name, gp.description
-            FROM {} ap LEFT JOIN {} gp on
+            FROM {} ap JOIN {} gp on
             (ap.fk_port_g_id = gp.id AND ap.fk_user_id = $1)",
             &db_types::ActualPortData::sql_table(),
             &db_types::GoalPortData::sql_table(),
@@ -733,11 +733,26 @@ mod tests {
             assert_eq!(res.is_ok(), true);
             let r = &res.unwrap();
             assert_eq!(&r.len(), &2);
-            assert_eq!(&r.get(0).unwrap().fk_user_id, &1);
-            assert_eq!(&r.get(0).unwrap().stock_percent, &58.0);
-            assert_eq!(&r.get(0).unwrap().name, "Value Portfolio");
-            assert_eq!(&r.get(1).unwrap().stock_percent, &90.0);
+            assert_eq!(&r.get(1).unwrap().fk_user_id, &1);
+            assert_eq!(&r.get(1).unwrap().stock_percent, &58.0);
             assert_eq!(&r.get(1).unwrap().name, "Value Portfolio");
+            assert_eq!(&r.get(0).unwrap().stock_percent, &90.0);
+            assert_eq!(&r.get(0).unwrap().name, "Value Portfolio");
+        })
+    }
+
+    #[test]
+    fn test_get_port_actual_list_by_user_id_sql_join_stmt() {
+        TestHelper::run_test(|db_name| {
+            let db = TestHelper::get_test_db(db_name);
+            let res = db.get_port_actual_list_by_user_id(&2);
+
+            assert_eq!(res.is_ok(), true);
+            let r = &res.unwrap();
+            assert_eq!(&r.len(), &1);
+            assert_eq!(&r.get(0).unwrap().fk_user_id, &2);
+            assert_eq!(&r.get(0).unwrap().stock_percent, &50.0);
+            assert_eq!(&r.get(0).unwrap().name, "Value Portfolio");
         })
     }
 
