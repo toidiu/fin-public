@@ -5,7 +5,7 @@ INSERT INTO users VALUES
   (DEFAULT, 'apoorv@toidiu.com', '$$scrypt$ln=14,r=8,p=1$Xvtx1zK+bcot3cjKfZR9+A$fAM+i/wFUfQaq+HQe2RgsyjgrT93cz/jUkPV+zRNF4I');
 
 INSERT INTO users VALUES
-  (DEFAULT, 'anna.cirianidean@gmail.com', '$$scrypt$ln=14,r=8,p=1$Xvtx1zK+bcot3cjKfZR9+A$fAM+i/wFUfQaq+HQe2RgsyjgrT93cz/jUkPV+zRNF4I');
+  (DEFAULT, 'test@toidiu.com', '$$scrypt$ln=14,r=8,p=1$Xvtx1zK+bcot3cjKfZR9+A$fAM+i/wFUfQaq+HQe2RgsyjgrT93cz/jUkPV+zRNF4I');
 
 ----------- tickers
 INSERT INTO exchanges VALUES

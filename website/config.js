@@ -8,12 +8,9 @@ var config = {};
 // config.server.port = 'http://localhost:8000';
 
 config.api = {
-    host: process.env.HOST || 'localhost',
-    port: process.env.PORT || 4000,
+    host: process.env.WEB_HOST || 'localhost',
+    port: process.env.WEB_PORT || 8000,
     timeoutMs: 20000
 };
-// config.redis.host = 'hostname';
-// config.redis.port = 6379;
-// config.web.port = process.env.WEB_PORT || 9980;
 
 module.exports = config;
