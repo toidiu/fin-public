@@ -2,6 +2,7 @@
 name = "fin"
 version = "0.1.0"
 authors = ["toidiu <apoorv@toidiu.com>"]
+description = "Server for fin, a financial calculator."
 edition = '2018'
 publish = false
 
@@ -12,8 +13,7 @@ members = [
 ]
 
 [dependencies]
-iex_rs = { path = "iex_rs", features = ["source_debug"] }
-# iex_rs = { path = "iex_rs" }
+iex_rs = { path = "iex_rs" }
 fin_config = { path = "fin_config" }
 
 chrono = { version = "~0.4", features = ["serde"] }
@@ -48,6 +48,5 @@ git = "https://github.com/toidiu/postgres-mapper"
 [dependencies.postgres-mapper-derive]
 features = ["postgres-mapper", "postgres-support"]
 git = "https://github.com/toidiu/postgres-mapper"
-
 
 

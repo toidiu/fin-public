@@ -20,6 +20,7 @@ pub struct Database {
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct IexConfig {
+    pub debug: bool,
     pub token: String,
 }
 

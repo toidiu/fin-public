@@ -7,3 +7,4 @@ url = "postgres://___:___:@localhost:5432/fin-prod"
 
 [iex]
 token = "___________________________________"
+debug = false

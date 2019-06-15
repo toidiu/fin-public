@@ -24,9 +24,7 @@ impl Iex {
             s, self.iex_config.token
         );
 
-        // `source_debug` is used so we can work on the logic without
-        // an internet connection
-        let ret: IexTickersPrice = if cfg!(feature = "source_debug") {
+        let ret: IexTickersPrice = if self.iex_config.debug {
             dbg!("using dbg source for iex price");
             let mut temp: IexTickersPrice = HashMap::new();
             let mut fake_price: f64 = 100.0;
