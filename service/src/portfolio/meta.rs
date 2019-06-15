@@ -5,7 +5,7 @@ use crate::ticker::*;
 use std::collections::HashMap;
 
 lazy_static! {
-    pub static ref EMPTY_TICKER_DIFF: TickerMeta = {
+    pub static ref EMPTY_TICKER_META: TickerMeta = {
         TickerMeta {
             id: tic_id!(-1),
             action: TickerAction::Hold,

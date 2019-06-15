@@ -145,11 +145,11 @@ impl BuyNext {
         port_state: &portfolio::PortfolioState,
         tic_metas: Vec<&portfolio::TickerMeta>,
     ) -> portfolio::TickerMeta {
-        let empty_diff = portfolio::EMPTY_TICKER_DIFF.clone();
+        let empty_diff = portfolio::EMPTY_TICKER_META.clone();
         tic_metas.into_iter().fold(empty_diff, |x, y| {
-            if (x.id == portfolio::EMPTY_TICKER_DIFF.id) {
+            if (x.id == portfolio::EMPTY_TICKER_META.id) {
                 return y.clone();
-            } else if (y.id == portfolio::EMPTY_TICKER_DIFF.id) {
+            } else if (y.id == portfolio::EMPTY_TICKER_META.id) {
                 return x;
             }
 

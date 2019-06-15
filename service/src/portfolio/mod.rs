@@ -10,7 +10,7 @@ mod test_helper;
 pub use self::{
     actual::{PortfolioActual, TickerActual},
     goal::{GoalTicker, PortfolioGoal, TickerGoalDetailed},
-    meta::*,
+    meta::{PortfolioAction, TickerAction, TickerMeta, EMPTY_TICKER_META},
     state::PortfolioState,
 };
 
