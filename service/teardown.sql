@@ -1,0 +1,16 @@
+DROP DATABASE fin_unit_test_2;
+DROP DATABASE fin_unit_test_3;
+DROP DATABASE fin_unit_test_4;
+DROP DATABASE fin_unit_test_5;
+DROP DATABASE fin_unit_test_6;
+DROP DATABASE fin_unit_test_7;
+DROP DATABASE fin_unit_test_8;
+DROP DATABASE fin_unit_test_9;
+DROP DATABASE fin_unit_test_10;
+DROP DATABASE fin_unit_test_11;
+DROP DATABASE fin_unit_test_12;
+DROP DATABASE fin_unit_test_13;
+DROP DATABASE fin_unit_test_14;
+DROP DATABASE fin_unit_test_15;
+DROP DATABASE fin_unit_test_16;
+DROP DATABASE fin_unit_test_17;

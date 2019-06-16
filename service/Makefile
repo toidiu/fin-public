@@ -29,5 +29,7 @@ migrationList:
 migrationZZZ_DANGER_RESET_DB_ZZZ: #DANGER!!
 	export DATABASE_URL=${DB_URL}; diesel database reset
 
+migration_teardown_db:
+	psql -U postgres -a -f teardown.sql;
 
 .PHONY: migrationRun migrationRedo migrationRevert migrationList migrationZZZ_DANGER_RESET_DB_ZZZ releaseLinuxDocker releaseLinuxExec

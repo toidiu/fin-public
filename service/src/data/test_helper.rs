@@ -92,10 +92,10 @@ impl TestHelper {
         )
         .unwrap();
         let init =
-            fs::read_to_string("../migrations/2018-10-07-022941_init/up.sql")
+            fs::read_to_string("migrations/2018-10-07-022941_init/up.sql")
                 .expect("file not found");
         let fake_data = fs::read_to_string(
-            "../migrations/2018-10-07-232226_fake_data/up.sql",
+            "migrations/2018-10-07-232226_fake_data/up.sql",
         )
         .expect("file not found");
 
