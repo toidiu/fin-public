@@ -44,7 +44,7 @@ pub fn get_port_a_list(
 
 pub fn get_portfolio_a(
     actual_id: i64,
-    _: i64,
+    _user_id: i64,
     res_portfolio_backend: Result<
         impl backend::PortfolioBackend,
         warp::Rejection,

@@ -52,7 +52,8 @@ impl BuyNextResp {
             let id = action.get_id();
             match map.get(&id) {
                 Some(exist) => {
-                    map.insert(id, action.clone() + exist.clone());
+                    let action = action.clone() + exist.clone();
+                    map.insert(id, action);
                 }
 
                 None => {
