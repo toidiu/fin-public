@@ -1,3 +1,4 @@
+use super::auth;
 use crate::backend;
 use crate::errors::FinError;
 use crate::global::ROOT;
@@ -26,7 +27,7 @@ pub fn get_portfolio_g_list(
 }
 
 pub fn get_port_a_list(
-    user_id: i64,
+    user_id: auth::UserId,
     res_portfolio_backend: Result<
         impl backend::PortfolioBackend,
         warp::Rejection,
@@ -36,7 +37,7 @@ pub fn get_port_a_list(
     let port_actual = port_backend
         .get_port_actual_list_by_user_id(&user_id)
         .map_err(|err| {
-            error!(LOGGER, "{}: {}. user_id: {}", line!(), err, &user_id);
+            error!(LOGGER, "{}: {}. user_id: {:?}", line!(), err, &user_id);
             warp::reject::custom(err)
         })?;
     Ok(warp::reply::json(&port_actual))
@@ -44,7 +45,7 @@ pub fn get_port_a_list(
 
 pub fn get_portfolio_a(
     actual_id: i64,
-    _user_id: i64,
+    _user_id: auth::UserId,
     res_portfolio_backend: Result<
         impl backend::PortfolioBackend,
         warp::Rejection,
@@ -61,7 +62,11 @@ pub fn get_portfolio_a(
         })?;
 
     // ticker info
-    let keys = port_actual.tickers_actual.keys().map(|x| x.0).collect();
+    let keys = port_actual
+        .tickers_actual
+        .keys()
+        .map(|x| *x.get_ticker_id())
+        .collect();
     let tickers_map: HashMap<TickerId, Ticker> =
         port_backend.get_tickers(&keys);
 
@@ -88,7 +93,7 @@ pub fn get_portfolio_a(
 }
 
 pub fn create_port_a(
-    user_id: i64,
+    user_id: auth::UserId,
     data: server::NewPortActualData,
     res_portfolio_backend: Result<
         impl backend::PortfolioBackend,
@@ -114,7 +119,7 @@ pub fn create_port_a(
 }
 
 pub fn get_buy_next(
-    user_id: i64,
+    user_id: auth::UserId,
     data: server::BuyNextQuery,
     res_portfolio_backend: Result<
         impl backend::PortfolioBackend,
@@ -139,7 +144,7 @@ pub fn get_buy_next(
 }
 
 pub(super) fn post_buy_next(
-    user_id: i64,
+    user_id: auth::UserId,
     data: server::BuyNextData,
     res_portfolio_backend: Result<
         impl backend::PortfolioBackend,

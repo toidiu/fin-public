@@ -4,6 +4,7 @@ mod test_helper;
 use crate::backend;
 use crate::errors::{FinError, ResultFin};
 use crate::portfolio;
+use crate::server;
 use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use chrono::prelude::*;
 use postgres::Connection;
@@ -52,7 +53,7 @@ pub trait FinDb {
     //========== ACTUAL
     fn get_port_actual_list_by_user_id(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
     ) -> ResultFin<Vec<db_types::ActualPortDetailData>>;
 
     fn get_port_actual(
@@ -68,7 +69,7 @@ pub trait FinDb {
 
     fn update_tickers_actual(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         current_port_version: &i32,
         updated_tsz: &DateTime<Utc>,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
@@ -80,7 +81,7 @@ pub trait FinDb {
 
     fn create_portfolio_actual(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         port_g_id: &i64,
         stock_percent: &f32,
     ) -> ResultFin<db_types::ActualPortData>;
@@ -220,7 +221,7 @@ impl FinDb for PgFinDb {
 
     fn get_port_actual_list_by_user_id(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
     ) -> ResultFin<Vec<db_types::ActualPortDetailData>> {
         let stmt = &format!(
             "SELECT ap.id, ap.fk_user_id, ap.fk_port_g_id, ap.stock_percent,
@@ -230,10 +231,12 @@ impl FinDb for PgFinDb {
             &db_types::ActualPortData::sql_table(),
             &db_types::GoalPortData::sql_table(),
         );
-        let rows = &self.conn.query(stmt, &[user_id]).map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
-        })?;
+        let rows = &self.conn.query(stmt, &[user_id.get_user_id()]).map_err(
+            |err| {
+                error!(self.logger, "{}: {}", line!(), err);
+                FinError::DatabaseErr
+            },
+        )?;
 
         let ret =
             rows.iter()
@@ -242,7 +245,7 @@ impl FinDb for PgFinDb {
                         .map_err(|err| {
                             error!(
                                 self.logger,
-                                "{}: {}. user_id: {}",
+                                "{}: {}. user_id: {:?}",
                                 line!(),
                                 err,
                                 &user_id
@@ -322,7 +325,7 @@ impl FinDb for PgFinDb {
 
     fn update_tickers_actual(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         current_port_version: &i32,
         updated_tsz: &DateTime<Utc>,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
@@ -481,7 +484,7 @@ impl FinDb for PgFinDb {
     /// for each corresponding GoalTickerData.
     fn create_portfolio_actual(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         port_g_id: &i64,
         stock_percent: &f32,
     ) -> ResultFin<db_types::ActualPortData> {
@@ -506,7 +509,7 @@ impl FinDb for PgFinDb {
             .query(
                 stmt_port_a,
                 &[
-                    user_id,
+                    user_id.get_user_id(),
                     port_g_id,
                     stock_percent,
                     &portfolio::PERCENT_DEVIATION,
@@ -734,7 +737,7 @@ mod tests {
     fn test_get_port_actual_list_by_user_id() {
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
-            let res = db.get_port_actual_list_by_user_id(&1);
+            let res = db.get_port_actual_list_by_user_id(&user_id!(1));
 
             assert_eq!(res.is_ok(), true);
             let r = &res.unwrap();
@@ -751,7 +754,7 @@ mod tests {
     fn test_get_port_actual_list_by_user_id_sql_join_stmt() {
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
-            let res = db.get_port_actual_list_by_user_id(&2);
+            let res = db.get_port_actual_list_by_user_id(&user_id!(2));
 
             assert_eq!(res.is_ok(), true);
             let r = &res.unwrap();
@@ -809,7 +812,7 @@ mod tests {
                 portfolio::TickerActual::new(1, 1, 1, 1, new_shares);
 
             let res = db.update_tickers_actual(
-                &1,
+                &user_id!(1),
                 &curr_version,
                 &new_time,
                 &vec![&init_tic],
@@ -834,7 +837,7 @@ mod tests {
         TestHelper::run_test_opt_teardown(true, |db_name| {
             let db = TestHelper::get_test_db(db_name);
 
-            let user_id = &1;
+            let user_id = &user_id!(1);
             let port_g_id = 1;
             let port_a_id = 2;
             let curr_version = 1;
@@ -926,7 +929,7 @@ mod tests {
 
     #[test]
     fn test_create_portfolio_actual() {
-        let user_id = 1;
+        let user_id = user_id!(1);
         let port_g_id = 1;
         let per = 90.0;
 
@@ -935,7 +938,7 @@ mod tests {
             let res = db.create_portfolio_actual(&user_id, &port_g_id, &per);
             assert_eq!(res.is_ok(), true);
             let res = res.unwrap();
-            assert_eq!(&res.fk_user_id, &user_id);
+            assert_eq!(&res.fk_user_id, user_id.get_user_id());
             assert_eq!(&res.fk_port_g_id, &port_g_id);
             assert_eq!(&res.stock_percent, &per);
             assert_eq!(&res.deviation, &1.5);

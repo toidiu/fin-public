@@ -5,6 +5,8 @@ use http::{self, Response, StatusCode};
 use crate::errors::{self, FinError, ResultFin};
 use chrono::prelude::*;
 
+pub const SESS_COOKIE_NAME: &str = "sess";
+
 lazy_static! {
     static ref SECRET_KEY: Vec<u8> =
         Vec::from(CONFIG.app.paseto_token.as_bytes());
@@ -13,10 +15,23 @@ lazy_static! {
 
 #[derive(Deserialize, Debug)]
 struct Sess {
-    user_id: i64,
+    user_id: UserId,
 }
 
-pub fn parse_sess(sess: &str) -> ResultFin<i64> {
+#[derive(Deserialize, Debug)]
+pub struct UserId(i64);
+
+impl UserId {
+    pub fn new(v: i64) -> Self {
+        UserId(v)
+    }
+
+    pub fn get_user_id(&self) -> &i64 {
+        &self.0
+    }
+}
+
+pub fn parse_sess(sess: &str) -> ResultFin<UserId> {
     let res_verified_token = paseto::tokens::validate_local_token(
         sess.to_string(),
         None,

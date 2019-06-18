@@ -14,6 +14,7 @@ mod portfolio_server;
 mod user_server;
 
 pub use api::*;
+pub use auth::UserId;
 
 lazy_static! {
     static ref CONNECTION: r2d2::Pool<PostgresConnectionManager> = {
@@ -76,15 +77,14 @@ pub fn start_server() {
     };
 
     // AUTH
-    let sess_cookie_name = "sess";
-    let with_auth = warp::cookie::optional(&sess_cookie_name).and_then(
+    let with_auth = warp::cookie::optional(&auth::SESS_COOKIE_NAME).and_then(
         |opt_sess: Option<String>| match opt_sess {
             Some(sess) => auth::parse_sess(&sess)
                 .map_err(|err| warp::reject::custom(FinError::NotLoggedIn)),
             None => Err(warp::reject::custom(FinError::NotLoggedIn)),
         },
     );
-    let with_opt_auth = warp::cookie::optional(&sess_cookie_name);
+    let with_opt_auth = warp::cookie::optional(&auth::SESS_COOKIE_NAME);
 
     // PORTFOLIO===============
     let portfolio_path = warp::path("portfolio");

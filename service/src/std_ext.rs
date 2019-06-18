@@ -18,7 +18,13 @@ macro_rules! symbol(
 
 macro_rules! tic_id(
     ($s:expr) => (
-        TickerId($s)
+        TickerId::new($s)
+    )
+);
+
+macro_rules! user_id(
+    ($s:expr) => (
+        server::UserId::new($s)
     )
 );
 

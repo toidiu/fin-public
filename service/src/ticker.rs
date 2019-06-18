@@ -17,7 +17,17 @@ pub struct TickerSymbol(pub String);
     Default,
     Debug,
 )]
-pub struct TickerId(pub i64);
+pub struct TickerId(i64);
+
+impl TickerId {
+    pub fn new(v: i64) -> Self {
+        TickerId(v)
+    }
+
+    pub fn get_ticker_id(&self) -> &i64 {
+        &self.0
+    }
+}
 
 impl fmt::Display for TickerSymbol {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

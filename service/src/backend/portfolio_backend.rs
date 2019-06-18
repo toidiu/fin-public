@@ -31,7 +31,7 @@ pub trait PortfolioBackend {
 
     fn get_port_actual_list_by_user_id(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
     ) -> ResultFin<Vec<server::PortfolioActualDetailResp>>;
 
     fn get_port_actual(
@@ -61,7 +61,7 @@ pub trait PortfolioBackend {
 
     fn update_actual(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         current_port_version: &i32,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
         updated_tickers_actual: &Vec<&portfolio::TickerActual>,
@@ -72,14 +72,14 @@ pub trait PortfolioBackend {
 
     fn create_port_a(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         goal_id: &i64,
         stock_percent: &f32,
     ) -> ResultFin<server::PortfolioActualResp>;
 
     fn get_buy_next(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         port_g_id: &i64,
         port_a_id: &i64,
         buy_amount: f64,
@@ -87,7 +87,7 @@ pub trait PortfolioBackend {
 
     fn execute_actions(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         port_g_id: &i64,
         port_a_id: &i64,
         actions: &Vec<Action>,
@@ -208,7 +208,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn get_port_actual_list_by_user_id(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
     ) -> ResultFin<Vec<server::PortfolioActualDetailResp>> {
         self.db
             .get_port_actual_list_by_user_id(user_id)
@@ -254,7 +254,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn update_actual(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         current_port_version: &i32,
         init_tickers_actual: &Vec<&portfolio::TickerActual>,
         updated_tickers_actual: &Vec<&portfolio::TickerActual>,
@@ -291,7 +291,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn create_port_a(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         goal_id: &i64,
         stock_percent: &f32,
     ) -> ResultFin<server::PortfolioActualResp> {
@@ -310,7 +310,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn get_buy_next(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         port_g_id: &i64,
         port_a_id: &i64,
         buy_amount: f64,
@@ -320,7 +320,8 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         let port_actual = self.get_port_actual(port_a_id, &tic_actual)?;
 
         // tickers info
-        let actual_ticker_ids = tic_actual.keys().map(|x| x.0).collect();
+        let actual_ticker_ids =
+            tic_actual.keys().map(|x| *x.get_ticker_id()).collect();
         let tickers_map: HashMap<TickerId, Ticker> =
             self.get_tickers(&actual_ticker_ids);
 
@@ -361,7 +362,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn execute_actions(
         &self,
-        user_id: &i64,
+        user_id: &server::UserId,
         port_g_id: &i64,
         port_a_id: &i64,
         actions: &Vec<Action>,
@@ -371,7 +372,8 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         let port_actual = self.get_port_actual(port_a_id, &tic_actual)?;
 
         // tickers info
-        let actual_ticker_ids = tic_actual.keys().map(|x| x.0).collect();
+        let actual_ticker_ids =
+            tic_actual.keys().map(|x| *x.get_ticker_id()).collect();
         let tickers_map: HashMap<TickerId, Ticker> =
             self.get_tickers(&actual_ticker_ids);
 
