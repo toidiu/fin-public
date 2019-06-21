@@ -1,5 +1,5 @@
 use crate::algo;
-use crate::ticker::{self, *};
+use crate::ticker;
 
 mod actual;
 mod goal;

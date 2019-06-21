@@ -18,12 +18,20 @@ lazy_static! {
             .open(&*log_path)
             .expect("failed to open log file");
 
-        let drain: slog::Fuse<slog_async::Async> = slog_async::Async::new(
-            slog_term::FullFormat::new(slog_term::PlainDecorator::new(file)).build().fuse(),
-        )
-        .build()
-        .fuse();
-        slog::Logger::root(drain, o!("crate" => "fin", "version" => env!("CARGO_PKG_VERSION")))
+        // terminal output in development
+        #[cfg(debug_assertions)]
+        let formatter = slog_term::FullFormat::new(
+                slog_term::PlainDecorator::new(file)
+            ).build();
+        // json formatting in production
+        #[cfg(not(debug_assertions))]
+        let formatter = slog_bunyan::default(file);
+
+        let formatter = formatter.fuse();
+        let fuse = slog_async::Async::new(formatter.fuse()).build().fuse();
+        slog::Logger::root(fuse, o!("crate" => "fin", "version" => env!("CARGO_PKG_VERSION")))
+
+
     };
 
 }

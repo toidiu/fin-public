@@ -34,7 +34,10 @@ lazy_static! {
 
 pub fn start_server() {
     println!("Listening on http://localhost:{}", CONFIG.app.port);
-    info!(LOGGER, "Listening on http://localhost:{}", CONFIG.app.port);
+    lineInfo!(
+        LOGGER,
+        format!("Listening on http://localhost:{}", CONFIG.app.port)
+    );
 
     // HEADERS
     let with_cors = warp::cors()

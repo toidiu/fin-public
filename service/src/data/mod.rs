@@ -122,6 +122,7 @@ impl FinDb for PgFinDb {
 
         let rows = &self.conn.query(stmt, &[&email]).map_err(|err| {
             error!(self.logger, "{}: {}", line!(), err);
+            lineError!(self.logger, err);
             FinError::DatabaseErr
         })?;
 
@@ -243,12 +244,9 @@ impl FinDb for PgFinDb {
                 .map(|row| {
                     db_types::ActualPortDetailData::from_postgres_row(row)
                         .map_err(|err| {
-                            error!(
+                            lineError!(
                                 self.logger,
-                                "{}: {}. user_id: {:?}",
-                                line!(),
-                                err,
-                                &user_id
+                                format!("{}. user_id: {:?}", err, &user_id)
                             );
                             FinError::DatabaseErr
                         })

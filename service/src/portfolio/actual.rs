@@ -37,13 +37,13 @@ impl PortfolioActual {
         }
     }
 
-    pub fn get_ticker_a(&self, id: &TickerId) -> &TickerActual {
+    pub(super) fn get_ticker_a(&self, id: &TickerId) -> &TickerActual {
         self.tickers_actual
             .get(&id)
             .expect(&format!("add ticker to db: {:?}", &id))
     }
 
-    pub fn get_version(&self) -> &i32 {
+    pub(super) fn get_version(&self) -> &i32 {
         &self.version
     }
 }
@@ -58,7 +58,7 @@ pub struct TickerActual {
 }
 
 impl TickerActual {
-    pub fn new(
+    pub(crate) fn new(
         id: i64,
         port_goal_id: i64,
         port_actual_id: i64,
@@ -74,7 +74,7 @@ impl TickerActual {
         }
     }
 
-    pub fn get_ticker_id(&self) -> i64 {
+    pub(crate) fn get_ticker_id(&self) -> i64 {
         self.ticker_id
     }
 }

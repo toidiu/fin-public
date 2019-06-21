@@ -58,7 +58,7 @@ impl PortfolioMeta {
         meta
     }
 
-    pub fn recalculate(
+    pub(super) fn recalculate(
         &mut self,
         tickers: &HashMap<TickerId, Ticker>,
         actual: &PortfolioActual,
@@ -174,7 +174,7 @@ impl PortfolioMeta {
         self.total_value = total_val;
     }
 
-    pub fn get_ticker(&self, id: &TickerId) -> &TickerMeta {
+    pub(super) fn get_ticker(&self, id: &TickerId) -> &TickerMeta {
         self.tickers_meta
             .get(&id)
             .expect(&format!("add ticker to db: {:?}", &id))

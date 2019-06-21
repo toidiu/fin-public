@@ -54,7 +54,7 @@ impl PortfolioGoal {
         }
     }
 
-    pub fn get_ticker_g(&self, id: &TickerId) -> &GoalTicker {
+    pub(super) fn get_ticker_g(&self, id: &TickerId) -> &GoalTicker {
         self.tickers_goal.get(id).expect(&format!(
             "{} add ticker to db: {:?}",
             line!(),
@@ -89,7 +89,7 @@ impl GoalTicker {
         }
     }
 
-    pub fn get_order(&self) -> i32 {
+    pub(super) fn get_order(&self) -> i32 {
         self.order
     }
 }

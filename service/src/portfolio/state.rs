@@ -5,10 +5,10 @@ use super::meta::{self, *};
 use crate::algo::{Action, ActionInfo};
 use crate::backend;
 use crate::ticker::{self, *};
-use chrono::prelude::*;
 
 use crate::errors::ResultFin;
 use crate::{data, server, std_ext::*};
+use chrono::prelude::*;
 use std::{cmp::Ordering, collections::HashMap, num};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -20,7 +20,7 @@ pub struct PortfolioState {
 }
 
 impl PortfolioState {
-    pub fn new(
+    pub(crate) fn new(
         pa: &PortfolioActual,
         // actual: &HashMap<TickerId, TickerActual>,
         pg: &PortfolioGoal,
@@ -37,7 +37,7 @@ impl PortfolioState {
     }
 
     // todo test!!
-    pub fn get_ticker(&self, id: &TickerId) -> &Ticker {
+    pub(crate) fn get_ticker(&self, id: &TickerId) -> &Ticker {
         &self.tickers.get(id).expect(&format!(
             "{} add ticker to db: {:?}",
             line!(),
@@ -46,27 +46,29 @@ impl PortfolioState {
     }
 
     // todo test!!
-    pub fn get_actual_port(&self) -> &PortfolioActual {
+    pub(crate) fn get_actual_port(&self) -> &PortfolioActual {
         &self.actual
     }
 
     // todo test!!
-    pub fn get_actual_tickers(&self) -> &HashMap<TickerId, TickerActual> {
+    pub(crate) fn get_actual_tickers(
+        &self,
+    ) -> &HashMap<TickerId, TickerActual> {
         &self.actual.tickers_actual
     }
 
     // todo test!!
-    pub fn get_goal_ticker(&self, id: &TickerId) -> &GoalTicker {
+    pub(crate) fn get_goal_ticker(&self, id: &TickerId) -> &GoalTicker {
         &self.goal.tickers_goal.get(id).unwrap()
     }
 
     // todo test!!
-    pub fn get_meta_tickers(&self) -> &HashMap<TickerId, TickerMeta> {
+    pub(crate) fn get_meta_tickers(&self) -> &HashMap<TickerId, TickerMeta> {
         &self.meta.tickers_meta
     }
 
     // todo test!!
-    pub fn get_meta_ticker(&self, id: &TickerId) -> &TickerMeta {
+    pub(crate) fn get_meta_ticker(&self, id: &TickerId) -> &TickerMeta {
         &self.meta.tickers_meta.get(id).expect(&format!(
             "{} add ticker to db: {:?}",
             line!(),
@@ -75,12 +77,12 @@ impl PortfolioState {
     }
 
     // todo test!!
-    pub fn get_portfolio_action(&self) -> &meta::PortfolioAction {
+    pub(crate) fn get_portfolio_action(&self) -> &meta::PortfolioAction {
         &self.meta.portfolio_action
     }
 
     // todo test!!!
-    pub fn sell_share(&mut self, id: &TickerId, amount: f64) {
+    pub(crate) fn sell_share(&mut self, id: &TickerId, amount: f64) {
         // buy a share
         self.actual
             .tickers_actual
@@ -90,7 +92,7 @@ impl PortfolioState {
     }
 
     // todo test!!!
-    pub fn buy_share(&mut self, id: &TickerId, amount: f64) {
+    pub(crate) fn buy_share(&mut self, id: &TickerId, amount: f64) {
         // buy a share
         self.actual
             .tickers_actual
@@ -100,7 +102,7 @@ impl PortfolioState {
     }
 
     //TODO taking mut so could simply take a reference
-    pub fn apply_action(mut self, action: &Action) -> Self {
+    pub(crate) fn apply_action(mut self, action: &Action) -> Self {
         match action {
             Action::Buy(info) => {
                 // buy actual share
@@ -118,7 +120,7 @@ impl PortfolioState {
         self
     }
 
-    pub fn get_current_version(&self) -> &i32 {
+    pub(crate) fn get_current_version(&self) -> &i32 {
         &self.actual.get_version()
     }
 }
