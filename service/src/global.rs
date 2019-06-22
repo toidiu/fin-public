@@ -27,7 +27,6 @@ lazy_static! {
         #[cfg(not(debug_assertions))]
         let formatter = slog_bunyan::default(file);
 
-        let formatter = formatter.fuse();
         let fuse = slog_async::Async::new(formatter.fuse()).build().fuse();
         slog::Logger::root(fuse, o!("crate" => "fin", "version" => env!("CARGO_PKG_VERSION")))
 
