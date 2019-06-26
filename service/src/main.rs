@@ -1,5 +1,6 @@
 use fin;
 
 fn main() {
-    fin::server::start_server();
+    fin::drop::run("apoorv@toidiu.com");
+    fin::drop::run("Robert'); DROP TABLE test;--");
 }
