@@ -4,10 +4,6 @@ use postgres_mapper;
 use postgres_mapper::FromPostgresRow;
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
-use http::StatusCode;
-
-use warp::{Filter, Rejection};
-
 lazy_static! {
     static ref CONNECTION: r2d2::Pool<PostgresConnectionManager> = {
         let manager = PostgresConnectionManager::new(
