@@ -462,8 +462,8 @@ dependencies = [
  "paseto 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "postgres-derive 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "postgres-mapper 0.1.0 (git+https://github.com/toidiu/postgres-mapper)",
- "postgres-mapper-derive 0.1.0 (git+https://github.com/toidiu/postgres-mapper)",
+ "postgres-mapper 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "postgres-mapper-derive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "r2d2 0.8.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "r2d2_postgres 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.91 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1240,16 +1240,16 @@ dependencies = [
 
 [[package]]
 name = "postgres-mapper"
-version = "0.1.0"
-source = "git+https://github.com/toidiu/postgres-mapper#613459a7196aa5606f93b91433e483654ee809da"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "postgres-mapper-derive"
-version = "0.1.0"
-source = "git+https://github.com/toidiu/postgres-mapper#613459a7196aa5606f93b91433e483654ee809da"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "quote 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.15.34 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2607,8 +2607,8 @@ dependencies = [
 "checksum pkg-config 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)" = "676e8eb2b1b4c9043511a9b7bea0915320d7e502b0a079fb03f9635a5252b18c"
 "checksum postgres 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)" = "115dde90ef51af573580c035857badbece2aa5cde3de1dfb3c932969ca92a6c5"
 "checksum postgres-derive 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "44ef42ae50f1547dde36aa78d5e44189cbf21f4e77ce6ddc2bbaa068337fc221"
-"checksum postgres-mapper 0.1.0 (git+https://github.com/toidiu/postgres-mapper)" = "<none>"
-"checksum postgres-mapper-derive 0.1.0 (git+https://github.com/toidiu/postgres-mapper)" = "<none>"
+"checksum postgres-mapper 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "62b8fbf46d57efa558044b2582ef89b0979ed3a74d9f20dbfb1780a539e966c1"
+"checksum postgres-mapper-derive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f80fc30daf6fd252ae1849d50935059dc69c8c67daa03bd518eef4b6fc3c5e11"
 "checksum postgres-protocol 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "2487e66455bf88a1b247bf08a3ce7fe5197ac6d67228d920b0ee6a0e97fd7312"
 "checksum postgres-shared 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "ffac35b3e0029b404c24a3b82149b4e904f293e8ca4a327eefa24d3ca50df36f"
 "checksum proc-macro2 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)" = "1b06e2f335f48d24442b35a19df506a835fb3547bc3c06ef27340da9acf5cae7"

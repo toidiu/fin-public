@@ -31,6 +31,8 @@ openssl-probe = "~0.1"
 
 postgres = { version = "~0.15", features = ["with-serde_json", "with-chrono"] }
 postgres-derive = "~0.3"
+postgres-mapper = { version = "~0.1", features = ["postgres-support"] }
+postgres-mapper-derive = { version = "~0.1", features = ["postgres-mapper", "postgres-support"] }
 r2d2 = "~0.8"
 r2d2_postgres = "~0.14"
 
@@ -40,14 +42,5 @@ http = "~0.1"
 serde = "~1.0"
 serde_derive = "~1.0"
 serde_json = "~1.0"
-
-
-[dependencies.postgres-mapper]
-features = ["postgres-support"]
-git = "https://github.com/toidiu/postgres-mapper"
-
-[dependencies.postgres-mapper-derive]
-features = ["postgres-mapper", "postgres-support"]
-git = "https://github.com/toidiu/postgres-mapper"
 
 
