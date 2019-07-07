@@ -27,7 +27,7 @@ impl PgFinDb {
         logger: slog::Logger,
     ) -> Self {
         PgFinDb {
-            conn: conn,
+            conn,
             logger: logger.new(o!("mod" => "data")),
         }
     }
@@ -58,13 +58,13 @@ pub trait FinDb {
 
     fn get_port_actual(
         &self,
-        port_a_id: &i64,
+        port_a_id: i64,
     ) -> ResultFin<db_types::ActualPortData>;
 
     fn get_actual_tickers(
         &self,
-        port_g_id: &i64,
-        port_a_id: &i64,
+        port_g_id: i64,
+        port_a_id: i64,
     ) -> ResultFin<Vec<db_types::ActualTickerData>>;
 
     fn update_tickers_actual(
@@ -82,8 +82,8 @@ pub trait FinDb {
     fn create_portfolio_actual(
         &self,
         user_id: &server::UserId,
-        port_g_id: &i64,
-        stock_percent: &f32,
+        port_g_id: i64,
+        stock_percent: f32,
     ) -> ResultFin<db_types::ActualPortData>;
 
     //========== GOAL
@@ -91,17 +91,17 @@ pub trait FinDb {
 
     fn get_port_goal(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> ResultFin<db_types::GoalPortData>;
 
     fn get_ticker_goal_by_id(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> ResultFin<Vec<db_types::GoalTickerData>>;
 
     fn get_ticker_goal_detailed(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> ResultFin<Vec<db_types::GoalTickerDetailData>>;
 
     //========== TICKERS
@@ -126,8 +126,7 @@ impl FinDb for PgFinDb {
             FinError::DatabaseErr
         })?;
 
-        let ret: ResultFin<db_types::UserData> = rows
-            .iter()
+        rows.iter()
             .next()
             .map(|row| {
                 db_types::UserData::from_postgres_row(row).map_err(|err| {
@@ -135,9 +134,7 @@ impl FinDb for PgFinDb {
                     FinError::DatabaseErr
                 })
             })
-            .ok_or(FinError::DatabaseErr)?;
-
-        ret
+            .ok_or(FinError::DatabaseErr)?
     }
 
     fn get_user_with_pass(
@@ -156,8 +153,7 @@ impl FinDb for PgFinDb {
             FinError::DatabaseErr
         })?;
 
-        let ret: ResultFin<db_types::UserDataWithPass> = rows
-            .iter()
+        rows.iter()
             .next()
             .map(|row| {
                 db_types::UserDataWithPass::from_postgres_row(row).map_err(
@@ -167,9 +163,7 @@ impl FinDb for PgFinDb {
                     },
                 )
             })
-            .ok_or(FinError::DatabaseErr)?;
-
-        ret
+            .ok_or(FinError::DatabaseErr)?
     }
 
     fn does_user_exist(&self, email: &str) -> ResultFin<bool> {
@@ -206,8 +200,7 @@ impl FinDb for PgFinDb {
                 FinError::DatabaseErr
             })?;
 
-        let ret: ResultFin<db_types::UserData> = rows
-            .iter()
+        rows.iter()
             .next()
             .map(|row| {
                 db_types::UserData::from_postgres_row(row).map_err(|err| {
@@ -215,9 +208,7 @@ impl FinDb for PgFinDb {
                     FinError::DatabaseErr
                 })
             })
-            .ok_or(FinError::DatabaseErr)?;
-
-        ret
+            .ok_or(FinError::DatabaseErr)?
     }
 
     fn get_port_actual_list_by_user_id(
@@ -239,39 +230,36 @@ impl FinDb for PgFinDb {
             },
         )?;
 
-        let ret =
-            rows.iter()
-                .map(|row| {
-                    db_types::ActualPortDetailData::from_postgres_row(row)
-                        .map_err(|err| {
-                            lineError!(
-                                self.logger,
-                                format!("{}. user_id: {:?}", err, &user_id)
-                            );
-                            FinError::DatabaseErr
-                        })
-                })
-                .collect::<ResultFin<Vec<db_types::ActualPortDetailData>>>();
-
-        ret
+        rows.iter()
+            .map(|row| {
+                db_types::ActualPortDetailData::from_postgres_row(row).map_err(
+                    |err| {
+                        lineError!(
+                            self.logger,
+                            format!("{}. user_id: {:?}", err, &user_id)
+                        );
+                        FinError::DatabaseErr
+                    },
+                )
+            })
+            .collect::<ResultFin<Vec<db_types::ActualPortDetailData>>>()
     }
 
     fn get_port_actual(
         &self,
-        port_a_id: &i64,
+        port_a_id: i64,
     ) -> ResultFin<db_types::ActualPortData> {
         let stmt = &format!(
             "SELECT {} FROM {} WHERE id = $1",
             &db_types::ActualPortData::sql_fields(),
             &db_types::ActualPortData::sql_table(),
         );
-        let rows = &self.conn.query(stmt, &[port_a_id]).map_err(|err| {
+        let rows = &self.conn.query(stmt, &[&port_a_id]).map_err(|err| {
             error!(self.logger, "{}: {}", line!(), err);
             FinError::DatabaseErr
         })?;
 
-        let ret = rows
-            .iter()
+        rows.iter()
             .next()
             .map(|row| {
                 db_types::ActualPortData::from_postgres_row(row).map_err(
@@ -281,15 +269,13 @@ impl FinDb for PgFinDb {
                     },
                 )
             })
-            .ok_or(FinError::DatabaseErr)?;
-
-        ret
+            .ok_or(FinError::DatabaseErr)?
     }
 
     fn get_actual_tickers(
         &self,
-        port_g_id: &i64,
-        port_a_id: &i64,
+        port_g_id: i64,
+        port_a_id: i64,
     ) -> ResultFin<Vec<db_types::ActualTickerData>> {
         let stmt = &format!(
             "SELECT {} FROM {}
@@ -297,17 +283,14 @@ impl FinDb for PgFinDb {
             &db_types::ActualTickerData::sql_fields(),
             &db_types::ActualTickerData::sql_table()
         );
-        let rows =
-            &self
-                .conn
-                .query(stmt, &[port_g_id, port_a_id])
-                .map_err(|err| {
-                    error!(self.logger, "{}: {}", line!(), err);
-                    FinError::DatabaseErr
-                })?;
+        let rows = &self.conn.query(stmt, &[&port_g_id, &port_a_id]).map_err(
+            |err| {
+                error!(self.logger, "{}: {}", line!(), err);
+                FinError::DatabaseErr
+            },
+        )?;
 
-        let ret = rows
-            .iter()
+        rows.iter()
             .map(|row| {
                 db_types::ActualTickerData::from_postgres_row(row).map_err(
                     |err| {
@@ -316,9 +299,7 @@ impl FinDb for PgFinDb {
                     },
                 )
             })
-            .collect::<ResultFin<Vec<db_types::ActualTickerData>>>();
-
-        ret
+            .collect::<ResultFin<Vec<db_types::ActualTickerData>>>()
     }
 
     fn update_tickers_actual(
@@ -483,8 +464,8 @@ impl FinDb for PgFinDb {
     fn create_portfolio_actual(
         &self,
         user_id: &server::UserId,
-        port_g_id: &i64,
-        stock_percent: &f32,
+        port_g_id: i64,
+        stock_percent: f32,
     ) -> ResultFin<db_types::ActualPortData> {
         // get tickers_goal. this can be before the transaction
         let goal_tickers = self.get_ticker_goal_by_id(port_g_id)?;
@@ -508,8 +489,8 @@ impl FinDb for PgFinDb {
                 stmt_port_a,
                 &[
                     user_id.get_user_id(),
-                    port_g_id,
-                    stock_percent,
+                    &port_g_id,
+                    &stock_percent,
                     &portfolio::PERCENT_DEVIATION,
                     &default_version,
                     &Utc::now(),
@@ -562,33 +543,31 @@ impl FinDb for PgFinDb {
             FinError::DatabaseErr
         })?;
 
-        let ret = rows
+        rows
             .iter()
             .map(|row| db_types::GoalPortData::from_postgres_row(row))
             .collect::<Result<Vec<db_types::GoalPortData>, postgres_mapper::Error>>()
             .map_err(|err| {
                 error!(self.logger, "{}: {}", line!(), err);
                 FinError::DatabaseErr
-            });
-        ret
+            })
     }
 
     fn get_port_goal(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> ResultFin<db_types::GoalPortData> {
         let stmt = &format!(
             "SELECT {} FROM {} WHERE id = $1",
             &db_types::GoalPortData::sql_fields(),
             &db_types::GoalPortData::sql_table(),
         );
-        let rows = &self.conn.query(stmt, &[port_g_id]).map_err(|err| {
+        let rows = &self.conn.query(stmt, &[&port_g_id]).map_err(|err| {
             error!(self.logger, "{}: {}", line!(), err);
             FinError::DatabaseErr
         })?;
 
-        let ret = rows
-            .iter()
+        rows.iter()
             .next()
             .map(|row| {
                 db_types::GoalPortData::from_postgres_row(row).map_err(|err| {
@@ -596,40 +575,36 @@ impl FinDb for PgFinDb {
                     FinError::DatabaseErr
                 })
             })
-            .ok_or(FinError::DatabaseErr)?;
-
-        ret
+            .ok_or(FinError::DatabaseErr)?
     }
 
     fn get_ticker_goal_by_id(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> ResultFin<Vec<db_types::GoalTickerData>> {
         let stmt = &format!(
             "SELECT {} FROM {} WHERE fk_port_g_id = $1",
             &db_types::GoalTickerData::sql_fields(),
             &db_types::GoalTickerData::sql_table(),
         );
-        let rows = &self.conn.query(stmt, &[port_g_id]).map_err(|err| {
+        let rows = &self.conn.query(stmt, &[&port_g_id]).map_err(|err| {
             error!(self.logger, "{}: {}", line!(), err);
             FinError::DatabaseErr
         })?;
 
-        let ret = rows
+        rows
             .iter()
             .map(|row| db_types::GoalTickerData::from_postgres_row(row))
             .collect::<Result<Vec<db_types::GoalTickerData>, postgres_mapper::Error>>()
             .map_err(|err| {
                 error!(self.logger, "{}: {}", line!(), err);
                 FinError::DatabaseErr
-            });
-
-        ret
+            })
     }
 
     fn get_ticker_goal_detailed(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> ResultFin<Vec<db_types::GoalTickerDetailData>> {
         let stmt = &format!(
             "SELECT gt.fk_port_g_id, gt.fk_tic_id, gt.tic_goal_per, gt.ord, ti.symbol from goal_tic gt
@@ -638,7 +613,7 @@ impl FinDb for PgFinDb {
             &db_types::TickerData::sql_table()
         );
 
-        let rows = &self.conn.query(stmt, &[port_g_id]).map_err(|err| {
+        let rows = &self.conn.query(stmt, &[&port_g_id]).map_err(|err| {
             error!(self.logger, "{}: {}", line!(), err);
             FinError::DatabaseErr
         })?;
@@ -767,12 +742,12 @@ mod tests {
     fn test_get_port_actual() {
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
-            let res = db.get_port_actual(&1);
+            let res = db.get_port_actual(1);
 
             assert_eq!(res.is_ok(), true);
             let r = &res.unwrap();
-            assert_eq!(&r.id, &1);
-            assert_eq!(&r.fk_user_id, &1);
+            assert_eq!(r.id, 1);
+            assert_eq!(r.fk_user_id, 1);
         })
     }
 
@@ -780,12 +755,12 @@ mod tests {
     fn test_get_ticker_actual() {
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
-            let res = db.get_actual_tickers(&1, &1);
+            let res = db.get_actual_tickers(1, 1);
 
             assert_eq!(res.is_ok(), true);
             assert!(!res.unwrap().is_empty());
 
-            let res = db.get_actual_tickers(&12, &1000);
+            let res = db.get_actual_tickers(12, 1000);
             assert_eq!(res.is_ok(), true);
             assert!(res.unwrap().is_empty());
         })
@@ -933,7 +908,7 @@ mod tests {
 
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
-            let res = db.create_portfolio_actual(&user_id, &port_g_id, &per);
+            let res = db.create_portfolio_actual(&user_id, port_g_id, per);
             assert_eq!(res.is_ok(), true);
             let res = res.unwrap();
             assert_eq!(&res.fk_user_id, user_id.get_user_id());
@@ -942,10 +917,10 @@ mod tests {
             assert_eq!(&res.deviation, &1.5);
             assert_eq!(&res.version, &1);
 
-            let at = db.get_actual_tickers(&port_g_id, &res.id);
+            let at = db.get_actual_tickers(port_g_id, res.id);
             assert_eq!(at.is_ok(), true);
 
-            let gt = db.get_ticker_goal_by_id(&port_g_id);
+            let gt = db.get_ticker_goal_by_id(port_g_id);
             assert_eq!(gt.is_ok(), true);
 
             let gt = gt.unwrap();
@@ -980,7 +955,7 @@ mod tests {
     fn test_get_port_goal() {
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
-            let res = db.get_port_goal(&1);
+            let res = db.get_port_goal(1);
             assert_eq!(res.is_ok(), true);
         })
     }
@@ -989,7 +964,7 @@ mod tests {
     fn test_get_ticker_goal() {
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
-            let res = db.get_ticker_goal_by_id(&1);
+            let res = db.get_ticker_goal_by_id(1);
 
             assert_eq!(res.is_ok(), true);
         })
@@ -999,7 +974,7 @@ mod tests {
     fn test_get_ticker_goal_detailed() {
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
-            let res = db.get_ticker_goal_detailed(&1);
+            let res = db.get_ticker_goal_detailed(1);
 
             assert_eq!(res.is_ok(), true);
         })

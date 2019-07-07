@@ -86,5 +86,5 @@ pub fn resp_with_auth(
             format!("sess={};HttpOnly;path=/", token),
         )
         .body(body)
-        .expect(&format!("{} error adding auth to resp", line!())))
+        .unwrap_or_else(|_| panic!("{} error adding auth to resp", line!())))
 }

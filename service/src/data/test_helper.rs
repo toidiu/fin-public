@@ -10,7 +10,7 @@ use std::io::prelude::*;
 use std::sync::RwLock;
 use std::sync::{Arc, Mutex};
 
-const CLUSTER_URI: &'static str = "postgres://postgres@localhost:5432";
+const CLUSTER_URI: &str = "postgres://postgres@localhost:5432";
 
 lazy_static! {
     static ref COUNTER: Arc<Mutex<u8>> = Arc::new(Mutex::new(1));
@@ -37,7 +37,7 @@ impl TestHelper {
         }
     }
 
-    pub fn run_test_opt_teardown<T>(teardown: bool, test: T) -> ()
+    pub fn run_test_opt_teardown<T>(teardown: bool, test: T)
     where
         T: FnOnce(&str) -> () + std::panic::UnwindSafe,
     {
@@ -52,7 +52,7 @@ impl TestHelper {
         assert!(result.is_ok())
     }
 
-    pub fn run_test<T>(test: T) -> ()
+    pub fn run_test<T>(test: T)
     where
         T: FnOnce(&str) -> () + std::panic::UnwindSafe,
     {

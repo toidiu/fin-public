@@ -20,13 +20,13 @@ pub trait PortfolioBackend {
     // FIXME return ResultFin
     fn get_tic_goal(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> HashMap<TickerId, portfolio::GoalTicker>;
 
     // FIXME return ResultFin
     fn get_tic_goal_detailed(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> HashMap<TickerId, portfolio::TickerGoalDetailed>;
 
     fn get_port_actual_list_by_user_id(
@@ -36,24 +36,24 @@ pub trait PortfolioBackend {
 
     fn get_port_actual(
         &self,
-        port_a_id: &i64,
+        port_a_id: i64,
         actual_tickers: &HashMap<TickerId, portfolio::TickerActual>,
     ) -> ResultFin<portfolio::PortfolioActual>;
 
     fn get_actual_tickers(
         &self,
-        port_g_id: &i64,
-        port_a_id: &i64,
+        port_g_id: i64,
+        port_a_id: i64,
     ) -> ResultFin<HashMap<TickerId, portfolio::TickerActual>>;
 
     fn get_port_actual_and_tickers(
         &self,
-        port_a_id: &i64,
+        port_a_id: i64,
     ) -> ResultFin<portfolio::PortfolioActual>;
 
     fn get_port_goal(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
         goal_tickers: &HashMap<TickerId, portfolio::GoalTicker>,
         tickers_map: &HashMap<TickerId, Ticker>,
         actual_stock_percent: &f32,
@@ -73,23 +73,23 @@ pub trait PortfolioBackend {
     fn create_port_a(
         &self,
         user_id: &server::UserId,
-        goal_id: &i64,
-        stock_percent: &f32,
+        goal_id: i64,
+        stock_percent: f32,
     ) -> ResultFin<server::PortfolioActualResp>;
 
     fn get_buy_next(
         &self,
         user_id: &server::UserId,
-        port_g_id: &i64,
-        port_a_id: &i64,
+        port_g_id: i64,
+        port_a_id: i64,
         buy_amount: f64,
     ) -> ResultFin<BuyNext>;
 
     fn execute_actions(
         &self,
         user_id: &server::UserId,
-        port_g_id: &i64,
-        port_a_id: &i64,
+        port_g_id: i64,
+        port_a_id: i64,
         actions: &Vec<Action>,
     ) -> ResultFin<portfolio::PortfolioState>;
 }
@@ -108,7 +108,7 @@ pub struct DefaultPortfolioBackend<T: data::FinDb> {
 impl<T: data::FinDb> DefaultPortfolioBackend<T> {
     pub fn new(db: T, logger: slog::Logger) -> DefaultPortfolioBackend<T> {
         DefaultPortfolioBackend {
-            db: db,
+            db,
             logger: PortfolioBackend::get_logger_context(logger),
         }
     }
@@ -117,7 +117,7 @@ impl<T: data::FinDb> DefaultPortfolioBackend<T> {
 impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
     fn get_port_goal(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
         goal_tickers: &HashMap<TickerId, portfolio::GoalTicker>,
         tickers_map: &HashMap<TickerId, Ticker>,
         actual_stock_percent: &f32,
@@ -169,7 +169,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         self.db.get_port_goals().map(|v| {
             v.into_iter()
                 .map(|data| {
-                    let goal_tickers = self.get_tic_goal_detailed(&data.id);
+                    let goal_tickers = self.get_tic_goal_detailed(data.id);
                     server::PortfolioGoalDetailResp::new(data, goal_tickers)
                 })
                 .collect()
@@ -178,7 +178,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn get_tic_goal(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> HashMap<TickerId, portfolio::GoalTicker> {
         let tg = self.db.get_ticker_goal_by_id(port_g_id);
         let mut map = HashMap::new();
@@ -193,7 +193,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn get_tic_goal_detailed(
         &self,
-        port_g_id: &i64,
+        port_g_id: i64,
     ) -> HashMap<TickerId, portfolio::TickerGoalDetailed> {
         let tg = self.db.get_ticker_goal_detailed(port_g_id);
         let mut map = HashMap::new();
@@ -217,7 +217,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn get_port_actual(
         &self,
-        port_a_id: &i64,
+        port_a_id: i64,
         actual_tickers: &HashMap<TickerId, portfolio::TickerActual>,
     ) -> ResultFin<portfolio::PortfolioActual> {
         self.db
@@ -227,8 +227,8 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn get_actual_tickers(
         &self,
-        port_g_id: &i64,
-        port_a_id: &i64,
+        port_g_id: i64,
+        port_a_id: i64,
     ) -> ResultFin<HashMap<TickerId, portfolio::TickerActual>> {
         let ta = self.db.get_actual_tickers(port_g_id, port_a_id)?;
         let mut map = HashMap::new();
@@ -242,12 +242,12 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
 
     fn get_port_actual_and_tickers(
         &self,
-        port_a_id: &i64,
+        port_a_id: i64,
     ) -> ResultFin<portfolio::PortfolioActual> {
         let db_port_actual = self.db.get_port_actual(port_a_id)?;
 
         let actual_tickers =
-            self.get_actual_tickers(&db_port_actual.fk_port_g_id, port_a_id)?;
+            self.get_actual_tickers(db_port_actual.fk_port_g_id, port_a_id)?;
 
         Ok(db_port_actual.to_actual_port(&actual_tickers))
     }
@@ -292,15 +292,15 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
     fn create_port_a(
         &self,
         user_id: &server::UserId,
-        goal_id: &i64,
-        stock_percent: &f32,
+        goal_id: i64,
+        stock_percent: f32,
     ) -> ResultFin<server::PortfolioActualResp> {
         let port_a =
             self.db
                 .create_portfolio_actual(user_id, goal_id, stock_percent)?;
         let a_tickers = self
             .db
-            .get_actual_tickers(goal_id, &port_a.id)?
+            .get_actual_tickers(goal_id, port_a.id)?
             .into_iter()
             .map(|t| t.into())
             .collect();
@@ -311,8 +311,8 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
     fn get_buy_next(
         &self,
         user_id: &server::UserId,
-        port_g_id: &i64,
-        port_a_id: &i64,
+        port_g_id: i64,
+        port_a_id: i64,
         buy_amount: f64,
     ) -> ResultFin<BuyNext> {
         // actual info
@@ -363,8 +363,8 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
     fn execute_actions(
         &self,
         user_id: &server::UserId,
-        port_g_id: &i64,
-        port_a_id: &i64,
+        port_g_id: i64,
+        port_a_id: i64,
         actions: &Vec<Action>,
     ) -> ResultFin<portfolio::PortfolioState> {
         // actual info

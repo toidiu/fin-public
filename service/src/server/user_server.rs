@@ -19,18 +19,19 @@ pub fn login(
     // get user with password
     let user_with_pass = res_user_backend?
         .get_user_with_pass(&data.email)
-        .map_err(|err| warp::reject::custom(err))?;
+        .map_err(warp::reject::custom)?;
 
     // verify password
-    let opt_user_data = match libpasta::verify_password(
+    let opt_user_data = if (libpasta::verify_password(
         &user_with_pass.password,
         &data.password,
-    ) {
-        true => Some(data::UserData {
+    )) {
+        Some(data::UserData {
             id: user_with_pass.id,
             email: user_with_pass.email,
-        }),
-        false => None,
+        })
+    } else {
+        None
     };
 
     match opt_user_data {
@@ -70,26 +71,23 @@ pub fn signup(
     // check email doesnt already exist
     let user_exists = user_backend
         .does_user_exist(&data.email)
-        .map_err(|err| warp::reject::custom(err))?;
+        .map_err(warp::reject::custom)?;
 
     // hash password
     let hash_pass = libpasta::hash_password(&data.password);
 
     // add user
-    match user_exists {
-        true => {
-            let response = Response::builder()
-                .status(StatusCode::CONFLICT)
-                .body("user with email already exists".to_string())
-                .unwrap();
-            Ok(response)
-        }
-        false => {
-            let new_user = user_backend
-                .create_user(&data.email, &hash_pass)
-                .map_err(|err| warp::reject::custom(err))?;
+    if (user_exists) {
+        let response = Response::builder()
+            .status(StatusCode::CONFLICT)
+            .body("user with email already exists".to_string())
+            .unwrap();
+        Ok(response)
+    } else {
+        let new_user = user_backend
+            .create_user(&data.email, &hash_pass)
+            .map_err(warp::reject::custom)?;
 
-            auth::resp_with_auth(new_user, "".to_string(), StatusCode::CREATED)
-        }
+        auth::resp_with_auth(new_user, "".to_string(), StatusCode::CREATED)
     }
 }

@@ -72,12 +72,12 @@ impl Ticker {
         kind: InvestmentKind,
     ) -> Self {
         Ticker {
-            id: id,
-            symbol: symbol,
-            exchange: exchange,
-            fee: fee,
-            price: price,
-            kind: kind,
+            id,
+            symbol,
+            exchange,
+            fee,
+            price,
+            kind,
         }
     }
 

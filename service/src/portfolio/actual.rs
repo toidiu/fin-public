@@ -26,14 +26,14 @@ impl PortfolioActual {
         tickers_actual: HashMap<TickerId, TickerActual>,
     ) -> Self {
         PortfolioActual {
-            id: id,
-            fk_user_id: fk_user_id,
-            fk_port_g_id: fk_port_g_id,
-            stock_percent: stock_percent,
-            deviation_percent: deviation_percent,
-            version: version,
-            last_updated: last_updated,
-            tickers_actual: tickers_actual,
+            id,
+            fk_user_id,
+            fk_port_g_id,
+            stock_percent,
+            deviation_percent,
+            version,
+            last_updated,
+            tickers_actual,
         }
     }
 

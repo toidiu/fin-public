@@ -30,7 +30,7 @@ pub struct DefaultUserBackend<T: data::FinDb> {
 
 impl<T: data::FinDb> DefaultUserBackend<T> {
     pub fn new(db: T) -> DefaultUserBackend<T> {
-        DefaultUserBackend { db: db }
+        DefaultUserBackend { db }
     }
 }
 

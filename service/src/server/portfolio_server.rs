@@ -55,7 +55,7 @@ pub fn get_portfolio_a(
 
     // actual info
     let port_actual = port_backend
-        .get_port_actual_and_tickers(&actual_id)
+        .get_port_actual_and_tickers(actual_id)
         .map_err(|err| {
             error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::not_found()
@@ -71,10 +71,10 @@ pub fn get_portfolio_a(
         port_backend.get_tickers(&keys);
 
     // goal info
-    let goal_tickers = port_backend.get_tic_goal(&port_actual.fk_port_g_id);
+    let goal_tickers = port_backend.get_tic_goal(port_actual.fk_port_g_id);
     let port_goal = port_backend
         .get_port_goal(
-            &port_actual.fk_port_g_id,
+            port_actual.fk_port_g_id,
             &goal_tickers,
             &tickers_map,
             &port_actual.stock_percent,
@@ -102,7 +102,7 @@ pub fn create_port_a(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let port_backend = res_portfolio_backend?;
     let resp = port_backend
-        .create_port_a(&user_id, &data.goal_id, &data.stock_percent)
+        .create_port_a(&user_id, data.goal_id, data.stock_percent)
         .map_err(|err| {
             error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::custom(FinError::ServerErr)
@@ -131,8 +131,8 @@ pub fn get_buy_next(
     let resp = port_backend
         .get_buy_next(
             &user_id,
-            &data.goal_port_id,
-            &data.actual_port_id,
+            data.goal_port_id,
+            data.actual_port_id,
             data.amount,
         )
         .map_err(|err| {
@@ -155,8 +155,8 @@ pub(super) fn post_buy_next(
 
     let port = port_backend.execute_actions(
         &user_id,
-        &data.goal_id,
-        &data.port_a_id,
+        data.goal_id,
+        data.port_a_id,
         &data.actions,
     );
 

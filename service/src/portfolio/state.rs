@@ -31,7 +31,7 @@ impl PortfolioState {
         PortfolioState {
             goal: pg.clone(),
             actual: pa.clone(),
-            meta: meta,
+            meta,
             tickers: tickers_map.clone(),
         }
     }
@@ -156,7 +156,7 @@ impl Into<server::PortfolioStateResp> for PortfolioState {
         server::PortfolioStateResp {
             name: self.goal.name,
             goal_id: self.goal.id,
-            tickers: tickers,
+            tickers,
             goal_stock_percent: self.actual.stock_percent,
             actual_stock_percent: self.meta.stock_percent,
             total_value: self.meta.total_value,

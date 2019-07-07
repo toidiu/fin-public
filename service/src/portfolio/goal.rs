@@ -47,10 +47,10 @@ impl PortfolioGoal {
             })
             .collect();
         PortfolioGoal {
-            id: id,
-            name: name,
-            description: description,
-            tickers_goal: tickers_goal,
+            id,
+            name,
+            description,
+            tickers_goal,
         }
     }
 
@@ -81,11 +81,11 @@ impl GoalTicker {
         order: i32,
     ) -> Self {
         GoalTicker {
-            id: id,
-            port_goal_id: port_goal_id,
-            ticker_id: ticker_id,
-            goal_percent: goal_percent,
-            order: order,
+            id,
+            port_goal_id,
+            ticker_id,
+            goal_percent,
+            order,
         }
     }
 

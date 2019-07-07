@@ -29,9 +29,9 @@ impl TestHelper {
             Ticker::new(2, symbol!("t2"), 2, 2.25, 50.0, InvestmentKind::Bond);
         let t3 =
             Ticker::new(3, symbol!("t3"), 2, 3.25, 60.0, InvestmentKind::Stock);
-        map.insert(tic_id!(t1.id.clone()), t1);
-        map.insert(tic_id!(t2.id.clone()), t2);
-        map.insert(tic_id!(t3.id.clone()), t3);
+        map.insert(tic_id!(t1.id), t1);
+        map.insert(tic_id!(t2.id), t2);
+        map.insert(tic_id!(t3.id), t3);
         map
     }
 
@@ -56,9 +56,9 @@ impl TestHelper {
         let t1 = TickerActual::new(1, 1, 1, 1, 1.0);
         let t2 = TickerActual::new(2, 1, 1, 2, 1.0);
         let t3 = TickerActual::new(3, 1, 1, 3, 1.0);
-        map.insert(tic_id!(t1.id.clone()), t1);
-        map.insert(tic_id!(t2.id.clone()), t2);
-        map.insert(tic_id!(t3.id.clone()), t3);
+        map.insert(tic_id!(t1.id), t1);
+        map.insert(tic_id!(t2.id), t2);
+        map.insert(tic_id!(t3.id), t3);
         map
     }
 
@@ -70,9 +70,9 @@ impl TestHelper {
         let t2 = GoalTicker::new(2, 1, 2, 100.0, 2); // only bond is 100 so 50%
         let t3 = GoalTicker::new(3, 1, 3, 60.0, 3); // stock is 60 of 50% so 30%
 
-        map.insert(tic_id!(t1.ticker_id.clone()), t1);
-        map.insert(tic_id!(t2.ticker_id.clone()), t2);
-        map.insert(tic_id!(t3.ticker_id.clone()), t3);
+        map.insert(tic_id!(t1.ticker_id), t1);
+        map.insert(tic_id!(t2.ticker_id), t2);
+        map.insert(tic_id!(t3.ticker_id), t3);
 
         map
     }
@@ -208,7 +208,7 @@ impl TestHelper {
     pub fn get_ticker_meta() -> TickerMeta {
         let id = tic_id!(1);
         TickerMeta {
-            id: id,
+            id,
             action: TickerAction::Hold,
             ticker_value: 100.0,
             ticker_percent: 5.0,
@@ -218,7 +218,7 @@ impl TestHelper {
     pub fn get_ticker_meta_zero_percent() -> TickerMeta {
         let id = tic_id!(1);
         TickerMeta {
-            id: id,
+            id,
             action: TickerAction::Hold,
             ticker_value: 0.0,
             ticker_percent: 0.0,

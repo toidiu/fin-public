@@ -8,7 +8,7 @@ lazy_static! {
 
     pub static ref ROOT: slog::Logger = {
         let log_dir: &'static str = "./logs";
-        let n: () = fs::create_dir_all(log_dir).expect("unable to create dir for logs");
+        fs::create_dir_all(log_dir).expect("unable to create dir for logs");
         let log_path: String = format!("{}/server.log", log_dir);
         let file: std::fs::File = OpenOptions::new()
             .create(true)

@@ -62,7 +62,7 @@ impl BuyNextResp {
             };
         }
         BuyNextResp {
-            requested_value: requested_value,
+            requested_value,
             actions: buy_next.actions,
             buy_value: buy_next.buy_value,
             action_summary: map,
@@ -116,7 +116,7 @@ impl PortfolioGoalDetailResp {
             id: data.id,
             name: data.name,
             description: data.description,
-            tickers_goal: tickers_goal,
+            tickers_goal,
         }
     }
 }

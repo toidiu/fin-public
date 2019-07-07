@@ -40,7 +40,7 @@ impl StdError for FinError {
 }
 
 impl FinError {
-    pub fn to_msg(&self) -> ErrMessage {
+    pub fn to_msg(self) -> ErrMessage {
         ErrMessage {
             code: self.value(),
             message: self.to_string(),
@@ -48,7 +48,7 @@ impl FinError {
     }
 
     /// useful for user debugging
-    fn value(&self) -> u16 {
+    fn value(self) -> u16 {
         match self {
             FinError::NotLoggedIn => 1,
             FinError::ServerErr => 20,
