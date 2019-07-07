@@ -2,7 +2,6 @@
   "name": "finance",
   "version": "0.1.0",
   "description": "my finances",
-  "main": "src/index.js",
   "author": "apoorv@toidiu.com",
   "license": "MIT",
   "dependencies": {
