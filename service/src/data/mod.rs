@@ -121,16 +121,15 @@ impl FinDb for PgFinDb {
         );
 
         let rows = &self.conn.query(stmt, &[&email]).map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
             lineError!(self.logger, err);
-            FinError::DatabaseErr
+            err
         })?;
 
         rows.iter()
             .next()
             .map(|row| {
                 db_types::UserData::from_postgres_row(row).map_err(|err| {
-                    error!(self.logger, "{}: {}", line!(), err);
+                    lineError!(self.logger, err);
                     FinError::DatabaseErr
                 })
             })
@@ -149,8 +148,8 @@ impl FinDb for PgFinDb {
         );
 
         let rows = &self.conn.query(stmt, &[&email]).map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         rows.iter()
@@ -158,7 +157,7 @@ impl FinDb for PgFinDb {
             .map(|row| {
                 db_types::UserDataWithPass::from_postgres_row(row).map_err(
                     |err| {
-                        error!(self.logger, "{}: {}", line!(), err);
+                        lineError!(self.logger, err);
                         FinError::DatabaseErr
                     },
                 )
@@ -173,9 +172,11 @@ impl FinDb for PgFinDb {
             &db_types::UserData::sql_table(),
         );
 
-        let rows = &self.conn.query(stmt, &[&email]).map_err(|err| {
-            error!(self.logger, "{} {}", err, line!());
-            FinError::DatabaseErr
+        let rows = self.conn.query(stmt, &[&email]);
+
+        let rows = rows.map_err(|err| {
+            lineError!(self.logger, err);
+            err
         })?;
 
         let ret = !rows.is_empty();
@@ -196,15 +197,15 @@ impl FinDb for PgFinDb {
 
         let rows =
             &self.conn.query(stmt, &[&email, &password]).map_err(|err| {
-                error!(self.logger, "{} {}", err, line!());
-                FinError::DatabaseErr
+                lineError!(self.logger, err);
+                err
             })?;
 
         rows.iter()
             .next()
             .map(|row| {
                 db_types::UserData::from_postgres_row(row).map_err(|err| {
-                    error!(self.logger, "{} {}", err, line!());
+                    lineError!(self.logger, err);
                     FinError::DatabaseErr
                 })
             })
@@ -225,8 +226,8 @@ impl FinDb for PgFinDb {
         );
         let rows = &self.conn.query(stmt, &[user_id.get_user_id()]).map_err(
             |err| {
-                error!(self.logger, "{}: {}", line!(), err);
-                FinError::DatabaseErr
+                lineError!(self.logger, err);
+                err
             },
         )?;
 
@@ -255,8 +256,8 @@ impl FinDb for PgFinDb {
             &db_types::ActualPortData::sql_table(),
         );
         let rows = &self.conn.query(stmt, &[&port_a_id]).map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         rows.iter()
@@ -264,7 +265,7 @@ impl FinDb for PgFinDb {
             .map(|row| {
                 db_types::ActualPortData::from_postgres_row(row).map_err(
                     |err| {
-                        error!(self.logger, "{}: {}", line!(), err);
+                        lineError!(self.logger, err);
                         FinError::DatabaseErr
                     },
                 )
@@ -285,8 +286,8 @@ impl FinDb for PgFinDb {
         );
         let rows = &self.conn.query(stmt, &[&port_g_id, &port_a_id]).map_err(
             |err| {
-                error!(self.logger, "{}: {}", line!(), err);
-                FinError::DatabaseErr
+                lineError!(self.logger, err);
+                err
             },
         )?;
 
@@ -294,7 +295,7 @@ impl FinDb for PgFinDb {
             .map(|row| {
                 db_types::ActualTickerData::from_postgres_row(row).map_err(
                     |err| {
-                        error!(self.logger, "{}: {}", line!(), err);
+                        lineError!(self.logger, err);
                         FinError::DatabaseErr
                     },
                 )
@@ -314,7 +315,10 @@ impl FinDb for PgFinDb {
         actions_data: &serde_json::Value,
     ) -> ResultFin<db_types::ActualFullData> {
         if (updated_tickers_actual.is_empty()) {
-            error!(self.logger, "unable to update tickers because updated_tickers_actual is empty");
+            lineError!(
+                self.logger,
+                "unable to update tickers because updated_tickers_actual is empty"
+            );
             return Err(FinError::BadRequestErr);
         }
         let tic = updated_tickers_actual
@@ -325,8 +329,8 @@ impl FinDb for PgFinDb {
         let port_a_id = tic.port_actual_id;
 
         let tx = &self.conn.transaction().map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         // ===================
@@ -351,8 +355,8 @@ impl FinDb for PgFinDb {
             ],
         )
         .map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         // ===================
@@ -380,8 +384,8 @@ impl FinDb for PgFinDb {
                 ],
             )
             .map_err(|err| {
-                error!(self.logger, "{}: {}", line!(), err);
-                FinError::DatabaseErr
+                lineError!(self.logger, err);
+                err
             })?;
 
         let updated_port: ResultFin<db_types::ActualPortData> = rows
@@ -390,7 +394,7 @@ impl FinDb for PgFinDb {
             .map(|row| {
                 db_types::ActualPortData::from_postgres_row(row).map_err(
                     |err| {
-                        error!(self.logger, "{}: {}", line!(), err);
+                        lineError!(self.logger, err);
                         FinError::DatabaseErr
                     },
                 )
@@ -432,8 +436,8 @@ impl FinDb for PgFinDb {
                             ],
                         )
                         .map_err(|err| {
-                            error!(self.logger, "{}: {}", line!(), err);
-                            FinError::DatabaseErr
+                            lineError!(self.logger, err);
+                            err
                         })?;
 
                     let ret: ResultFin<db_types::ActualTickerData> = rows
@@ -442,7 +446,7 @@ impl FinDb for PgFinDb {
                         .map(|row| {
                             db_types::ActualTickerData::from_postgres_row(row)
                                 .map_err(|err| {
-                                    error!(self.logger, "{}: {}", line!(), err);
+                                    lineError!(self.logger, err);
                                     FinError::DatabaseErr
                                 })
                         })
@@ -471,8 +475,8 @@ impl FinDb for PgFinDb {
         let goal_tickers = self.get_ticker_goal_by_id(port_g_id)?;
 
         let tx = &self.conn.transaction().map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         // insert port actual
@@ -497,8 +501,8 @@ impl FinDb for PgFinDb {
                 ],
             )
             .map_err(|err| {
-                error!(self.logger, "{}: {}", line!(), err);
-                FinError::DatabaseErr
+                lineError!(self.logger, err);
+                err
             })?;
 
         let new_actual_port: db_types::ActualPortData = rows
@@ -507,7 +511,7 @@ impl FinDb for PgFinDb {
             .map(|row| {
                 db_types::ActualPortData::from_postgres_row(row).map_err(
                     |err| {
-                        error!(self.logger, "{} {}", err, line!());
+                        lineError!(self.logger, err);
                         FinError::DatabaseErr
                     },
                 )
@@ -539,8 +543,8 @@ impl FinDb for PgFinDb {
             &db_types::GoalPortData::sql_table(),
         );
         let rows = &self.conn.query(stmt, &[]).map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         rows
@@ -548,8 +552,8 @@ impl FinDb for PgFinDb {
             .map(|row| db_types::GoalPortData::from_postgres_row(row))
             .collect::<Result<Vec<db_types::GoalPortData>, postgres_mapper::Error>>()
             .map_err(|err| {
-                error!(self.logger, "{}: {}", line!(), err);
-                FinError::DatabaseErr
+            lineError!(self.logger, err);
+                err.into()
             })
     }
 
@@ -563,15 +567,15 @@ impl FinDb for PgFinDb {
             &db_types::GoalPortData::sql_table(),
         );
         let rows = &self.conn.query(stmt, &[&port_g_id]).map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         rows.iter()
             .next()
             .map(|row| {
                 db_types::GoalPortData::from_postgres_row(row).map_err(|err| {
-                    error!(self.logger, "{}: {}", line!(), err);
+                    lineError!(self.logger, err);
                     FinError::DatabaseErr
                 })
             })
@@ -588,8 +592,8 @@ impl FinDb for PgFinDb {
             &db_types::GoalTickerData::sql_table(),
         );
         let rows = &self.conn.query(stmt, &[&port_g_id]).map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         rows
@@ -597,8 +601,8 @@ impl FinDb for PgFinDb {
             .map(|row| db_types::GoalTickerData::from_postgres_row(row))
             .collect::<Result<Vec<db_types::GoalTickerData>, postgres_mapper::Error>>()
             .map_err(|err| {
-                error!(self.logger, "{}: {}", line!(), err);
-                FinError::DatabaseErr
+            lineError!(self.logger, err);
+                err.into()
             })
     }
 
@@ -614,16 +618,16 @@ impl FinDb for PgFinDb {
         );
 
         let rows = &self.conn.query(stmt, &[&port_g_id]).map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         rows.iter()
             .map(|row| db_types::GoalTickerDetailData::from_postgres_row(row))
             .collect::<Result<Vec<db_types::GoalTickerDetailData>, postgres_mapper::Error>>()
             .map_err(|err| {
-                error!(self.logger, "{}: {}", line!(), err);
-                FinError::DatabaseErr
+            lineError!(self.logger, err);
+                err.into()
             })
     }
 
@@ -638,16 +642,16 @@ impl FinDb for PgFinDb {
         );
 
         let rows = &self.conn.query(stmt, &[ids]).map_err(|err| {
-            error!(self.logger, "{}: {}", line!(), err);
-            FinError::DatabaseErr
+            lineError!(self.logger, err);
+            err
         })?;
 
         rows.iter()
             .map(|row| db_types::TickerData::from_postgres_row(row))
             .collect::<Result<Vec<db_types::TickerData>, postgres_mapper::Error>>()
             .map_err(|err| {
-                error!(self.logger, "{}: {}", line!(), err);
-                FinError::DatabaseErr
+            lineError!(self.logger, err);
+                err.into()
             })
     }
 }

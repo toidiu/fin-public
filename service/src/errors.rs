@@ -26,6 +26,12 @@ impl From<PostgresError> for FinError {
     }
 }
 
+impl From<postgres_mapper::Error> for FinError {
+    fn from(err: postgres_mapper::Error) -> Self {
+        FinError::DatabaseErr
+    }
+}
+
 impl StdError for FinError {
     fn description(&self) -> &str {
         match self {
