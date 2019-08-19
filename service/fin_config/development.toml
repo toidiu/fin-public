@@ -8,4 +8,4 @@ url = "postgres://postgres@localhost:5432/r_fin"
 [iex]
 token = "_____"
 # debug is used so we can work on the logic without an internet connection
-debug = true
+debug = false

@@ -20,7 +20,8 @@ impl Iex {
         let s = tickers.join(",");
 
         let uri = format!(
-            "https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=price&token={}",
+            "https://cloud.iexapis.com/stable/stock/market/batch?symbols={}&types=quote&filter=latestPrice&token={}",
+
             s, self.iex_config.token
         );
 
@@ -46,19 +47,41 @@ impl Iex {
                     ()
                 })?;
 
-            serde_json::from_str(&body).map_err(|err| {
-                loge!(err);
-                ()
-            })?
+            let info: IexTickerInfo =
+                serde_json::from_str(&body).map_err(|err| {
+                    loge!(err);
+                    ()
+                })?;
+
+            info.into_iter().map(|x| (x.0, x.1.into())).collect()
         };
 
         Ok(ret)
     }
 }
 
+// CRATE IEX API =====================
 type IexTickersPrice = HashMap<String, IexPrice>;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct IexPrice {
     pub price: f64,
+}
+impl From<IexObj> for IexPrice {
+    fn from(item: IexObj) -> IexPrice {
+        IexPrice {
+            price: item.quote.latestPrice,
+        }
+    }
+}
+
+// IEX CLOUD API =====================
+type IexTickerInfo = HashMap<String, IexObj>;
+#[derive(Serialize, Deserialize, Debug)]
+pub struct IexObj {
+    pub quote: IexQuote,
+}
+#[derive(Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+pub struct IexQuote {
+    pub latestPrice: f64,
 }
