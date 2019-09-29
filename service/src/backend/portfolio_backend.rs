@@ -94,7 +94,7 @@ pub trait PortfolioBackend {
     ) -> ResultFin<portfolio::PortfolioState>;
 }
 
-impl PortfolioBackend {
+impl dyn PortfolioBackend {
     pub fn get_logger_context(logger: slog::Logger) -> slog::Logger {
         logger.new(o!("mod" => "portfolio_backend"))
     }

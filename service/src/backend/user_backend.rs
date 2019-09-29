@@ -18,7 +18,7 @@ pub trait UserBackend {
     ) -> ResultFin<data::UserData>;
 }
 
-impl UserBackend {
+impl dyn UserBackend {
     pub fn get_logger_context(logger: slog::Logger) -> slog::Logger {
         logger.new(o!("mod" => "user_backend"))
     }
