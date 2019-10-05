@@ -85,7 +85,7 @@ pub fn get_portfolio_a(
         })?;
 
     let port =
-        portfolio::PortfolioState::new(&port_actual, &port_goal, &tickers_map);
+        portfolio::PortfolioState::new(port_actual, port_goal, tickers_map);
 
     // get state
     let resp: server::PortfolioStateResp = port.into();

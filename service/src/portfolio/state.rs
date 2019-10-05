@@ -14,25 +14,24 @@ use std::{cmp::Ordering, collections::HashMap, num};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PortfolioState {
     goal: PortfolioGoal,
-    actual: actual::PortfolioActual,
+    actual: PortfolioActual,
     meta: PortfolioMeta,
     tickers: HashMap<TickerId, Ticker>,
 }
 
 impl PortfolioState {
     pub(crate) fn new(
-        pa: &PortfolioActual,
-        // actual: &HashMap<TickerId, TickerActual>,
-        pg: &PortfolioGoal,
-        tickers_map: &HashMap<TickerId, Ticker>,
+        pa: PortfolioActual,
+        pg: PortfolioGoal,
+        tickers_map: HashMap<TickerId, Ticker>,
     ) -> PortfolioState {
         // get meta
-        let meta = PortfolioMeta::new(tickers_map, &pg, &pa);
+        let meta = PortfolioMeta::new(&tickers_map, &pg, &pa);
         PortfolioState {
-            goal: pg.clone(),
-            actual: pa.clone(),
+            goal: pg,
+            actual: pa,
             meta,
-            tickers: tickers_map.clone(),
+            tickers: tickers_map,
         }
     }
 

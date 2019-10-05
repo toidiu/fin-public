@@ -335,9 +335,9 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         )?;
 
         let mut buy_next = BuyNext::new(portfolio::PortfolioState::new(
-            &port_actual,
-            &port_goal,
-            &tickers_map,
+            port_actual,
+            port_goal,
+            tickers_map,
         ));
 
         while (buy_next.buy_value < buy_amount) {
@@ -375,16 +375,13 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         )?;
 
         let init_port = portfolio::PortfolioState::new(
-            &port_actual,
-            &port_goal,
-            &tickers_map,
+            port_actual.clone(),
+            port_goal.clone(),
+            tickers_map.clone(),
         );
 
-        let mut evolved_port = portfolio::PortfolioState::new(
-            &port_actual,
-            &port_goal,
-            &tickers_map,
-        );
+        let mut evolved_port =
+            portfolio::PortfolioState::new(port_actual, port_goal, tickers_map);
 
         for a in actions {
             evolved_port.apply_action(&a);
