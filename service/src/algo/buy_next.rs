@@ -12,91 +12,66 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct BuyNext {
-    pub init_state: PortfolioState,
-    pub evolved_actual: HashMap<TickerId, TickerActual>,
+    pub port_state: PortfolioState,
     pub actions: Vec<Action>,
     pub buy_value: f64,
-    pub action_summary: HashMap<TickerId, Action>,
 }
 
 impl BuyNext {
     pub fn new(port: PortfolioState) -> Self {
-        let initial_actual_tickers = port.get_actual_tickers().clone();
         BuyNext {
-            init_state: port,
-            evolved_actual: initial_actual_tickers,
+            port_state: port,
             actions: Vec::new(),
             buy_value: 0.0, // default uninitialized value
-            action_summary: HashMap::new(),
         }
     }
 
     // todo test!!!
-    pub fn get_next_action(
-        buy_next: &mut BuyNext,
-        buy_amount: f64,
-        port_state: PortfolioState,
-    ) -> Option<Action> {
+    pub fn buy_one(&mut self, buy_amount: f64) -> Option<Action> {
         // get action
-        let action = Self::get_buy_next_action(&port_state);
+        let action = self.get_action();
 
         // buying more would put us above the buy value
-        if (buy_next.buy_value + action.get_price() > buy_amount) {
+        if (self.buy_value + action.get_price() > buy_amount) {
             None
         } else {
             // update PortfolioState
-            let port_state = port_state.apply_action(&action);
+            self.port_state.apply_action(&action);
 
             // update BuyNext
-            Self::update_buy_next(
-                buy_next,
-                port_state.get_actual_tickers(),
-                &action,
-            );
+            self.update_buy_next(&action);
 
             Some(action)
         }
     }
 
     // todo test!!!
-    fn update_buy_next(
-        buy_next: &mut BuyNext,
-        updated_actual_tic: &HashMap<TickerId, TickerActual>,
-        action: &Action,
-    ) {
+    fn update_buy_next(&mut self, action: &Action) {
         // update buy_value
-        buy_next.buy_value += action.get_price();
-        StdExt::round_two_digits_64(&mut buy_next.buy_value);
+        self.buy_value += action.get_price();
+        StdExt::round_two_digits_64(&mut self.buy_value);
 
         // update action
-        buy_next.actions.push(action.clone());
-
-        // update final state
-        buy_next.evolved_actual = updated_actual_tic.clone();
+        self.actions.push(action.clone());
     }
 
     // todo test!!
-    pub fn get_buy_next_action(
-        port_state: &portfolio::PortfolioState,
-    ) -> Action {
-        /// filter based on portfolio action
-        let filter_kind = Self::filter_kind(port_state);
+    fn get_action(&self) -> Action {
+        let filter_kind = Self::filter_kind(&self.port_state);
 
-        /// filter based on ticker action (buys)
         let filter_buys = Self::filter_buys(filter_kind);
 
-        /// filter based on greatest percent difference
         let filter_percent_diff =
-            Self::filter_percent_diff(port_state, filter_buys);
+            Self::filter_percent_diff(&self.port_state, filter_buys);
 
         Action::Buy(ActionInfo {
             id: filter_percent_diff.id.clone(),
             shares: 1.0, // 1 action so we purchase 1 share
-            price: port_state.get_ticker(&filter_percent_diff.id).price,
+            price: self.port_state.get_ticker(&filter_percent_diff.id).price,
         })
     }
 
-    // todo test!!!
+    /// filter based on portfolio action
     fn filter_kind(
         port_state: &portfolio::PortfolioState,
     ) -> Vec<&portfolio::TickerMeta> {
@@ -121,26 +96,26 @@ impl BuyNext {
         }
     }
 
-    // todo test!!!
+    /// filter based on ticker action (buys)
     fn filter_buys(
         tic_metas: Vec<&portfolio::TickerMeta>,
     ) -> Vec<&portfolio::TickerMeta> {
         // filter buys
-        let contains_no_buys = tic_metas
+        let buys = tic_metas
             .iter()
             .filter(|x| matches!(&x.action, portfolio::TickerAction::Buy))
             .collect::<Vec<&&portfolio::TickerMeta>>();
 
-        // todo test
-        if (contains_no_buys.is_empty()) {
+        if (buys.is_empty()) {
             // dont filter since we dont have buys
             tic_metas
         } else {
-            contains_no_buys.into_iter().map(|x| *x).collect()
+            buys.into_iter().map(|x| *x).collect()
         }
     }
 
-    // todo test!!!
+    /// filter based on greatest percent difference
+    // todo make this sort so we get a list of actions we can do
     fn filter_percent_diff(
         port_state: &portfolio::PortfolioState,
         tic_metas: Vec<&portfolio::TickerMeta>,
@@ -153,18 +128,18 @@ impl BuyNext {
                 return x;
             }
 
-            let actual = port_state.get_meta_ticker(&x.id).ticker_percent;
-            let desired = port_state.get_goal_ticker(&x.id).goal_percent;
-            let x_actual_minus_desired = actual - desired;
+            let meta_per = port_state.get_meta_ticker(&x.id).ticker_percent;
+            let desired_per = port_state.get_goal_ticker(&x.id).goal_percent;
+            let x_actual_minus_desired = desired_per - meta_per;
 
-            let actual = port_state.get_meta_ticker(&y.id).ticker_percent;
-            let desired = port_state.get_goal_ticker(&y.id).goal_percent;
-            let y_actual_minus_desired = actual - desired;
+            let meta_per = port_state.get_meta_ticker(&y.id).ticker_percent;
+            let desired_per = port_state.get_goal_ticker(&y.id).goal_percent;
+            let y_actual_minus_desired = desired_per - meta_per;
 
             if (x_actual_minus_desired > y_actual_minus_desired) {
-                y.clone()
-            } else {
                 x
+            } else {
+                y.clone()
             }
         })
     }
@@ -173,8 +148,217 @@ impl BuyNext {
 #[cfg(test)]
 mod test {
 
+    use super::*;
+    use chrono::prelude::*;
+    use portfolio::*;
+
     #[test]
-    fn test_get_next_action() {
-        assert!(true)
+    // filter based on portfolio action
+    fn bn_test_filter_kind() {
+        let p_state = Helper::helper_get_port_state();
+        let meta = BuyNext::filter_kind(&p_state);
+
+        assert_eq!(&PortfolioAction::BuyBond, p_state.get_portfolio_action());
+        assert_eq!(1, meta.len());
+        assert_eq!(tic_id!(2), meta.get(0).unwrap().id);
     }
+
+    #[test]
+    // filter based on ticker action (buys)
+    fn bn_test_filter_buys_no_buys() {
+        let mut metas = Vec::new();
+        metas.push(TickerMeta {
+            id: tic_id!(1),
+            action: TickerAction::Hold,
+            ticker_value: 0.0,
+            ticker_percent: 0.0,
+        });
+        metas.push(TickerMeta {
+            id: tic_id!(2),
+            action: TickerAction::Hold,
+            ticker_value: 0.0,
+            ticker_percent: 0.0,
+        });
+        metas.push(TickerMeta {
+            id: tic_id!(3),
+            action: TickerAction::Sell,
+            ticker_value: 0.0,
+            ticker_percent: 0.0,
+        });
+        metas.push(TickerMeta {
+            id: tic_id!(4),
+            action: TickerAction::Hold,
+            ticker_value: 0.0,
+            ticker_percent: 0.0,
+        });
+        let metas = metas.iter().collect();
+        let meta = BuyNext::filter_buys(metas);
+
+        assert_eq!(4, meta.len());
+    }
+
+    #[test]
+    // filter based on ticker action (buys)
+    fn bn_test_filter_buys() {
+        let mut metas = Vec::new();
+        metas.push(TickerMeta {
+            id: tic_id!(1),
+            action: TickerAction::Buy,
+            ticker_value: 0.0,
+            ticker_percent: 0.0,
+        });
+        metas.push(TickerMeta {
+            id: tic_id!(2),
+            action: TickerAction::Hold,
+            ticker_value: 0.0,
+            ticker_percent: 0.0,
+        });
+        metas.push(TickerMeta {
+            id: tic_id!(3),
+            action: TickerAction::Sell,
+            ticker_value: 0.0,
+            ticker_percent: 0.0,
+        });
+        metas.push(TickerMeta {
+            id: tic_id!(4),
+            action: TickerAction::Buy,
+            ticker_value: 0.0,
+            ticker_percent: 0.0,
+        });
+        let metas = metas.iter().collect();
+        let meta = BuyNext::filter_buys(metas);
+
+        assert_eq!(2, meta.len());
+        assert_eq!(tic_id!(1), meta.get(0).unwrap().id);
+        assert_eq!(tic_id!(4), meta.get(1).unwrap().id);
+    }
+
+    #[test]
+    // filter based on greatest percent difference
+    fn bn_test_filter_percent_diff() {
+        let p_state = Helper::helper_get_port_state();
+        let metas = Helper::helper_get_tic_metas();
+        let metas = metas.iter().collect();
+        let meta = BuyNext::filter_percent_diff(&p_state, metas);
+
+        assert_eq!(tic_id!(1), meta.id);
+    }
+
+    struct Helper {}
+    impl Helper {
+        fn helper_get_port_state() -> PortfolioState {
+            let pa = Self::helper_get_actual_port();
+            let pg = Self::helper_get_goal_port();
+            let tickers = Self::helper_get_tickers();
+            PortfolioState::new(&pa, &pg, &tickers)
+        }
+        fn helper_get_tic_metas() -> Vec<portfolio::TickerMeta> {
+            let mut ret = Vec::new();
+            ret.push(Self::helper_get_meta(&tic_id!(1)));
+            ret.push(Self::helper_get_meta(&tic_id!(3)));
+            ret
+        }
+        fn helper_get_meta(id: &TickerId) -> TickerMeta {
+            TickerMeta {
+                id: id.clone(),
+                action: TickerAction::Hold,
+                ticker_value: 0.0,
+                ticker_percent: 0.0,
+            }
+        }
+        fn helper_get_tickers() -> HashMap<TickerId, Ticker> {
+            let mut map = HashMap::new();
+            // id, symbol, exchange, fee, price, kind,
+            let t1 = Ticker::new(
+                1,
+                symbol!("t1"),
+                2,
+                1.25,
+                1.0,
+                InvestmentKind::Stock,
+            );
+            let t2 = Ticker::new(
+                2,
+                symbol!("t2"),
+                2,
+                2.25,
+                1.0,
+                InvestmentKind::Bond,
+            );
+            let t3 = Ticker::new(
+                3,
+                symbol!("t3"),
+                2,
+                3.25,
+                1.0,
+                InvestmentKind::Stock,
+            );
+            map.insert(tic_id!(t1.id), t1);
+            map.insert(tic_id!(t2.id), t2);
+            map.insert(tic_id!(t3.id), t3);
+            map
+        }
+        fn helper_get_actual_port() -> PortfolioActual {
+            PortfolioActual::new(
+                // id
+                1,
+                // fk_user_id
+                1,
+                // fk_port_g_id
+                1,
+                // stock_percent,
+                50.0,
+                // deviation_percent
+                1.5,
+                // version
+                1,
+                // last_updated
+                Utc::now(),
+                // tickers_actual
+                Self::helper_get_actual_tickers(),
+            )
+        }
+        fn helper_get_actual_tickers() -> HashMap<TickerId, TickerActual> {
+            let mut map = HashMap::new();
+            // id, port_goal_id, port_actual_id, ticker_id, actual_shares
+            let t1 = TickerActual::new(1, 1, 1, 1, 24.0);
+            let t2 = TickerActual::new(2, 1, 1, 2, 0.0);
+            let t3 = TickerActual::new(3, 1, 1, 3, 26.0);
+            map.insert(tic_id!(t1.id), t1);
+            map.insert(tic_id!(t2.id), t2);
+            map.insert(tic_id!(t3.id), t3);
+            map
+        }
+        fn helper_get_goal_port() -> PortfolioGoal {
+            PortfolioGoal::new(
+                // id
+                1,
+                // name
+                "name".to_string(),
+                // description
+                Some("".to_string()),
+                // tickers_goal
+                &Self::helper_get_goal_tickers(),
+                // tickers_map
+                &Self::helper_get_tickers(),
+                // actual_stock_percent
+                &50.0,
+            )
+        }
+        pub fn helper_get_goal_tickers() -> HashMap<TickerId, GoalTicker> {
+            let mut map = HashMap::new();
+            // goal percent gets calculated based on stock percent in PortfolioGoal::new
+            // id, port_goal_id, ticker_id, goal_percent, order
+            let t1 = GoalTicker::new(1, 1, 1, 50.0, 1); // stock is 50 of 50% so 25%
+            let t2 = GoalTicker::new(2, 1, 2, 100.0, 2); // bond is 100 of 50% so 50%
+            let t3 = GoalTicker::new(3, 1, 3, 50.0, 3); // stock is 50 of 50% so 25%
+
+            map.insert(tic_id!(t1.ticker_id), t1);
+            map.insert(tic_id!(t2.ticker_id), t2);
+            map.insert(tic_id!(t3.ticker_id), t3);
+
+            map
+        }
+    }
+
 }

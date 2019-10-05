@@ -83,14 +83,12 @@ impl TickerActual {
 mod test {
     use super::*;
 
-    // #[test]
-    // fn ta_new() {
-    //     let ta1 = TickerActual::new(symbol!("vti"), 1.5);
-    //     assert_eq!(ta1.symbol, symbol!("vti"));
-    //     assert_eq!(ta1.actual_shares, 1.5);
-    //     // assert_eq!(ta1.aavv, 0.0);
-    //     // assert_eq!(ta1.actual_percent, 0.0);
-    // }
+    #[test]
+    fn ta_new() {
+        let ta1 = TickerActual::new(1, 2, 3, 4, 1.5);
+        assert_eq!(ta1.get_ticker_id(), 4);
+        assert_eq!(ta1.actual_shares, 1.5);
+    }
 
     // #[test]
     // fn ta_get_percent() {

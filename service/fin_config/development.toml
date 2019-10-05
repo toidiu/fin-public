@@ -1,6 +1,7 @@
 [app]
 paseto_token = "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
 cors_origin = "http://localhost:1234"
+paseto_timeout_min = 60
 
 [database]
 url = "postgres://postgres@localhost:5432/r_fin"
@@ -8,4 +9,4 @@ url = "postgres://postgres@localhost:5432/r_fin"
 [iex]
 token = "_____"
 # debug is used so we can work on the logic without an internet connection
-debug = false
+debug = true

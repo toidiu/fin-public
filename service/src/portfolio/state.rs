@@ -102,7 +102,7 @@ impl PortfolioState {
     }
 
     //TODO taking mut so could simply take a reference
-    pub(crate) fn apply_action(mut self, action: &Action) -> Self {
+    pub(crate) fn apply_action(&mut self, action: &Action) {
         match action {
             Action::Buy(info) => {
                 // buy actual share
@@ -117,7 +117,7 @@ impl PortfolioState {
         // re-calculate meta
         self.meta
             .recalculate(&self.tickers, &self.actual, &self.goal);
-        self
+        // self
     }
 
     pub(crate) fn get_current_version(&self) -> &i32 {

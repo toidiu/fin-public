@@ -317,7 +317,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
     ) -> ResultFin<BuyNext> {
         // actual info
         let tic_actual = self.get_actual_tickers(port_g_id, port_a_id)?;
-        let port_actual = self.get_port_actual(port_a_id, &tic_actual)?;
+        let mut port_actual = self.get_port_actual(port_a_id, &tic_actual)?;
 
         // tickers info
         let actual_ticker_ids =
@@ -334,26 +334,14 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
             &port_actual.stock_percent,
         )?;
 
-        // TODO simplify by capturing above into one fn
-        // construct a port state and a BuyNext
-        let port = portfolio::PortfolioState::new(
+        let mut buy_next = BuyNext::new(portfolio::PortfolioState::new(
             &port_actual,
             &port_goal,
             &tickers_map,
-        );
-        let mut buy_next = BuyNext::new(port);
+        ));
 
         while (buy_next.buy_value < buy_amount) {
-            let port_actual =
-                self.get_port_actual(port_a_id, &buy_next.evolved_actual)?;
-            let port_state = portfolio::PortfolioState::new(
-                &port_actual,
-                &port_goal,
-                &tickers_map,
-            );
-            if let None =
-                BuyNext::get_next_action(&mut buy_next, buy_amount, port_state)
-            {
+            if let None = buy_next.buy_one(buy_amount) {
                 break;
             }
         }
@@ -392,32 +380,32 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
             &tickers_map,
         );
 
-        let mut new_port = portfolio::PortfolioState::new(
+        let mut evolved_port = portfolio::PortfolioState::new(
             &port_actual,
             &port_goal,
             &tickers_map,
         );
 
         for a in actions {
-            new_port = new_port.apply_action(&a);
+            evolved_port.apply_action(&a);
         }
 
         // initial ticker values
         let init_tic_actual = tic_actual.values().collect();
         // evolved ticker values
-        let evolved_tic_actual = new_port.get_actual_tickers().clone();
+        let evolved_tic_actual = evolved_port.get_actual_tickers();
         let evolved_tic_actual = evolved_tic_actual.values().collect();
 
         let inserted_tic_actual = self.update_actual(
             user_id,
-            new_port.get_current_version(),
+            evolved_port.get_current_version(),
             &init_tic_actual,
             &evolved_tic_actual,
             &init_port.get_actual_port(),
-            &new_port.get_actual_port(),
+            &evolved_port.get_actual_port(),
             &actions,
         );
 
-        Ok(new_port)
+        Ok(evolved_port)
     }
 }
