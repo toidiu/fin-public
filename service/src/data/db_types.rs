@@ -1,6 +1,5 @@
-use crate::portfolio;
+use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
 use crate::server;
-use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use chrono::prelude::*;
 use std::borrow::{Cow, ToOwned};
 use std::collections::HashMap;

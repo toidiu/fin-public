@@ -1,4 +1,4 @@
-use crate::ticker::*;
+use crate::portfolio::ticker::*;
 use chrono::prelude::*;
 use std::collections::HashMap;
 
@@ -14,8 +14,34 @@ pub struct PortfolioActual {
     pub tickers_actual: HashMap<TickerId, TickerActual>,
 }
 
+// **************************************
+// mutate
+// **************************************
 impl PortfolioActual {
-    pub fn new(
+    // todo test!!!
+    pub(super) fn sell_share(&mut self, id: &TickerId, amount: f64) {
+        // buy a share
+        self.tickers_actual
+            .get_mut(id)
+            .expect(&format!("{} add ticker to db: {:?}", line!(), id))
+            .actual_shares -= amount;
+    }
+
+    // todo test!!!
+    pub(super) fn buy_share(&mut self, id: &TickerId, amount: f64) {
+        // buy a share
+        self.tickers_actual
+            .get_mut(id)
+            .expect(&format!("{} add ticker to db: {:?}", line!(), id))
+            .actual_shares += amount;
+    }
+}
+
+// **************************************
+// read
+// **************************************
+impl PortfolioActual {
+    pub(crate) fn new(
         id: i64,
         fk_user_id: i64,
         fk_port_g_id: i64,
@@ -176,9 +202,9 @@ mod test {
     //     let ta_s = Helper::get_ta_stock();
     //     let t_s = Helper::stock();
     //     let updated_stock =
-    // updated.tickers_actual.get(&symbol!("stock")).unwrap();
+    // updated.tickers_actual.get(&symbol!("stock")).expect("test");
     //     let updated_bond =
-    // updated.tickers_actual.get(&symbol!("bond")).unwrap();
+    // updated.tickers_actual.get(&symbol!("bond")).expect("test");
 
     //     let calc_total_val = (t_s.price * ta_s.actual_shares) + (t_b.price *
     // ta_b.actual_shares);     assert_eq!(updated.total, calc_total_val);
@@ -198,8 +224,8 @@ mod test {
     // let updated = PortfolioActual::update_ta_percent(tic_actual_map,
     // &total_val);
     //
-    // let updated_stock = updated.get(&symbol!("stock")).unwrap();
-    // let updated_bond = updated.get(&symbol!("bond")).unwrap();
+    // let updated_stock = updated.get(&symbol!("stock")).expect("test");
+    // let updated_bond = updated.get(&symbol!("bond")).expect("test");
     // let ta_b = Helper::get_ta_bond();
     // let ta_s = Helper::get_ta_stock();
     //

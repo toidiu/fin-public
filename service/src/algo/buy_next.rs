@@ -7,7 +7,6 @@ use crate::portfolio::{
 };
 use crate::server;
 use crate::std_ext::*;
-use crate::ticker::*;
 use std::collections::HashMap;
 
 /// This object is used to pass BuyNext info from backend
@@ -185,7 +184,7 @@ mod test {
 
         assert_eq!(&PortfolioAction::BuyBond, p_state.get_portfolio_action());
         assert_eq!(1, meta.len());
-        assert_eq!(tic_id!(2), meta.get(0).unwrap().id);
+        assert_eq!(tic_id!(2), meta.get(0).expect("test").id);
     }
 
     #[test]
@@ -254,8 +253,8 @@ mod test {
         let meta = BuyNext::filter_buys(metas);
 
         assert_eq!(2, meta.len());
-        assert_eq!(tic_id!(1), meta.get(0).unwrap().id);
-        assert_eq!(tic_id!(4), meta.get(1).unwrap().id);
+        assert_eq!(tic_id!(1), meta.get(0).expect("test").id);
+        assert_eq!(tic_id!(4), meta.get(1).expect("test").id);
     }
 
     #[test]

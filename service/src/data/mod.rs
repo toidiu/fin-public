@@ -3,9 +3,8 @@ mod test_helper;
 
 use crate::backend;
 use crate::errors::{FinError, ResultFin};
-use crate::portfolio;
+use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
 use crate::server;
-use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use chrono::prelude::*;
 use postgres::Connection;
 use std::collections::HashMap;
@@ -668,7 +667,7 @@ mod tests {
             let db = TestHelper::get_test_db(db_name);
             let res = db.get_user("apoorv@toidiu.com");
             assert_eq!(res.is_ok(), true);
-            assert_eq!(res.unwrap().email, "apoorv@toidiu.com");
+            assert_eq!(res.expect("test").email, "apoorv@toidiu.com");
         })
     }
 
@@ -678,7 +677,7 @@ mod tests {
             let db = TestHelper::get_test_db(db_name);
             let res = db.get_user_with_pass("apoorv@toidiu.com");
             assert_eq!(res.is_ok(), true);
-            assert_eq!(res.unwrap().email, "apoorv@toidiu.com");
+            assert_eq!(res.expect("test").email, "apoorv@toidiu.com");
         })
     }
 
@@ -688,11 +687,11 @@ mod tests {
             let db = TestHelper::get_test_db(db_name);
             let res = db.does_user_exist("apoorv@toidiu.com");
             assert_eq!(res.is_ok(), true);
-            assert_eq!(res.unwrap(), true);
+            assert_eq!(res.expect("test"), true);
 
             let res = db.does_user_exist("not@toidiu.com");
             assert_eq!(res.is_ok(), true);
-            assert_eq!(res.unwrap(), false);
+            assert_eq!(res.expect("test"), false);
         })
     }
 
@@ -702,11 +701,11 @@ mod tests {
             let db = TestHelper::get_test_db(db_name);
             let res = db.create_user("1@toidiu.com", "123456");
             assert_eq!(res.is_ok(), true);
-            assert_eq!(res.unwrap().email, "1@toidiu.com");
+            assert_eq!(res.expect("test").email, "1@toidiu.com");
 
             let res = db.get_user_with_pass("1@toidiu.com");
             assert_eq!(res.is_ok(), true);
-            assert_eq!(res.unwrap().password, "123456");
+            assert_eq!(res.expect("test").password, "123456");
         });
     }
 
@@ -717,13 +716,13 @@ mod tests {
             let res = db.get_port_actual_list_by_user_id(&user_id!(1));
 
             assert_eq!(res.is_ok(), true);
-            let r = &res.unwrap();
+            let r = &res.expect("test");
             assert_eq!(&r.len(), &2);
-            assert_eq!(&r.get(1).unwrap().fk_user_id, &1);
-            assert_eq!(&r.get(1).unwrap().stock_percent, &58.0);
-            assert_eq!(&r.get(1).unwrap().name, "Value Portfolio");
-            assert_eq!(&r.get(0).unwrap().stock_percent, &90.0);
-            assert_eq!(&r.get(0).unwrap().name, "Value Portfolio");
+            assert_eq!(&r.get(1).expect("test").fk_user_id, &1);
+            assert_eq!(&r.get(1).expect("test").stock_percent, &58.0);
+            assert_eq!(&r.get(1).expect("test").name, "Value Portfolio");
+            assert_eq!(&r.get(0).expect("test").stock_percent, &90.0);
+            assert_eq!(&r.get(0).expect("test").name, "Value Portfolio");
         })
     }
 
@@ -734,11 +733,11 @@ mod tests {
             let res = db.get_port_actual_list_by_user_id(&user_id!(2));
 
             assert_eq!(res.is_ok(), true);
-            let r = &res.unwrap();
+            let r = &res.expect("test");
             assert_eq!(&r.len(), &1);
-            assert_eq!(&r.get(0).unwrap().fk_user_id, &2);
-            assert_eq!(&r.get(0).unwrap().stock_percent, &50.0);
-            assert_eq!(&r.get(0).unwrap().name, "Value Portfolio");
+            assert_eq!(&r.get(0).expect("test").fk_user_id, &2);
+            assert_eq!(&r.get(0).expect("test").stock_percent, &50.0);
+            assert_eq!(&r.get(0).expect("test").name, "Value Portfolio");
         })
     }
 
@@ -749,7 +748,7 @@ mod tests {
             let res = db.get_port_actual(1);
 
             assert_eq!(res.is_ok(), true);
-            let r = &res.unwrap();
+            let r = &res.expect("test");
             assert_eq!(r.id, 1);
             assert_eq!(r.fk_user_id, 1);
         })
@@ -762,11 +761,11 @@ mod tests {
             let res = db.get_actual_tickers(1, 1);
 
             assert_eq!(res.is_ok(), true);
-            assert!(!res.unwrap().is_empty());
+            assert!(!res.expect("test").is_empty());
 
             let res = db.get_actual_tickers(12, 1000);
             assert_eq!(res.is_ok(), true);
-            assert!(res.unwrap().is_empty());
+            assert!(res.expect("test").is_empty());
         })
     }
 
@@ -775,10 +774,12 @@ mod tests {
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
 
-            let old_time =
-                "2014-11-28T12:00:09Z".parse::<DateTime<Utc>>().unwrap();
-            let new_time =
-                "2015-11-28T12:00:09Z".parse::<DateTime<Utc>>().unwrap();
+            let old_time = "2014-11-28T12:00:09Z"
+                .parse::<DateTime<Utc>>()
+                .expect("test");
+            let new_time = "2015-11-28T12:00:09Z"
+                .parse::<DateTime<Utc>>()
+                .expect("test");
             let new_shares = 100.0;
             let curr_version = 1;
             let new_version = curr_version + 1;
@@ -800,12 +801,12 @@ mod tests {
             );
 
             assert_eq!(res.is_ok(), true);
-            let res_unwrap = &res.unwrap();
+            let res = &res.expect("test");
             assert_eq!(
-                &res_unwrap.tics.get(0).unwrap().actual_shares,
+                &res.tics.get(0).expect("test").actual_shares,
                 &new_shares
             );
-            assert_eq!(&res_unwrap.port.version, &new_version);
+            assert_eq!(&res.port.version, &new_version);
         })
     }
 
@@ -820,10 +821,12 @@ mod tests {
             let curr_version = 1;
             let new_version = curr_version + 1;
 
-            let old_time =
-                "2014-11-28T12:00:09Z".parse::<DateTime<Utc>>().unwrap();
-            let new_time =
-                "2015-11-28T12:00:09Z".parse::<DateTime<Utc>>().unwrap();
+            let old_time = "2014-11-28T12:00:09Z"
+                .parse::<DateTime<Utc>>()
+                .expect("test");
+            let new_time = "2015-11-28T12:00:09Z"
+                .parse::<DateTime<Utc>>()
+                .expect("test");
 
             let new_shares = 100.0;
             let tic_unique_id = 12;
@@ -855,17 +858,18 @@ mod tests {
             );
 
             assert_eq!(res.is_ok(), true);
-            let res_unwrap = &res.unwrap();
+            let res = &res.expect("test");
             assert_eq!(
-                &res_unwrap.tics.get(0).unwrap().actual_shares,
+                &res.tics.get(0).expect("test").actual_shares,
                 &new_shares
             );
-            assert_eq!(&res_unwrap.port.version, &new_version);
+            assert_eq!(&res.port.version, &new_version);
 
             // --------------------- second update
             let new_version_2 = new_version + 1;
-            let new_time_2 =
-                "2016-11-28T12:00:09Z".parse::<DateTime<Utc>>().unwrap();
+            let new_time_2 = "2016-11-28T12:00:09Z"
+                .parse::<DateTime<Utc>>()
+                .expect("test");
             let new_shares_2 = 30.0;
             let ticker_id_2 = 2;
             let tic_unique_id_2 = 13;
@@ -895,12 +899,12 @@ mod tests {
             );
 
             assert_eq!(res.is_ok(), true);
-            let res_unwrap = &res.unwrap();
+            let res = &res.expect("test");
             assert_eq!(
-                &res_unwrap.tics.get(0).unwrap().actual_shares,
+                &res.tics.get(0).expect("test").actual_shares,
                 &new_shares_2
             );
-            assert_eq!(&res_unwrap.port.version, &new_version_2);
+            assert_eq!(&res.port.version, &new_version_2);
         })
     }
 
@@ -914,7 +918,7 @@ mod tests {
             let db = TestHelper::get_test_db(db_name);
             let res = db.create_portfolio_actual(&user_id, port_g_id, per);
             assert_eq!(res.is_ok(), true);
-            let res = res.unwrap();
+            let res = res.expect("test");
             assert_eq!(&res.fk_user_id, user_id.get_user_id());
             assert_eq!(&res.fk_port_g_id, &port_g_id);
             assert_eq!(&res.stock_percent, &per);
@@ -927,8 +931,8 @@ mod tests {
             let gt = db.get_ticker_goal_by_id(port_g_id);
             assert_eq!(gt.is_ok(), true);
 
-            let gt = gt.unwrap();
-            let at = at.unwrap();
+            let gt = gt.expect("test");
+            let at = at.expect("test");
             let at_ids: Vec<i64> = at.iter().map(|x| x.fk_tic_id).collect();
 
             // assert that we create an actual ticker for each goal ticker

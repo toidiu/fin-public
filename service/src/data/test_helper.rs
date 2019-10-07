@@ -24,7 +24,7 @@ impl TestHelper {
                 Self::get_test_db_uri(db_name).as_str(),
                 R2TlsMode::None,
             )
-            .unwrap();
+            .expect("test");
             r2d2::Pool::builder()
                 .max_size(1)
                 .build(manager)
@@ -66,7 +66,7 @@ impl TestHelper {
     }
 
     fn get_test_db_name() -> String {
-        let mut counter = COUNTER.lock().unwrap();
+        let mut counter = COUNTER.lock().expect("test");
         *counter += 1;
         let test_db_name = "fin_unit_test";
         format!("{}_{}", &test_db_name, *counter)
@@ -90,7 +90,7 @@ impl TestHelper {
             Self::get_test_db_uri(db_name).as_str(),
             TlsMode::None,
         )
-        .unwrap();
+        .expect("test");
         let init =
             fs::read_to_string("migrations/2018-10-07-022941_init/up.sql")
                 .expect("file not found");
@@ -98,8 +98,8 @@ impl TestHelper {
             fs::read_to_string("migrations/2018-10-07-232226_fake_data/up.sql")
                 .expect("file not found");
 
-        conn.batch_execute(&init).unwrap();
-        conn.batch_execute(&fake_data).unwrap();
+        conn.batch_execute(&init).expect("test");
+        conn.batch_execute(&fake_data).expect("test");
     }
 
     fn teardown(db_name: &str) {

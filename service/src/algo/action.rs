@@ -1,4 +1,4 @@
-use crate::ticker::*;
+use crate::portfolio::TickerId;
 use std::ops::Add;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

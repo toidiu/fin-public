@@ -4,6 +4,7 @@ extern crate serde_derive;
 extern crate log;
 #[macro_use]
 mod std_ext;
+mod errors;
 
 use reqwest;
 use std::collections::HashMap;
@@ -16,7 +17,7 @@ impl Iex {
     pub fn get_price(
         &self,
         tickers: Vec<String>,
-    ) -> Result<IexTickersPrice, ()> {
+    ) -> errors::ResultIex<IexTickersPrice> {
         let s = tickers.join(",");
 
         let uri = format!(
@@ -41,16 +42,21 @@ impl Iex {
             }
             temp
         } else {
-            let body =
-                reqwest::get(uri.as_str()).unwrap().text().map_err(|err| {
+            let body = reqwest::get(uri.as_str())
+                .map_err(|err| {
                     loge!(err);
-                    ()
+                    errors::IexError::Wrong
+                })?
+                .text()
+                .map_err(|err| {
+                    loge!(err);
+                    errors::IexError::Wrong
                 })?;
 
             let info: IexTickerInfo =
                 serde_json::from_str(&body).map_err(|err| {
                     loge!(err);
-                    ()
+                    errors::IexError::Wrong
                 })?;
 
             info.into_iter().map(|x| (x.0, x.1.into())).collect()

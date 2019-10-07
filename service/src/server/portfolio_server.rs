@@ -2,9 +2,8 @@ use super::auth;
 use crate::backend;
 use crate::errors::FinError;
 use crate::global::ROOT;
-use crate::portfolio;
+use crate::portfolio::{self, Ticker, TickerId};
 use crate::server;
-use crate::ticker::{Ticker, TickerId};
 use std::collections::HashMap;
 
 lazy_static! {
@@ -139,7 +138,11 @@ pub fn get_buy_next(
             error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::custom(err)
         })?;
-    let resp = server::BuyNextResp::from_data(resp.actions, resp.buy_value, data.amount);
+    let resp = server::BuyNextResp::from_data(
+        resp.actions,
+        resp.buy_value,
+        data.amount,
+    );
     Ok(warp::reply::json(&resp))
 }
 

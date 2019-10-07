@@ -1,7 +1,7 @@
 use super::SMALL_PERCENT_DEVIATION;
 use super::{actual::*, goal::*};
+use crate::portfolio::ticker::*;
 use crate::std_ext::*;
-use crate::ticker::*;
 use std::collections::HashMap;
 
 lazy_static! {
@@ -251,15 +251,15 @@ mod tests {
         assert_eq!(pm.stock_value, 70.0);
         assert_eq!(pm.total_value, 120.0);
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(1)).unwrap().ticker_value,
+            pm.tickers_meta.get(&tic_id!(1)).expect("test").ticker_value,
             10.0
         );
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(2)).unwrap().ticker_value,
+            pm.tickers_meta.get(&tic_id!(2)).expect("test").ticker_value,
             50.0
         );
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(3)).unwrap().ticker_value,
+            pm.tickers_meta.get(&tic_id!(3)).expect("test").ticker_value,
             60.0
         );
     }
@@ -270,15 +270,24 @@ mod tests {
         pm.calc_percent();
         assert_eq!(pm.stock_percent, 40.0);
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(1)).unwrap().ticker_percent,
+            pm.tickers_meta
+                .get(&tic_id!(1))
+                .expect("test")
+                .ticker_percent,
             10.0
         );
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(2)).unwrap().ticker_percent,
+            pm.tickers_meta
+                .get(&tic_id!(2))
+                .expect("test")
+                .ticker_percent,
             30.0
         );
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(3)).unwrap().ticker_percent,
+            pm.tickers_meta
+                .get(&tic_id!(3))
+                .expect("test")
+                .ticker_percent,
             60.0
         );
     }
@@ -290,15 +299,24 @@ mod tests {
         pm.calc_percent();
         assert_eq!(pm.stock_percent, 0.0);
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(1)).unwrap().ticker_percent,
+            pm.tickers_meta
+                .get(&tic_id!(1))
+                .expect("test")
+                .ticker_percent,
             0.0
         );
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(2)).unwrap().ticker_percent,
+            pm.tickers_meta
+                .get(&tic_id!(2))
+                .expect("test")
+                .ticker_percent,
             0.0
         );
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(3)).unwrap().ticker_percent,
+            pm.tickers_meta
+                .get(&tic_id!(3))
+                .expect("test")
+                .ticker_percent,
             0.0
         );
     }
@@ -319,15 +337,15 @@ mod tests {
 
         // make sure that ticker action is also called
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(1)).unwrap().action,
+            pm.tickers_meta.get(&tic_id!(1)).expect("test").action,
             TickerAction::Sell
         );
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(2)).unwrap().action,
+            pm.tickers_meta.get(&tic_id!(2)).expect("test").action,
             TickerAction::Hold
         );
         assert_eq!(
-            pm.tickers_meta.get(&tic_id!(3)).unwrap().action,
+            pm.tickers_meta.get(&tic_id!(3)).expect("test").action,
             TickerAction::Buy
         );
     }

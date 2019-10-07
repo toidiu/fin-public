@@ -44,7 +44,7 @@ pub fn login(
             let response = Response::builder()
                 .status(StatusCode::NOT_FOUND)
                 .body("user not found".to_string())
-                .unwrap();
+                .expect("unexpected warp server error");
             Ok(response)
         }
     }
@@ -58,7 +58,7 @@ pub fn logout() -> Result<impl warp::Reply, warp::Rejection> {
             "sess=;HttpOnly;path=/;expires=Thu, 01 Jan 1970 00:00:00 UTC",
         )
         .body("logged in".to_string())
-        .unwrap();
+        .expect("unexpected warp server error");
     Ok(response)
 }
 
@@ -81,7 +81,7 @@ pub fn signup(
         let response = Response::builder()
             .status(StatusCode::CONFLICT)
             .body("user with email already exists".to_string())
-            .unwrap();
+            .expect("unexpected warp server error");
         Ok(response)
     } else {
         let new_user = user_backend

@@ -22,7 +22,7 @@ lazy_static! {
             CONFIG.database.url.to_string(),
             TlsMode::None,
         )
-        .unwrap();
+        .expect("unable to connect to db");
         r2d2::Pool::builder()
             .max_size(CONFIG.database.pool_size)
             .build(manager)

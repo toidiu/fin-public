@@ -4,7 +4,7 @@ use super::goal::{self, *};
 use super::meta::{self, *};
 use crate::algo::{Action, ActionInfo};
 use crate::backend;
-use crate::ticker::{self, *};
+use crate::portfolio::ticker::{self, *};
 
 use crate::errors::ResultFin;
 use crate::{data, server, std_ext::*};
@@ -19,6 +19,32 @@ pub struct PortfolioState {
     tickers: HashMap<TickerId, Ticker>,
 }
 
+// **************************************
+// mutate
+// **************************************
+impl PortfolioState {
+    /// Modify actual and then re-calculate meta.
+    pub(crate) fn apply_action(&mut self, action: &Action) {
+        match action {
+            Action::Buy(info) => {
+                // buy actual share
+                self.actual.buy_share(&info.id, info.shares);
+            }
+
+            Action::Sell(info) => {
+                // sell actual share
+                self.actual.sell_share(&info.id, info.shares);
+            }
+        }
+        // re-calculate meta
+        self.meta
+            .recalculate(&self.tickers, &self.actual, &self.goal);
+    }
+}
+
+// **************************************
+// read
+// **************************************
 impl PortfolioState {
     pub(crate) fn new(
         pa: PortfolioActual,
@@ -58,7 +84,7 @@ impl PortfolioState {
 
     // todo test!!
     pub(crate) fn get_goal_ticker(&self, id: &TickerId) -> &GoalTicker {
-        &self.goal.tickers_goal.get(id).unwrap()
+        &self.goal.get_ticker_g(id)
     }
 
     // todo test!!
@@ -80,50 +106,14 @@ impl PortfolioState {
         &self.meta.portfolio_action
     }
 
-    // todo test!!!
-    pub(crate) fn sell_share(&mut self, id: &TickerId, amount: f64) {
-        // buy a share
-        self.actual
-            .tickers_actual
-            .get_mut(id)
-            .expect(&format!("{} add ticker to db: {:?}", line!(), id))
-            .actual_shares -= amount;
-    }
-
-    // todo test!!!
-    pub(crate) fn buy_share(&mut self, id: &TickerId, amount: f64) {
-        // buy a share
-        self.actual
-            .tickers_actual
-            .get_mut(id)
-            .expect(&format!("{} add ticker to db: {:?}", line!(), id))
-            .actual_shares += amount;
-    }
-
-    //TODO taking mut so could simply take a reference
-    pub(crate) fn apply_action(&mut self, action: &Action) {
-        match action {
-            Action::Buy(info) => {
-                // buy actual share
-                self.buy_share(&info.id, info.shares);
-            }
-
-            Action::Sell(info) => {
-                // sell actual share
-                self.sell_share(&info.id, info.shares);
-            }
-        }
-        // re-calculate meta
-        self.meta
-            .recalculate(&self.tickers, &self.actual, &self.goal);
-        // self
-    }
-
     pub(crate) fn get_current_version(&self) -> &i32 {
         &self.actual.get_version()
     }
 }
 
+/// We are implementing Into rather than From because we are
+/// accessing private fields. We could expose them but that
+/// increases the surface area of the api.
 impl Into<server::PortfolioStateResp> for PortfolioState {
     // todo test!!
     fn into(self) -> server::PortfolioStateResp {

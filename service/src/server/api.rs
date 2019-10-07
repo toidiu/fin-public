@@ -1,7 +1,6 @@
 use crate::algo::{Action, BuyNext};
 use crate::data;
-use crate::portfolio;
-use crate::ticker::{InvestmentKind, TickerId, TickerSymbol};
+use crate::portfolio::{self, InvestmentKind, TickerId, TickerSymbol};
 use chrono::prelude::*;
 use std::collections::HashMap;
 
@@ -46,7 +45,11 @@ pub struct BuyNextResp {
 }
 
 impl BuyNextResp {
-    pub fn from_data(buy_next_actions: Vec<Action>, buy_next_buy_value: f64, requested_value: f64) -> Self {
+    pub fn from_data(
+        buy_next_actions: Vec<Action>,
+        buy_next_buy_value: f64,
+        requested_value: f64,
+    ) -> Self {
         let mut map: HashMap<TickerId, Action> = HashMap::new();
         for action in buy_next_actions.iter() {
             let id = action.get_id();

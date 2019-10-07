@@ -21,7 +21,6 @@ extern crate paseto;
 mod std_ext;
 mod errors;
 mod global;
-mod ticker;
 
 // has deps
 mod algo;

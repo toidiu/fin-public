@@ -3,10 +3,9 @@ use crate::algo::{Action, ActionInfo};
 use crate::data;
 use crate::errors::*;
 use crate::global::CONFIG;
-use crate::portfolio;
+use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
 use crate::server;
 use crate::std_ext::ExtIterator;
-use crate::ticker::{InvestmentKind, Ticker, TickerId, TickerSymbol};
 use chrono::prelude::*;
 use postgres::Connection;
 use std::collections::HashMap;
@@ -334,11 +333,8 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
             &port_actual.stock_percent,
         )?;
 
-        let mut p_state = portfolio::PortfolioState::new(
-            port_actual,
-            port_goal,
-            tickers_map,
-        );
+        let mut p_state =
+            portfolio::PortfolioState::new(port_actual, port_goal, tickers_map);
         let mut buy_next = BuyNext::new(&mut p_state);
 
         while (buy_next.buy_value < buy_amount) {
