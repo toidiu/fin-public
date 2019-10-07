@@ -11,6 +11,7 @@ Vue, Typescript, parceljs
 
 #### Requirements
 - npm 6.7.0
+- node 11.10.0
 
 #### Setup
 ```
