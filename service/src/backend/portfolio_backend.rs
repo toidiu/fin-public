@@ -1,4 +1,4 @@
-use crate::algo::{self, BuyNext};
+use crate::algo::{self, BuyNext, BuyNextInfo};
 use crate::algo::{Action, ActionInfo};
 use crate::data;
 use crate::errors::*;
@@ -83,7 +83,7 @@ pub trait PortfolioBackend {
         port_g_id: i64,
         port_a_id: i64,
         buy_amount: f64,
-    ) -> ResultFin<BuyNext>;
+    ) -> ResultFin<BuyNextInfo>;
 
     fn execute_actions(
         &self,
@@ -314,7 +314,7 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         port_g_id: i64,
         port_a_id: i64,
         buy_amount: f64,
-    ) -> ResultFin<BuyNext> {
+    ) -> ResultFin<BuyNextInfo> {
         // actual info
         let tic_actual = self.get_actual_tickers(port_g_id, port_a_id)?;
         let mut port_actual = self.get_port_actual(port_a_id, &tic_actual)?;
@@ -334,18 +334,19 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
             &port_actual.stock_percent,
         )?;
 
-        let mut buy_next = BuyNext::new(portfolio::PortfolioState::new(
+        let mut p_state = portfolio::PortfolioState::new(
             port_actual,
             port_goal,
             tickers_map,
-        ));
+        );
+        let mut buy_next = BuyNext::new(&mut p_state);
 
         while (buy_next.buy_value < buy_amount) {
             if let None = buy_next.buy_one(buy_amount) {
                 break;
             }
         }
-        Ok(buy_next)
+        Ok(buy_next.into())
     }
 
     fn execute_actions(

@@ -139,7 +139,7 @@ pub fn get_buy_next(
             error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::custom(err)
         })?;
-    let resp = server::BuyNextResp::from_data(resp, data.amount);
+    let resp = server::BuyNextResp::from_data(resp.actions, resp.buy_value, data.amount);
     Ok(warp::reply::json(&resp))
 }
 

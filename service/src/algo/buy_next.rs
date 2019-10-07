@@ -10,15 +10,37 @@ use crate::std_ext::*;
 use crate::ticker::*;
 use std::collections::HashMap;
 
+/// This object is used to pass BuyNext info from backend
+/// to the server interface layer. This is necessary because
+/// BuyNext contains a reference to PortfolioState and
+/// therefore cannot be passed across owned boundary.
 #[derive(Debug)]
-pub struct BuyNext {
-    pub port_state: PortfolioState,
+pub struct BuyNextInfo {
     pub actions: Vec<Action>,
     pub buy_value: f64,
 }
 
-impl BuyNext {
-    pub fn new(port: PortfolioState) -> Self {
+impl<'s> From<BuyNext<'s>> for BuyNextInfo {
+    fn from(item: BuyNext) -> Self {
+        BuyNextInfo {
+            actions: item.actions,
+            buy_value: item.buy_value,
+        }
+    }
+}
+
+/// A state which captures the buy next algorithm. It takes
+/// a reference to the PortfolioState and calculates the
+/// actions and buy value.
+#[derive(Debug)]
+pub struct BuyNext<'s> {
+    pub port_state: &'s mut PortfolioState,
+    pub actions: Vec<Action>,
+    pub buy_value: f64,
+}
+
+impl<'s> BuyNext<'s> {
+    pub fn new(port: &'s mut PortfolioState) -> Self {
         BuyNext {
             port_state: port,
             actions: Vec::new(),
@@ -27,6 +49,9 @@ impl BuyNext {
     }
 
     // todo test!!!
+    /// This buys one stock or bond and return the action. The
+    /// action might be None if the `buy_amount` is too small
+    /// and the stock/bond prices are too high.
     pub fn buy_one(&mut self, buy_amount: f64) -> Option<Action> {
         // get action
         let action = self.get_action();
@@ -250,7 +275,7 @@ mod test {
             let pa = Self::helper_get_actual_port();
             let pg = Self::helper_get_goal_port();
             let tickers = Self::helper_get_tickers();
-            PortfolioState::new(&pa, &pg, &tickers)
+            PortfolioState::new(pa, pg, tickers)
         }
         fn helper_get_tic_metas() -> Vec<portfolio::TickerMeta> {
             let mut ret = Vec::new();

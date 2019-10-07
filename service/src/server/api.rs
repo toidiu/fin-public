@@ -46,9 +46,9 @@ pub struct BuyNextResp {
 }
 
 impl BuyNextResp {
-    pub fn from_data(buy_next: BuyNext, requested_value: f64) -> Self {
+    pub fn from_data(buy_next_actions: Vec<Action>, buy_next_buy_value: f64, requested_value: f64) -> Self {
         let mut map: HashMap<TickerId, Action> = HashMap::new();
-        for action in buy_next.actions.iter() {
+        for action in buy_next_actions.iter() {
             let id = action.get_id();
             match map.get(&id) {
                 Some(exist) => {
@@ -63,8 +63,8 @@ impl BuyNextResp {
         }
         BuyNextResp {
             requested_value,
-            actions: buy_next.actions,
-            buy_value: buy_next.buy_value,
+            actions: buy_next_actions,
+            buy_value: buy_next_buy_value,
             action_summary: map,
         }
     }
