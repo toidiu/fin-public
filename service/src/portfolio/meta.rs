@@ -39,25 +39,10 @@ pub struct PortfolioMeta {
     pub stock_percent: f32,
 }
 
+// **************************************
+// mutate
+// **************************************
 impl PortfolioMeta {
-    pub(super) fn new(
-        tickers: &HashMap<TickerId, Ticker>,
-        goal: &PortfolioGoal,
-        actual: &PortfolioActual,
-    ) -> Self {
-        let mut meta = PortfolioMeta {
-            tickers_meta: Self::populate_ticker_meta(&actual.tickers_actual),
-            portfolio_action: PortfolioAction::BuyEither,
-            total_value: 0.0,
-            stock_value: 0.0,
-            stock_percent: 0.0,
-        };
-
-        meta.recalculate(&tickers, &actual, &goal);
-
-        meta
-    }
-
     pub(super) fn recalculate(
         &mut self,
         tickers: &HashMap<TickerId, Ticker>,
@@ -81,45 +66,7 @@ impl PortfolioMeta {
         );
     }
 
-    fn populate_ticker_meta(
-        tickers_actual: &HashMap<TickerId, TickerActual>,
-    ) -> HashMap<TickerId, TickerMeta> {
-        let mut map = HashMap::new();
-        for (t_id, _) in tickers_actual.iter() {
-            map.insert(t_id.clone(), TickerMeta::default(&t_id));
-        }
-        map
-    }
-
-    pub(super) fn calc_value(
-        &mut self,
-        tickers: &HashMap<TickerId, Ticker>,
-        actual: &PortfolioActual,
-    ) {
-        let mut temp_stock_value = 0.0;
-        for (t_id, tic_meta) in self.tickers_meta.iter_mut() {
-            let tic = tickers
-                .get(&t_id)
-                .expect(&format!("add ticker to db: {:?}", &t_id));
-            let tic_act = actual.get_ticker_a(&t_id);
-            let tic_value = tic.price * tic_act.actual_shares;
-
-            tic_meta.ticker_value = tic_value;
-            StdExt::round_two_digits_64(&mut tic_meta.ticker_value);
-
-            // stock value
-            if (tic.is_stock()) {
-                temp_stock_value += tic_value;
-            }
-        }
-        self.stock_value = temp_stock_value;
-        self.calc_total_value();
-
-        // round total value to 2 digits
-        StdExt::round_two_digits_64(&mut self.total_value);
-    }
-
-    pub(super) fn calc_percent(&mut self) {
+    fn calc_percent(&mut self) {
         // dont divide by 0
         if (self.total_value == 0.0) {
             self.stock_percent = 0.0;
@@ -139,7 +86,7 @@ impl PortfolioMeta {
         }
     }
 
-    pub(super) fn calc_action(
+    fn calc_action(
         &mut self,
         goal: &PortfolioGoal,
         desired_stock_percent: &f32,
@@ -166,12 +113,73 @@ impl PortfolioMeta {
         }
     }
 
-    pub(super) fn calc_total_value(&mut self) {
+    fn calc_total_value(&mut self) {
         let mut total_val = 0.0;
         for (_s, x) in self.tickers_meta.iter() {
             total_val += x.ticker_value;
         }
         self.total_value = total_val;
+    }
+
+    fn calc_value(
+        &mut self,
+        tickers: &HashMap<TickerId, Ticker>,
+        actual: &PortfolioActual,
+    ) {
+        let mut temp_stock_value = 0.0;
+        for (t_id, tic_meta) in self.tickers_meta.iter_mut() {
+            let tic = tickers
+                .get(&t_id)
+                .expect(&format!("add ticker to db: {:?}", &t_id));
+            let tic_act = actual.get_ticker_a(&t_id);
+            let tic_value = tic.price * tic_act.actual_shares;
+
+            tic_meta.ticker_value = tic_value;
+            StdExt::round_two_digits_64(&mut tic_meta.ticker_value);
+
+            // stock value
+            if (tic.is_stock()) {
+                temp_stock_value += tic_value;
+            }
+        }
+        self.stock_value = temp_stock_value;
+        self.calc_total_value();
+
+        // round total value to 2 digits
+        StdExt::round_two_digits_64(&mut self.total_value);
+    }
+}
+
+// **************************************
+// immutable
+// **************************************
+impl PortfolioMeta {
+    pub(super) fn new(
+        tickers: &HashMap<TickerId, Ticker>,
+        goal: &PortfolioGoal,
+        actual: &PortfolioActual,
+    ) -> Self {
+        let mut meta = PortfolioMeta {
+            tickers_meta: Self::populate_ticker_meta(&actual.tickers_actual),
+            portfolio_action: PortfolioAction::BuyEither,
+            total_value: 0.0,
+            stock_value: 0.0,
+            stock_percent: 0.0,
+        };
+
+        meta.recalculate(&tickers, &actual, &goal);
+
+        meta
+    }
+
+    fn populate_ticker_meta(
+        tickers_actual: &HashMap<TickerId, TickerActual>,
+    ) -> HashMap<TickerId, TickerMeta> {
+        let mut map = HashMap::new();
+        for (t_id, _) in tickers_actual.iter() {
+            map.insert(t_id.clone(), TickerMeta::default(&t_id));
+        }
+        map
     }
 
     pub(super) fn get_ticker(&self, id: &TickerId) -> &TickerMeta {

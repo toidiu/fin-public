@@ -38,7 +38,7 @@ impl PortfolioActual {
 }
 
 // **************************************
-// read
+// immutable
 // **************************************
 impl PortfolioActual {
     pub(crate) fn new(
