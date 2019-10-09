@@ -43,7 +43,7 @@ impl PortfolioState {
 }
 
 // **************************************
-// read
+// immutable
 // **************************************
 impl PortfolioState {
     pub(crate) fn new(
