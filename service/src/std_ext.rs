@@ -100,7 +100,6 @@ impl<I: Iterator> ExtIterator for I {}
 mod test {
 
     use super::ExtIterator;
-    use crate::portfolio::ticker::*;
     use crate::portfolio::*;
 
     enum TestMacro {
