@@ -1,6 +1,8 @@
 use slog::*;
 use std::fs::{self, OpenOptions};
 
+use slog::{Record, Result, Serializer, KV};
+
 lazy_static! {
     pub static ref CONFIG: fin_config::FinConfig =
         fin_config::FinConfig::new().expect("unable to parse configs");
@@ -28,7 +30,10 @@ lazy_static! {
         let formatter = slog_bunyan::default(file);
 
         let fuse = slog_async::Async::new(formatter.fuse()).build().fuse();
-        slog::Logger::root(fuse, o!("crate" => "fin", "version" => env!("CARGO_PKG_VERSION")))
+        slog::Logger::root(
+            fuse,
+            o!("crate" => "fin", "version" => env!("CARGO_PKG_VERSION"))
+        )
 
 
     };
