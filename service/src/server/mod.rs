@@ -1,6 +1,6 @@
 use crate::backend;
 use crate::data;
-use crate::errors::{ErrMessage, FinError};
+use crate::errors::{FinError, UserErrMessage};
 use crate::global::{CONFIG, ROOT};
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
@@ -188,14 +188,11 @@ fn recover_error(err: Rejection) -> Result<impl warp::Reply, warp::Rejection> {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
         };
-        let json = warp::reply::json(&err.to_msg());
+        let json = warp::reply::json(&err.to_user_msg());
         Ok(warp::reply::with_status(json, status_code))
     } else {
         let status_code = StatusCode::NOT_FOUND;
-        let json = warp::reply::json(&ErrMessage::new(
-            status_code,
-            "not found".to_string(),
-        ));
+        let json = warp::reply::json(&FinError::NotFoundErr.to_user_msg());
         Ok(warp::reply::with_status(json, status_code))
     }
 }

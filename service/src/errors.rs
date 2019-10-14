@@ -46,8 +46,8 @@ impl StdError for FinError {
 }
 
 impl FinError {
-    pub fn to_msg(self) -> ErrMessage {
-        ErrMessage {
+    pub fn to_user_msg(self) -> UserErrMessage {
+        UserErrMessage {
             code: self.value(),
             message: self.to_string(),
         }
@@ -67,15 +67,15 @@ impl FinError {
 
 /// Return type to user
 #[derive(Serialize)]
-pub struct ErrMessage {
+pub struct UserErrMessage {
     code: u16,
     message: String,
 }
 
-impl ErrMessage {
-    pub fn new(code: StatusCode, msg: String) -> ErrMessage {
-        ErrMessage {
-            code: code.as_u16(),
+impl UserErrMessage {
+    fn new(code: u16, msg: String) -> UserErrMessage {
+        UserErrMessage {
+            code: code,
             message: msg,
         }
     }
