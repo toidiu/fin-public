@@ -5,6 +5,9 @@
 ![alt text](./screenshot.png)
 
 ---
+### Talk
+I gave a talk at Rust Belt Rust (2019):
+`https://github.com/toidiu/talk_rust_belt_rust_2019`
 
 ### Website
 Vue, Typescript, parceljs
