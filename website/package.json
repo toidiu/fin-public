@@ -5,7 +5,7 @@
   "author": "apoorv@toidiu.com",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "bulma": "^0.7.4",
     "vue": "^2.5.17",
     "vue-hot-reload-api": "^2.3.0",
@@ -19,8 +19,8 @@
   "engineStrict": true,
   "devDependencies": {
     "@vue/component-compiler-utils": "^2.2.0",
-    "node-sass": "^4.9.3",
-    "parcel-bundler": "^1.11.0",
+    "node-sass": "^4.14.1",
+    "parcel-bundler": "^1.12.4",
     "typescript": "^3.0.3",
     "vue-template-compiler": "^2.5.17"
   },

@@ -1,18 +1,16 @@
 ---
 - hosts: fin
 
+  vars_files:
+    - vars/main.yml
+
+  # roles run before task.. so this doesnt work on a new machine.
+  # must comment out and do init tasks first. fix is to make roles
+  # out of pre and post tasks
+  roles:
+    - hurricanehrndz.rustup
+
   tasks:
-
-    # -------------- GIT dotfiles
-    - git:
-        repo: 'https://github.com/toidiu/dotfiles.git'
-        dest: ~/.dotfiles
-        version: master
-        force: yes
-
-    - name: dotfiles
-      shell: ~/.dotfiles/setup.sh
-
     # -------------- INIT SERVER
     - name: update APT package manager repositories cache
       become: true
@@ -20,102 +18,107 @@
         update_cache: yes
         cache_valid_time: 3600
 
-    # Add nginx stable repository from PPA and install its signing key.
-    # On Ubuntu target:
-    - apt_repository:
-        repo: ppa:certbot/certbot
+    - name: Install a list of packages
+      apt:
+        pkg:
+        - pkg-config
+
+    ## Add nginx stable repository from PPA and install its signing key.
+    ## On Ubuntu target:
+    #- apt_repository:
+    #    repo: ppa:certbot/certbot
 
     - name: Upgrade installed packages
       become: true
       apt:
         upgrade: dist
 
-    - name: Set timezone to Asia/Tokyo
+    - name: Set timezone to UTC
       timezone:
         name: UTC
-
-    # -------------- USER
-    # - name: Add the user 'toidiu' group sudo 'admin'
-    #   user:
-    #     name: johnd
-    #     comment: John Doe
-    #     uid: 1040
-    #     group: admin
-    #
-    # https://stackoverflow.com/a/37334415
-    #
-    # - name: Make sure we have a 'wheel' group
-    #   group:
-    #     name: wheel
-    #     state: present
-    #
-    # - name: Allow 'wheel' group to have passwordless sudo
-    #   lineinfile:
-    #     dest: /etc/sudoers
-    #     state: present
-    #     regexp: '^%wheel'
-    #     line: '%wheel ALL=(ALL) NOPASSWD: ALL'
-    #     validate: 'visudo -cf %s'
-    #
-    # - name: Add sudoers users to wheel group
-    #   user: name=deployer groups=wheel append=yes state=present createhome=yes
-    #
-    #
-    # - name: Set up authorized keys for the deployer user
-    #   authorized_key: user=deployer key="{{item}}"
-    #   with_file:
-    #     - /home/railsdev/.ssh/id_rsa.pub
-
-    # -------------- NGINX
-    - name: ensure nginx is at the latest version
-      apt: name=nginx state=latest
-
-    - name: start nginx
-      service:
-        name: nginx
-        state: started
-
-    - name: copy the nginx config file and restart nginx
-      copy:
-        src: nginx_website.cfg
-        dest: /etc/nginx/sites-available/fin_site.cfg
       become: yes
+      become_method: sudo
 
-    - name: create symlink
-      file:
-        src: /etc/nginx/sites-available/fin_site.cfg
-        dest: /etc/nginx/sites-enabled/default
-        state: link
+    # -------------- setup dotfiles
+    - name: Clone dotfile repo
+      git:
+        repo: 'https://github.com/toidiu/dotfiles.git'
+        dest: ~/.dotfiles
+        version: master
+        force: yes
 
-    # -------------- CERTBOT
-    - name: Ensure certbot nginx is at the latest version
-      apt: name=python-certbot-nginx state=latest
-      become: true
+    # - name: Run setup dotfiles
+    #   shell: ~/.dotfiles/setup.sh -y
 
     # -------------- APPLICATION
-    - name: Create dirs for website
-      file:
-        path: ~/website
-        state: directory
+    - name: Application download and setup
+      import_tasks: tasks/app.yml
+      # become: true
 
-    - name: Create dirs for server
-      file:
-        path: ~/server
-        state: directory
+    ## -------------- USER
+    ## - name: Add the user 'toidiu' group sudo 'admin'
+    ##   user:
+    ##     name: johnd
+    ##     comment: John Doe
+    ##     uid: 1040
+    ##     group: admin
+    ##
+    ## https://stackoverflow.com/a/37334415
+    ##
+    ## - name: Make sure we have a 'wheel' group
+    ##   group:
+    ##     name: wheel
+    ##     state: present
+    ##
+    ## - name: Allow 'wheel' group to have passwordless sudo
+    ##   lineinfile:
+    ##     dest: /etc/sudoers
+    ##     state: present
+    ##     regexp: '^%wheel'
+    ##     line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+    ##     validate: 'visudo -cf %s'
+    ##
+    ## - name: Add sudoers users to wheel group
+    ##   user: name=deployer groups=wheel append=yes state=present createhome=yes
+    ##
+    ##
+    ## - name: Set up authorized keys for the deployer user
+    ##   authorized_key: user=deployer key="{{item}}"
+    ##   with_file:
+    ##     - /home/railsdev/.ssh/id_rsa.pub
 
-    - name: Copy website
-      unarchive:
-        src: ../website/dist
-        dest: ~/website
+    ## -------------- NGINX
+    #- name: ensure nginx is at the latest version
+    #  apt: name=nginx state=latest
 
-    # -------------- POST TASKS
-    - name: restart nginx
-      service:
-        name: nginx
-        state: restarted
-      become: yes
+    #- name: start nginx
+    #  service:
+    #    name: nginx
+    #    state: started
 
+    #- name: copy the nginx config file and restart nginx
+    #  copy:
+    #    src: nginx_website.cfg
+    #    dest: /etc/nginx/sites-available/fin_site.cfg
+    #  become: yes
 
+    #- name: create symlink
+    #  file:
+    #    src: /etc/nginx/sites-available/fin_site.cfg
+    #    dest: /etc/nginx/sites-enabled/default
+    #    state: link
+
+    ## -------------- CERTBOT
+    #- name: Ensure certbot nginx is at the latest version
+    #  apt: name=python-certbot-nginx state=latest
+    #  become: true
+
+    ## -------------- POST TASKS
+    #- name: restart nginx
+    #  service:
+    #    name: nginx
+    #    state: restarted
+    #  become: yes
 
 
 

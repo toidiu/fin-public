@@ -13,8 +13,8 @@ I gave a talk at Rust Belt Rust (2019):
 Vue, Typescript, parceljs
 
 #### Requirements
-- npm 6.7.0
-- node 11.10.0
+- npm 6.14.4
+- node 12.16.3
 
 #### Setup
 ```
