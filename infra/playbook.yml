@@ -11,35 +11,70 @@
     - hurricanehrndz.rustup
 
   tasks:
+    # --------------
     # -------------- INIT SERVER
-    - name: update APT package manager repositories cache
-      become: true
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
-
-    - name: Install a list of packages
-      apt:
-        pkg:
-        - pkg-config
-
-    ## Add nginx stable repository from PPA and install its signing key.
-    ## On Ubuntu target:
-    #- apt_repository:
-    #    repo: ppa:certbot/certbot
-
-    - name: Upgrade installed packages
-      become: true
-      apt:
-        upgrade: dist
-
+    # --------------
     - name: Set timezone to UTC
       timezone:
         name: UTC
       become: yes
       become_method: sudo
 
-    # -------------- setup dotfiles
+    # --------------
+    # -------------- APT
+    # --------------
+    - name: Upgrade dist
+      become: true
+      apt:
+        upgrade: dist
+
+    # install nodejs on ubuntu instructions
+    # https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-18-04
+    # gpg and repo values taken from: https://deb.nodesource.com/setup_12.x
+    - name: Add an Apt signing key for nodejs
+      become: true
+      apt_key:
+        url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+        state: present
+
+    - name: add nodejs deb repo
+      become: true
+      apt_repository:
+        repo: deb https://deb.nodesource.com/node_12.x bionic main
+        filename: deb_nodesource_com_node_12_x
+        update_cache: false
+        state: present
+
+    - name: add nodejs deb repo
+      become: true
+      apt_repository:
+        repo: deb-src https://deb.nodesource.com/node_12.x bionic main
+        filename: deb_nodesource_com_node_12_x
+        update_cache: false
+        state: present
+
+    - name: update APT package manager repositories
+      become: true
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    # -------------- INSTALL NODEJS
+    - name: Install a list of packages
+      become: true
+      apt:
+        pkg:
+        - pkg-config # needed for rust openssl
+        - nodejs
+
+    ## Add nginx stable repository from PPA and install its signing key.
+    ## On Ubuntu target:
+    #- apt_repository:
+    #    repo: ppa:certbot/certbot
+
+    # --------------
+    # -------------- Dotfiles
+    # --------------
     - name: Clone dotfile repo
       git:
         repo: 'https://github.com/toidiu/dotfiles.git'
@@ -50,10 +85,21 @@
     # - name: Run setup dotfiles
     #   shell: ~/.dotfiles/setup.sh -y
 
+    # --------------
     # -------------- APPLICATION
-    - name: Application download and setup
-      import_tasks: tasks/app.yml
-      # become: true
+    # --------------
+    - name: Clone a private repository into dir 'fin'
+      git:
+        repo: git@github.com:toidiu/fin.git
+        version: master
+        dest: fin
+        accept_hostkey: yes
+
+    - name: Build website
+      import_tasks: tasks/website.yml
+
+    - name: Build rust server
+      import_tasks: tasks/rust.yml
 
     ## -------------- USER
     ## - name: Add the user 'toidiu' group sudo 'admin'

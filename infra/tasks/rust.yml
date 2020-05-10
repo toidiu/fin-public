@@ -1,0 +1,5 @@
+---
+- name: Build fin server -- release
+  command: chdir=~/fin/service {{ item }}
+  with_items:
+  - cargo build --release

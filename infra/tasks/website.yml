@@ -1,0 +1,7 @@
+---
+- name: Build fin website
+  command: chdir=~/fin/website {{ item }}
+  with_items:
+  - npm install
+  - make webBuildAndRelease
+
