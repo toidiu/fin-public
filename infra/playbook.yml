@@ -23,54 +23,8 @@
     # --------------
     # -------------- APT
     # --------------
-    - name: Upgrade dist
-      become: true
-      apt:
-        upgrade: dist
-
-    # install nodejs on ubuntu instructions
-    # https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-18-04
-    # gpg and repo values taken from: https://deb.nodesource.com/setup_12.x
-    - name: Add an Apt signing key for nodejs
-      become: true
-      apt_key:
-        url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-        state: present
-
-    - name: add nodejs deb repo
-      become: true
-      apt_repository:
-        repo: deb https://deb.nodesource.com/node_12.x bionic main
-        filename: deb_nodesource_com_node_12_x
-        update_cache: false
-        state: present
-
-    - name: add nodejs deb repo
-      become: true
-      apt_repository:
-        repo: deb-src https://deb.nodesource.com/node_12.x bionic main
-        filename: deb_nodesource_com_node_12_x
-        update_cache: false
-        state: present
-
-    - name: update APT package manager repositories
-      become: true
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
-
-    # -------------- INSTALL NODEJS
-    - name: Install a list of packages
-      become: true
-      apt:
-        pkg:
-        - pkg-config # needed for rust openssl
-        - nodejs
-
-    ## Add nginx stable repository from PPA and install its signing key.
-    ## On Ubuntu target:
-    #- apt_repository:
-    #    repo: ppa:certbot/certbot
+    - name: Nginx setup
+      import_tasks: tasks/apt.yml
 
     # --------------
     # -------------- Dotfiles
@@ -94,6 +48,7 @@
         version: master
         dest: fin
         accept_hostkey: yes
+        force: yes
 
     - name: Build website
       import_tasks: tasks/website.yml
@@ -101,70 +56,11 @@
     - name: Build rust server
       import_tasks: tasks/rust.yml
 
-    ## -------------- USER
-    ## - name: Add the user 'toidiu' group sudo 'admin'
-    ##   user:
-    ##     name: johnd
-    ##     comment: John Doe
-    ##     uid: 1040
-    ##     group: admin
-    ##
-    ## https://stackoverflow.com/a/37334415
-    ##
-    ## - name: Make sure we have a 'wheel' group
-    ##   group:
-    ##     name: wheel
-    ##     state: present
-    ##
-    ## - name: Allow 'wheel' group to have passwordless sudo
-    ##   lineinfile:
-    ##     dest: /etc/sudoers
-    ##     state: present
-    ##     regexp: '^%wheel'
-    ##     line: '%wheel ALL=(ALL) NOPASSWD: ALL'
-    ##     validate: 'visudo -cf %s'
-    ##
-    ## - name: Add sudoers users to wheel group
-    ##   user: name=deployer groups=wheel append=yes state=present createhome=yes
-    ##
-    ##
-    ## - name: Set up authorized keys for the deployer user
-    ##   authorized_key: user=deployer key="{{item}}"
-    ##   with_file:
-    ##     - /home/railsdev/.ssh/id_rsa.pub
-
-    ## -------------- NGINX
-    #- name: ensure nginx is at the latest version
-    #  apt: name=nginx state=latest
-
-    #- name: start nginx
-    #  service:
-    #    name: nginx
-    #    state: started
-
-    #- name: copy the nginx config file and restart nginx
-    #  copy:
-    #    src: nginx_website.cfg
-    #    dest: /etc/nginx/sites-available/fin_site.cfg
-    #  become: yes
-
-    #- name: create symlink
-    #  file:
-    #    src: /etc/nginx/sites-available/fin_site.cfg
-    #    dest: /etc/nginx/sites-enabled/default
-    #    state: link
-
-    ## -------------- CERTBOT
-    #- name: Ensure certbot nginx is at the latest version
-    #  apt: name=python-certbot-nginx state=latest
-    #  become: true
-
-    ## -------------- POST TASKS
-    #- name: restart nginx
-    #  service:
-    #    name: nginx
-    #    state: restarted
-    #  become: yes
+    # --------------
+    # -------------- NGINX
+    # --------------
+    - name: Nginx setup
+      import_tasks: tasks/nginx.yml
 
 
 

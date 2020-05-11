@@ -1,5 +1,21 @@
 ---
-- name: Build fin server -- release
-  command: chdir=~/fin/service {{ item }}
-  with_items:
-  - cargo build --release
+- name: Copy file with owner and permissions
+  copy:
+    src: ../service/fin_config/local.production.toml
+    dest: fin/service/fin_config/production.toml
+    owner: ubuntu
+    group: ubuntu
+    mode: u+rw,g-rw,o-r
+
+# - name: Build fin server -- release
+#   command: chdir=~/fin/service {{ item }}
+#   with_items:
+#   - cargo build --release
+
+- name: Stop rust server
+  shell: pkill fin
+
+# https://stackoverflow.com/a/39355842
+- name: Start rust server
+  shell: cd fin/service; nohup ./target/release/fin </dev/null >/dev/null 2>&1 &
+

@@ -1,0 +1,49 @@
+---
+- name: Upgrade dist
+  become: true
+  apt:
+    upgrade: dist
+
+# # install nodejs on ubuntu instructions
+# # https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-18-04
+# # gpg and repo values taken from: https://deb.nodesource.com/setup_12.x
+- name: Add an Apt signing key for nodejs
+  become: true
+  apt_key:
+    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    state: present
+
+- name: add nodejs deb repo
+  become: true
+  apt_repository:
+    repo: deb https://deb.nodesource.com/node_12.x bionic main
+    filename: deb_nodesource_com_node_12_x
+    update_cache: false
+    state: present
+
+- name: add nodejs deb repo
+  become: true
+  apt_repository:
+    repo: deb-src https://deb.nodesource.com/node_12.x bionic main
+    filename: deb_nodesource_com_node_12_x
+    update_cache: false
+    state: present
+
+- name: update APT package manager repositories
+  become: true
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+# -------------- INSTALL NODEJS
+- name: Install a list of packages
+  become: true
+  apt:
+    pkg:
+    - pkg-config # needed for rust openssl
+    - nodejs
+    - nginx
+
+- name: ensure nginx is at the latest version
+  apt: name=nginx state=latest
+
