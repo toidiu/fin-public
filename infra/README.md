@@ -1,4 +1,22 @@
+## setup
+assumes there is a file called local.production.toml at `service/fin_config/local.production.toml` (note local. files are ignore by git)
 
+comment out role section in playbook.yml
+  `make run-ansible`
+
+un-comment out role section in playbook.yml
+  `make run-ansible`
+
+
+## backups
+create
+`pg_dump r_fin > ~/Desktop/out.bak`
+restore
+`psql -h fin-postgres.xxx.us-west-1.rds.amazonaws.com -p 5432 -U xxx r_fin < out.bak`
+
+
+
+## postgres stuff
 ```
 /etc/postgresql/11/main/pg_hba.conf
 
@@ -15,8 +33,3 @@ psql -U postgres  -d fin-prod -a -f migrations/2018-10-07-022941_init/up.sql
 psql -U postgres  -d fin-prod -a -f migrations/2018-10-07-232226_fake_data/up.sql
 
 
-## backups
-create
-`pg_dump r_fin > ~/Desktop/out.bak`
-restore
-`psql -h fin-postgres.xxx.us-west-1.rds.amazonaws.com -p 5432 -U xxx r_fin < out.bak`

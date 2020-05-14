@@ -78,6 +78,9 @@ password: 123456
 ---
 ### Server setup
 
+use infra package and ansible to setup infra. postgres still requires manual setup
+
+#### DEPRECATED
 ```
 apt-get update && apt-get upgrade
 dpkg-reconfigure tzdata
@@ -108,4 +111,15 @@ psql -d template1 -c "ALTER USER postgres WITH PASSWORD '____';"
 createdb fin-prod
 
 ```
+
+## tasks
+- remove dash link if not logged-in
+- enable ssl!
+- clean db, move fake_data migration out of prod path
+- install psql on infra
+- allow editing portfolio %
+- custom name for portfolio
+- allow 'deleting' portfolio
+
+
 
