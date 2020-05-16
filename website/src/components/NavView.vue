@@ -11,15 +11,15 @@
     </div>
 
     <div class="level-right">
-      <router-link to="/dash">
-        <a class="navbar-item">dash</a>
-      </router-link>
+      <!-- <router-link to="/dash"> -->
+      <!--   <a class="navbar-item" v-if="!isUserAuth">dash</a> -->
+      <!-- </router-link> -->
       <router-link v-if="isUserAuth" to="/login">
         <a class="navbar-item">login</a>
       </router-link>
-      <a class="navbar-item" href="#" v-if="!isUserAuth" v-on:click="logout"
-        >logout</a
-      >
+      <a class="navbar-item" href="#" v-if="!isUserAuth" v-on:click="logout">
+        logout
+      </a>
     </div>
   </nav>
 </template>

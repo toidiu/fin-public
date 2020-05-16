@@ -9,7 +9,6 @@
 <style lang="scss" scoped>
 .outer {
   display: table;
-  position: absolute;
   height: 100%;
   width: 100%;
 }
