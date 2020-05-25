@@ -14,11 +14,14 @@
     # --------------
     # -------------- INIT SERVER
     # --------------
-    - name: Set timezone to UTC
+    - name: set timezone to UTC
       timezone:
         name: UTC
       become: yes
       become_method: sudo
+
+    - name: Acme setup
+      import_tasks: tasks/init_acme.yml
 
     # --------------
     # -------------- APT
@@ -57,10 +60,14 @@
       import_tasks: tasks/rust.yml
 
     # --------------
+    # -------------- ACME
+    # --------------
+    - name: letsencrypt crets and nginx certs
+      import_tasks: tasks/acme.yml
+
+    # --------------
     # -------------- NGINX
     # --------------
     - name: Nginx setup
       import_tasks: tasks/nginx.yml
-
-
 

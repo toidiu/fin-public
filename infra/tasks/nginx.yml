@@ -1,8 +1,11 @@
 ---
+# sites-enabled is the location to enable.
+# we copy files to sites-available and link
+# to that from sites-enabled
 - name: copy the nginx config file and restart nginx
   become: yes
   copy:
-    src: nginx_website.cfg
+    src: nginx.cfg
     dest: /etc/nginx/sites-available/fin_site.cfg
 
 - name: create symlink

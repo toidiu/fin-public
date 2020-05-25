@@ -1,5 +1,10 @@
 ## setup
-assumes there is a file called local.production.toml at `service/fin_config/local.production.toml` (note local. files are ignore by git)
+assumes following files exist:
+- `local.production.toml` at `service/fin_config/local.production.toml` (note local. files are ignore by git)
+- `local.cf_secret` (look at example.cf_secret)
+
+install roles
+`make ansible-galaxy`
 
 comment out role section in playbook.yml
   `make run-ansible`

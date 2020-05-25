@@ -113,8 +113,8 @@ createdb fin-prod
 ```
 
 ## tasks
-- remove dash link if not logged-in
-- enable ssl!
+- ~remove dash link if not logged-in~
+- ~enable ssl! https://github.com/acmesh-official/acme.sh~
 - clean db, move fake_data migration out of prod path
 - install psql on infra
 - allow editing portfolio %

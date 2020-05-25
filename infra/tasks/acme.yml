@@ -1,0 +1,22 @@
+---
+- name: copy cloudflare tokens
+  become: yes
+  copy:
+    src: local.cf_secret
+    dest: .acme.sh/cf_secret
+
+- name: use acme.sh to get cert for site
+  shell: . .acme.sh/cf_secret && .acme.sh/acme.sh --issue --dns dns_cf -d fin.toidiu.com --log --log-level 2
+  args:
+    creates: .acme.sh/cert_first_run
+
+- name: use acme.sh to get cert for site
+  shell: . .acme.sh/cf_secret && .acme.sh/acme.sh --renew-all
+
+- name: copy cert to ssl dir
+  become: yes
+  command: cp .acme.sh/fin.toidiu.com/fin.toidiu.com.cer /etc/ssl
+
+- name: copy cert key to ssl dir
+  become: yes
+  command: cp .acme.sh/fin.toidiu.com/fin.toidiu.com.key /etc/ssl

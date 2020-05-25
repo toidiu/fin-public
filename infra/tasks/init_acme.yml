@@ -1,0 +1,16 @@
+---
+- name: creates directory
+  file:
+    path: acme_sh
+    state: directory
+
+- name: download get.acme.sh installer
+  get_url:
+    url: https://get.acme.sh
+    dest: acme_sh/get.acme.sh
+    force: yes
+    mode: u+rx,g-rx,o-r
+
+- name: execute the get.acme.sh installer
+  command: acme_sh/get.acme.sh
+
