@@ -29,7 +29,6 @@
         </template>
 
         <buy-next-view
-          v-show="buyNextState != null"
           :port-state="portState"
           :buy-next-state="buyNextState"
           @buy-next-event="buyNextHandler"

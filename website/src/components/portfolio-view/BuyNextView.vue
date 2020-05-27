@@ -1,5 +1,5 @@
 <template>
-  <div id="buy-next">
+  <div v-if="buyNextState" id="buy-next">
     <div>Buy value: ${{ buyNextState.buy_value }}</div>
     <table class="table">
       <tr>

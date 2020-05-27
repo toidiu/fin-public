@@ -5,7 +5,7 @@
     aria-label="main navigation"
   >
     <div class="navbar-brand ">
-      <a class="navbar-item" v-on:click="goToDash">
+      <a class="navbar-item" v-on:click="logoClicked(isUserAuth)">
         <img src="./../../static/images/fin-logo.png" width="112" height="28" />
       </a>
     </div>
@@ -32,6 +32,7 @@ export default Vue.extend({
   props: {
     isUserAuth: {
       type: Boolean,
+      // assume the user is not logged in
       default: false
     }
   },
@@ -67,8 +68,10 @@ export default Vue.extend({
       this.$appGlobal.axi.post("users/logout").catch(error => {});
       router.push({ name: "login" });
     },
-    goToDash() {
-      if (this.$router.currentRoute.name == "dash") {
+    logoClicked(isUserAuth) {
+      if (isUserAuth) {
+        // user is not logged in
+      } else if (this.$router.currentRoute.name == "dash") {
         this.$router.go(0);
       } else {
         router.push({ name: "dash" });
