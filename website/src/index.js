@@ -53,7 +53,7 @@ const router = new VueRouter({
 });
 
 const ax = axios.create({
-  baseURL: `http://${Config.api.host}:${Config.api.port}/`,
+  baseURL: `${Config.api.protocol}://${Config.api.host}:${Config.api.port}/`,
   timeout: Config.api.timeoutMs,
   withCredentials: true
   //headers: { "Access-Control-Max-Age": "1" },

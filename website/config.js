@@ -8,6 +8,7 @@ var config = {};
 // config.server.port = 'http://localhost:8000';
 
 config.api = {
+    protocol: process.env.WEB_PROTOCOL || 'http',
     host: process.env.WEB_HOST || 'localhost',
     port: process.env.WEB_PORT || 8000,
     timeoutMs: 20000
