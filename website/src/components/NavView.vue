@@ -6,7 +6,7 @@
   >
     <div class="navbar-brand ">
       <a class="navbar-item" v-on:click="logoClicked(isUserAuth)">
-        <img src="./../../static/images/fin-logo.png" width="112" height="28" />
+        <img src="./../../static/images/fin-logo.svg" />
       </a>
     </div>
 
@@ -81,4 +81,8 @@ export default Vue.extend({
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.navbar-item img {
+  padding: 0 10px;
+}
+</style>
