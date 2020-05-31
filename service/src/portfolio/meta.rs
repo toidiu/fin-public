@@ -395,5 +395,4 @@ mod tests {
         zero_tm.calc_ticker_action(0.6, 1.5);
         assert_eq!(zero_tm.action, TickerAction::Buy);
     }
-
 }

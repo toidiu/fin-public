@@ -115,11 +115,12 @@ createdb fin-prod
 ## tasks
 - ~remove dash link if not logged-in~
 - ~enable ssl! https://github.com/acmesh-official/acme.sh~
-- clean db, move fake_data migration out of prod path
-- install psql on infra
+- ~clean db, move fake_data migration out of prod path~
+- better description for value portfolio
+- custom name for portfolio actual
 - allow editing portfolio %
-- custom name for portfolio
 - allow 'deleting' portfolio
+- install psql on infra
 
 
 

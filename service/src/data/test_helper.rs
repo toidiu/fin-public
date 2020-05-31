@@ -94,11 +94,15 @@ impl TestHelper {
         let init =
             fs::read_to_string("migrations/2018-10-07-022941_init/up.sql")
                 .expect("file not found");
-        let fake_data =
-            fs::read_to_string("migrations/2018-10-07-232226_fake_data/up.sql")
-                .expect("file not found");
+        let initial_data = fs::read_to_string(
+            "migrations/2018-10-07-232226_initial_data/up.sql",
+        )
+        .expect("file not found");
+        let fake_data = fs::read_to_string("src/data/test_data.sql")
+            .expect("file not found");
 
         conn.batch_execute(&init).expect("test");
+        conn.batch_execute(&initial_data).expect("test");
         conn.batch_execute(&fake_data).expect("test");
     }
 
