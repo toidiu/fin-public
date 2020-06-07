@@ -7,10 +7,10 @@
     group: ubuntu
     mode: u+rw,g-rw,o-r
 
-# - name: Build fin server -- release
-#   command: chdir=~/fin/service {{ item }}
-#   with_items:
-#   - cargo build --release
+- name: Build fin server -- release
+  command: chdir=~/fin/service {{ item }}
+  with_items:
+  - cargo build --release
 
 - name: Stop rust server
   shell: pkill fin
