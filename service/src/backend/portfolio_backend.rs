@@ -74,6 +74,8 @@ pub trait PortfolioBackend {
         user_id: &server::UserId,
         goal_id: i64,
         stock_percent: f32,
+        name: &str,
+        description: &str,
     ) -> ResultFin<server::PortfolioActualResp>;
 
     fn get_buy_next(
@@ -293,10 +295,16 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         user_id: &server::UserId,
         goal_id: i64,
         stock_percent: f32,
+        name: &str,
+        description: &str,
     ) -> ResultFin<server::PortfolioActualResp> {
-        let port_a =
-            self.db
-                .create_portfolio_actual(user_id, goal_id, stock_percent)?;
+        let port_a = self.db.create_portfolio_actual(
+            user_id,
+            goal_id,
+            stock_percent,
+            name,
+            description,
+        )?;
         let a_tickers = self
             .db
             .get_actual_tickers(goal_id, port_a.id)?

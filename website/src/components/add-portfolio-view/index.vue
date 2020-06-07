@@ -69,6 +69,7 @@ export default Vue.extend({
         });
     },
     addPortfolioHandler(data: AddData) {
+      console.log(data);
       this.clearErrors();
       this.isLoading = true;
       this.$appGlobal.axi

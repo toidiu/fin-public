@@ -101,7 +101,13 @@ pub fn create_port_a(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let port_backend = res_portfolio_backend?;
     let resp = port_backend
-        .create_port_a(&user_id, data.goal_id, data.stock_percent)
+        .create_port_a(
+            &user_id,
+            data.goal_id,
+            data.stock_percent,
+            &data.name,
+            &data.description,
+        )
         .map_err(|err| {
             error!(LOGGER, "{}: {}", line!(), err);
             warp::reject::custom(FinError::ServerErr)

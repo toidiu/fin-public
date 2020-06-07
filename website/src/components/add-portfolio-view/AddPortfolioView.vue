@@ -2,14 +2,43 @@
   <div class="container">
     <form @submit.prevent="addPortfolio">
       <div class="section">
+        <div class="field">
+          <label class="label">Name</label>
+          <div class="control">
+            <input
+              class="input text-input"
+              type="text"
+              name="name"
+              value="My Portfolio"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Description</label>
+          <div class="control">
+            <textarea name="description" required rows="3" cols="50">
+My personal portfolio.</textarea
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
         <div class="control">
           <label class="label">Choose a Portfolio</label>
 
           <!-- radio input that shows all the portfolio goals -->
           <template v-for="(port, idx) in portGoalState">
             <label class="radio" v-bind:key="port.id + idx">
-              <input name="goalPortId" type="radio" :value="port.id" required /
-              checked >
+              <input
+                name="goalPortId"
+                type="radio"
+                :value="port.id"
+                required
+                checked
+              />
               {{ port.name }}
               <span class="help">{{ port.description }}</span>
               <!-- <div v-for="(tg, idx) in port.tickers_goal"> -->
@@ -19,9 +48,7 @@
             </label>
           </template>
         </div>
-      </div>
 
-      <div class="section">
         <div class="field">
           <label class="label">Choose Stock %</label>
           <div class="control">
@@ -36,7 +63,7 @@
             />
           </div>
           <p class="help">
-            what percent of the portfolio should be invested in stocks
+            What percent of the portfolio should be invested in stocks
           </p>
         </div>
       </div>
@@ -62,9 +89,12 @@ export default Vue.extend({
   },
   methods: {
     addPortfolio: function(submitEvent) {
+      console.log(submitEvent.target);
       let data = new Object() as AddData;
       data.goalPortId = parseInt(submitEvent.target.elements.goalPortId.value);
       data.stockPercent = parseInt(submitEvent.target.elements.stockPer.value);
+      data.name = submitEvent.target.elements.name.value;
+      data.description = submitEvent.target.elements.description.value;
       this.$emit("add-portfolio-event", data);
     },
     cancelAddPortfolio: function() {
@@ -75,6 +105,10 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+.section {
+  max-width: 50em;
+  padding-top: 2rem;
+}
 .text-input {
   max-width: 10em;
 }

@@ -338,6 +338,8 @@ mod test {
                 1,
                 // last_updated
                 Utc::now(),
+                "name".to_string(),
+                "description".to_string(),
                 // tickers_actual
                 Self::helper_get_actual_tickers(),
             )

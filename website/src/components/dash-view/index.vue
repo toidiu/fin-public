@@ -28,7 +28,7 @@ import LoaderView from "../LoaderView.vue";
 import ErrorsView from "../ErrorsView.vue";
 import DashView from "./DashView.vue";
 import router from "../../index.js";
-import { Ticker, PortfolioGoalList } from "../../data/models";
+import { Ticker, PortfolioActualList } from "../../data/models";
 import Vue from "vue";
 
 export default Vue.extend({
@@ -40,7 +40,7 @@ export default Vue.extend({
   },
   data() {
     return {
-      portListState: null, //PortfolioGoalList[]
+      portListState: null, //PortfolioActualList[]
       isLoading: true,
       buyNextState: null, //BuyNextResp
       errors: [] as String[]

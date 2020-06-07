@@ -30,7 +30,7 @@ export interface Action {
 }
 
 //======== portfolio list
-export interface PortfolioGoalList {
+export interface PortfolioActualList {
   id: number;
   name: string;
   goal_stock_percent: number;

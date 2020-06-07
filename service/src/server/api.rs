@@ -99,6 +99,8 @@ pub struct NewPortActualData {
     pub goal_id: i64,
     #[serde(alias = "stockPercent")]
     pub stock_percent: f32,
+    pub name: String,
+    pub description: String,
 }
 
 // ============ Portfolio Detail
@@ -146,5 +148,5 @@ pub struct PortfolioActualDetailResp {
     pub version: i32,
     pub last_updated: DateTime<Utc>,
     pub name: String,
-    pub description: Option<String>,
+    pub description: String,
 }

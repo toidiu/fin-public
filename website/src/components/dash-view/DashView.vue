@@ -29,12 +29,12 @@
 </template>
 
 <script lang="ts">
-import { PortfolioGoalList, Ticker } from "../../data/models";
+import { PortfolioActualList, Ticker } from "../../data/models";
 import Vue from "vue";
 
 export default Vue.extend({
   props: {
-    portListState: Array as () => PortfolioGoalList[]
+    portListState: Array as () => PortfolioActualList[]
   },
   methods: {
     goToPortfolio: function(id) {

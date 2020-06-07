@@ -46,6 +46,8 @@ impl TestHelper {
             1.5,
             1,
             Utc::now(),
+            "name".to_string(),
+            "description".to_string(),
             Self::get_actual_tickers(),
         )
     }

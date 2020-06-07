@@ -43,12 +43,13 @@ impl TestHelper {
     {
         let db_name = Self::get_test_db_name();
 
-        Self::setup(&db_name);
+        let setup_result = std::panic::catch_unwind(|| Self::setup(&db_name));
         let result = std::panic::catch_unwind(|| test(&db_name));
         if (teardown) {
             Self::teardown(&db_name);
         }
 
+        assert!(setup_result.is_ok(), "DB SETUP FAILED");
         assert!(result.is_ok())
     }
 
@@ -56,13 +57,7 @@ impl TestHelper {
     where
         T: FnOnce(&str) -> () + std::panic::UnwindSafe,
     {
-        let db_name = Self::get_test_db_name();
-
-        Self::setup(&db_name);
-        let result = std::panic::catch_unwind(|| test(&db_name));
-        Self::teardown(&db_name);
-
-        assert!(result.is_ok())
+        Self::run_test_opt_teardown(true, test)
     }
 
     fn get_test_db_name() -> String {

@@ -11,12 +11,12 @@ INSERT INTO users VALUES
 ----------- actual
 
 INSERT INTO actual_port
-  (id, fk_user_id, fk_port_g_id, stock_percent, deviation, version, last_updated)
-  VALUES (DEFAULT, 1, 1, 58.0, 1.5, 1, now());
+  (id, fk_user_id, fk_port_g_id, stock_percent, deviation, version, last_updated, name, description)
+  VALUES (DEFAULT, 1, 1, 58.0, 1.5, 1, now(), 'name', 'description');
 INSERT INTO actual_port VALUES
-  (DEFAULT, 1, 1, 90.0, 1.5, 1, now());
+  (DEFAULT, 1, 1, 90.0, 1.5, 1, now(), 'name', 'description');
 INSERT INTO actual_port VALUES
-  (DEFAULT, 2, 1, 50.0, 1.5, 1, now());
+  (DEFAULT, 2, 1, 50.0, 1.5, 1, now(), 'name', 'description');
 
 INSERT INTO actual_tic
   (id, fk_port_g_id, fk_port_a_id, fk_tic_id, actual_shares)

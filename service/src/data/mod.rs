@@ -83,6 +83,8 @@ pub trait FinDb {
         user_id: &server::UserId,
         port_g_id: i64,
         stock_percent: f32,
+        name: &str,
+        description: &str,
     ) -> ResultFin<db_types::ActualPortData>;
 
     //========== GOAL
@@ -216,12 +218,9 @@ impl FinDb for PgFinDb {
         user_id: &server::UserId,
     ) -> ResultFin<Vec<db_types::ActualPortDetailData>> {
         let stmt = &format!(
-            "SELECT ap.id, ap.fk_user_id, ap.fk_port_g_id, ap.stock_percent,
-            ap.deviation, ap.version, ap.last_updated, gp.name, gp.description
-            FROM {} ap JOIN {} gp on
-            (ap.fk_port_g_id = gp.id AND ap.fk_user_id = $1)",
+            "SELECT {} FROM {} where fk_user_id = $1",
+            &db_types::ActualPortData::sql_fields(),
             &db_types::ActualPortData::sql_table(),
-            &db_types::GoalPortData::sql_table(),
         );
         let rows = &self.conn.query(stmt, &[user_id.get_user_id()]).map_err(
             |err| {
@@ -469,6 +468,8 @@ impl FinDb for PgFinDb {
         user_id: &server::UserId,
         port_g_id: i64,
         stock_percent: f32,
+        name: &str,
+        description: &str,
     ) -> ResultFin<db_types::ActualPortData> {
         // get tickers_goal. this can be before the transaction
         let goal_tickers = self.get_ticker_goal_by_id(port_g_id)?;
@@ -481,8 +482,8 @@ impl FinDb for PgFinDb {
         // insert port actual
         let stmt_port_a = &format!(
             "INSERT INTO {}
-            (fk_user_id, fk_port_g_id, stock_percent, deviation, version, last_updated)
-            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            (fk_user_id, fk_port_g_id, stock_percent, deviation, version, last_updated, name, description)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
             &db_types::ActualPortData::sql_table(),
         );
 
@@ -497,6 +498,8 @@ impl FinDb for PgFinDb {
                     &portfolio::PERCENT_DEVIATION,
                     &default_version,
                     &Utc::now(),
+                    &name,
+                    &description,
                 ],
             )
             .map_err(|err| {
@@ -719,10 +722,11 @@ mod tests {
             let r = &res.expect("test");
             assert_eq!(&r.len(), &2);
             assert_eq!(&r.get(1).expect("test").fk_user_id, &1);
-            assert_eq!(&r.get(1).expect("test").stock_percent, &58.0);
-            assert_eq!(&r.get(1).expect("test").name, "Value Portfolio");
-            assert_eq!(&r.get(0).expect("test").stock_percent, &90.0);
-            assert_eq!(&r.get(0).expect("test").name, "Value Portfolio");
+            assert_eq!(&r.get(0).expect("test").stock_percent, &58.0);
+            assert_eq!(&r.get(0).expect("test").name, "name");
+            assert_eq!(&r.get(0).expect("test").description, "description");
+            assert_eq!(&r.get(1).expect("test").stock_percent, &90.0);
+            assert_eq!(&r.get(1).expect("test").name, "name");
         })
     }
 
@@ -737,7 +741,7 @@ mod tests {
             assert_eq!(&r.len(), &1);
             assert_eq!(&r.get(0).expect("test").fk_user_id, &2);
             assert_eq!(&r.get(0).expect("test").stock_percent, &50.0);
-            assert_eq!(&r.get(0).expect("test").name, "Value Portfolio");
+            assert_eq!(&r.get(0).expect("test").name, "name");
         })
     }
 
@@ -913,10 +917,18 @@ mod tests {
         let user_id = user_id!(1);
         let port_g_id = 1;
         let per = 90.0;
+        let name = "My Portfolio";
+        let description = "my wealth portfolio";
 
         TestHelper::run_test(|db_name| {
             let db = TestHelper::get_test_db(db_name);
-            let res = db.create_portfolio_actual(&user_id, port_g_id, per);
+            let res = db.create_portfolio_actual(
+                &user_id,
+                port_g_id,
+                per,
+                name,
+                description,
+            );
             assert_eq!(res.is_ok(), true);
             let res = res.expect("test");
             assert_eq!(&res.fk_user_id, user_id.get_user_id());
@@ -924,6 +936,8 @@ mod tests {
             assert_eq!(&res.stock_percent, &per);
             assert_eq!(&res.deviation, &1.5);
             assert_eq!(&res.version, &1);
+            assert_eq!(&res.name, &name);
+            assert_eq!(&res.description, &description);
 
             let at = db.get_actual_tickers(port_g_id, res.id);
             assert_eq!(at.is_ok(), true);

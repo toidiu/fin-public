@@ -52,6 +52,8 @@ CREATE TABLE actual_port (
   deviation float4 NOT NULL,
   version int4 NOT NULL,
   last_updated timestamptz NOT NULL,
+  name text NOT NULL,
+  description text NOT NULL,
   UNIQUE(id, fk_port_g_id) -- needed for FK in actual_tic
 );
 

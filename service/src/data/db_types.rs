@@ -140,7 +140,7 @@ pub struct ActualPortDetailData {
     pub version: i32,
     pub last_updated: DateTime<Utc>,
     pub name: String,
-    pub description: Option<String>,
+    pub description: String,
 }
 
 impl ActualPortDetailData {
@@ -169,6 +169,8 @@ pub struct ActualPortData {
     pub deviation: f32,
     pub version: i32,
     pub last_updated: DateTime<Utc>,
+    pub name: String,
+    pub description: String,
 }
 
 impl ActualPortData {
@@ -184,6 +186,8 @@ impl ActualPortData {
             self.deviation,
             self.version,
             self.last_updated,
+            self.name,
+            self.description,
             tickers_actual.clone(),
         )
     }

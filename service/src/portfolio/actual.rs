@@ -12,6 +12,8 @@ pub struct PortfolioActual {
     version: i32,
     pub last_updated: DateTime<Utc>,
     pub tickers_actual: HashMap<TickerId, TickerActual>,
+    pub name: String,
+    pub description: String,
 }
 
 // **************************************
@@ -49,6 +51,8 @@ impl PortfolioActual {
         deviation_percent: f32,
         version: i32,
         last_updated: DateTime<Utc>,
+        name: String,
+        description: String,
         tickers_actual: HashMap<TickerId, TickerActual>,
     ) -> Self {
         PortfolioActual {
@@ -60,6 +64,8 @@ impl PortfolioActual {
             version,
             last_updated,
             tickers_actual,
+            name,
+            description,
         }
     }
 

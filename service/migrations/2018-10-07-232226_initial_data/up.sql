@@ -33,7 +33,7 @@ INSERT INTO tickers VALUES
 
 ----------- goal
 INSERT INTO goal_port VALUES
-  (DEFAULT, 'Value Portfolio', 'A collection of funds that represent a value portfolio. The funds are chosen for their low fees.');
+  (DEFAULT, 'Value Portfolio', 'A collection of Vanguard index funds that represent a value portfolio. The funds are chosen for their low fees and a diversification between small, medium, large cap plus nation and international funds.');
 
 INSERT INTO goal_tic VALUES (DEFAULT, 1, 1  , 35.0 , 1);
 INSERT INTO goal_tic VALUES (DEFAULT, 1, 2  , 9.4  , 2);
