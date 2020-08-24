@@ -17,5 +17,5 @@
 
 # https://stackoverflow.com/a/39355842
 - name: Start rust server
-  shell: cd fin/service; nohup RUN_MODE=production ./target/release/fin </dev/null >/dev/null 2>&1 &
+  shell: cd fin/service; RUN_MODE=production ./target/release/fin </dev/null >/dev/null 2>&1 &
 
