@@ -6,11 +6,11 @@
   "license": "MIT",
   "dependencies": {
     "axios": "^0.18.1",
-    "bulma": "^0.7.4",
-    "vue": "^2.5.17",
-    "vue-hot-reload-api": "^2.3.0",
-    "vue-router": "^3.0.1",
-    "vue-spinner": "^1.0.3"
+    "bulma": "^0.7.5",
+    "vue": "^2.6.12",
+    "vue-hot-reload-api": "^2.3.4",
+    "vue-router": "^3.4.9",
+    "vue-spinner": "^1.0.4"
   },
   "engines": {
     "node": "11.10.0",
@@ -18,11 +18,12 @@
   },
   "engineStrict": true,
   "devDependencies": {
-    "@vue/component-compiler-utils": "^2.2.0",
+    "@vue/component-compiler-utils": "^2.6.0",
     "node-sass": "^4.14.1",
     "parcel-bundler": "^1.12.4",
-    "typescript": "^3.0.3",
-    "vue-template-compiler": "^2.5.17"
+    "sass": "^1.29.0",
+    "typescript": "^3.9.7",
+    "vue-template-compiler": "^2.6.12"
   },
   "scripts": {
     "start": "npm run purdy & parcel src/index.html",
