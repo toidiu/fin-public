@@ -16,7 +16,7 @@ INSERT INTO actual_port
 INSERT INTO actual_port VALUES
   (DEFAULT, 1, 1, 90.0, 1.5, 1, now(), 'name', 'description');
 INSERT INTO actual_port VALUES
-  (DEFAULT, 2, 1, 50.0, 1.5, 1, now(), 'name', 'description');
+  (DEFAULT, 2, 1, 50.0, 1.5, 1, now(), 'name_3', 'description');
 
 INSERT INTO actual_tic
   (id, fk_port_g_id, fk_port_a_id, fk_tic_id, actual_shares)

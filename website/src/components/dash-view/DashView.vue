@@ -17,12 +17,17 @@
             {{ port.description }}
           </div>
         </div>
+        <button id="option" v-on:click="editPortfolio(port.id)">edit</button>
       </div>
     </template>
 
-    <div v-on:click="addPortfolio" class="col-item column is-one-quarter">
+    <div
+      v-on:click="addPortfolio"
+      id="add-port"
+      class="col-item column is-one-quarter"
+    >
       <div class="container center-img-in-container">
-        <img src="/../assets/icons/plus.svg" class="is-64x64" />
+        <img src="/../static/images/plus.svg" class="is-64x64" />
       </div>
     </div>
   </div>
@@ -40,6 +45,9 @@ export default Vue.extend({
     goToPortfolio: function(id) {
       this.$emit("go_to_portfolio", id);
     },
+    editPortfolio: function(id) {
+      this.$emit("edit_portfolio", id);
+    },
     addPortfolio: function() {
       this.$emit("add_portfolio");
     }
@@ -48,6 +56,9 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+#add-port {
+  border: 0;
+}
 .container {
   padding: 0.75em 0;
 }

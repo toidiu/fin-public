@@ -55,6 +55,12 @@ pub trait FinDb {
         user_id: &server::UserId,
     ) -> ResultFin<Vec<db_types::ActualPortDetailData>>;
 
+    fn get_port_actual_by_port_id(
+        &self,
+        user_id: &server::UserId,
+        port_a_id: i64,
+    ) -> ResultFin<db_types::ActualPortDetailData>;
+
     fn get_port_actual(
         &self,
         port_a_id: i64,
@@ -242,6 +248,43 @@ impl FinDb for PgFinDb {
                 )
             })
             .collect::<ResultFin<Vec<db_types::ActualPortDetailData>>>()
+    }
+
+    fn get_port_actual_by_port_id(
+        &self,
+        user_id: &server::UserId,
+        port_a_id: i64,
+    ) -> ResultFin<db_types::ActualPortDetailData> {
+        let stmt = &format!(
+            "SELECT {} FROM {} where fk_user_id = $1 and id = $2",
+            &db_types::ActualPortData::sql_fields(),
+            &db_types::ActualPortData::sql_table(),
+        );
+        let rows = &self
+            .conn
+            .query(stmt, &[&user_id.get_user_id(), &port_a_id])
+            .map_err(|err| {
+                lineError!(self.logger, err);
+                err
+            })?;
+
+        rows.iter()
+            .next()
+            .map(|row| {
+                db_types::ActualPortDetailData::from_postgres_row(row).map_err(
+                    |err| {
+                        lineError!(
+                            self.logger,
+                            format!(
+                                "{}. user_id: {:?}, port_a_id: {}",
+                                err, &user_id, &port_a_id
+                            )
+                        );
+                        FinError::DatabaseErr
+                    },
+                )
+            })
+            .ok_or(FinError::DatabaseErr)?
     }
 
     fn get_port_actual(
@@ -741,7 +784,23 @@ mod tests {
             assert_eq!(&r.len(), &1);
             assert_eq!(&r.get(0).expect("test").fk_user_id, &2);
             assert_eq!(&r.get(0).expect("test").stock_percent, &50.0);
-            assert_eq!(&r.get(0).expect("test").name, "name");
+            assert_eq!(&r.get(0).expect("test").name, "name_3");
+        })
+    }
+
+    #[test]
+    fn test_get_port_actual_by_port_id() {
+        TestHelper::run_test(|db_name| {
+            let db = TestHelper::get_test_db(db_name);
+            let res = db.get_port_actual_by_port_id(&user_id!(2), 3);
+
+            assert_eq!(res.is_ok(), true);
+            let r = &res.expect("test");
+            assert_eq!(&r.fk_user_id, &2);
+            assert_eq!(&r.id, &3);
+            assert_eq!(&r.stock_percent, &50.0);
+            assert_eq!(&r.deviation, &1.5);
+            assert_eq!(&r.name, "name_3");
         })
     }
 

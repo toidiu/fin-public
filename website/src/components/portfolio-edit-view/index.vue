@@ -12,12 +12,10 @@
       <errors-view :errors="errors" v-show="errors.length" />
     </template>
 
-    <div class="bg" v-if="portListState != null">
-      <dash-view
-        :port-list-state="portListState"
-        @go_to_portfolio="goToPortfolioHandler"
-        @edit_portfolio="editPortfolioHandler"
-        @add_portfolio="addPortfolioHandler"
+    <div class="bg" v-if="portState != null">
+      <edit-portfolio-view
+        :port-state="portState"
+        @edit-portfolio-event="editPortfolioHandler"
       />
     </div>
   </div>
@@ -27,9 +25,9 @@
 import NavView from "../NavView.vue";
 import LoaderView from "../LoaderView.vue";
 import ErrorsView from "../ErrorsView.vue";
-import DashView from "./DashView.vue";
+import EditPortfolioView from "./EditPortfolioView.vue";
 import router from "../../index.js";
-import { Ticker, PortfolioActualList } from "../../data/models";
+import { EditData } from "./models";
 import Vue from "vue";
 
 export default Vue.extend({
@@ -37,32 +35,28 @@ export default Vue.extend({
     NavView,
     ErrorsView,
     LoaderView,
-    DashView
+    EditPortfolioView
   },
   data() {
     return {
-      portListState: null, //PortfolioActualList[]
+      portState: null, //FinPortfolioResp
       isLoading: true,
-      buyNextState: null, //BuyNextResp
+      actualId: this.$route.params.id,
       errors: [] as String[]
     };
   },
   mounted() {
-    this.getPortfolioList();
+    this.getPortfolioDetail();
   },
   methods: {
-    getPortfolioList() {
+    getPortfolioDetail() {
       this.clearErrors();
-      /* get portfolio list */
+      /* get portfolio */
       this.isLoading = true;
       this.$appGlobal.axi
-        .get("portfolio/actual")
+        .get(`portfolio/actual/detail/${this.actualId}`)
         .then(resp => {
-          if (resp != undefined) {
-            this.portListState = resp.data;
-          } else {
-            this.errors.push("oops,looks like we made a mistake");
-          }
+          this.portState = resp.data;
           this.isLoading = false;
         })
         .catch(error => {
@@ -71,15 +65,20 @@ export default Vue.extend({
           this.isLoading = false;
         });
     },
-    goToPortfolioHandler(id) {
-      router.push({ name: "portfolio", params: { id: id } });
-    },
-    editPortfolioHandler(id) {
-      event.stopPropagation();
-      router.push({ name: "edit-portfolio", params: { id: id } });
-    },
-    addPortfolioHandler() {
-      router.push({ name: "portAdd" });
+    editPortfolioHandler(data: EditData) {
+      console.log(data);
+      this.clearErrors();
+      this.isLoading = true;
+      this.$appGlobal.axi
+        .post("portfolio/actual", data)
+        .then(resp => {
+          router.push({ name: "dash" });
+        })
+        .catch(error => {
+          this.errors.push(error.status);
+          this.errors.push(error.statusText);
+          this.isLoading = false;
+        });
     },
     clearErrors() {
       this.errors = [];

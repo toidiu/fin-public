@@ -107,6 +107,16 @@ pub fn start_server() {
         .and(with_auth)
         .and(with_portfolio_backend)
         .and_then(portfolio_server::get_portfolio_a);
+    // GET -> portfolio/actual/detail?id
+    let get_port_a_detail = warp::get2()
+        .and(portfolio_path)
+        .and(warp::path("actual"))
+        .and(warp::path("detail"))
+        .and(warp::path::param2::<i64>())
+        .and(warp::path::end())
+        .and(with_auth)
+        .and(with_portfolio_backend)
+        .and_then(portfolio_server::get_portfolio_a_detail);
     // GET -> portfolio/actual
     let get_port_a_list = warp::get2()
         .and(portfolio_path)
@@ -145,6 +155,7 @@ pub fn start_server() {
         .and_then(portfolio_server::post_buy_next);
     let port_api = get_port_g_list
         .or(get_port_a_by_id)
+        .or(get_port_a_detail)
         .or(get_port_a_list)
         .or(create_port_a)
         .or(get_buy_next)

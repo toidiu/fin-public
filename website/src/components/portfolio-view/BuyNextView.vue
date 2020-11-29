@@ -14,7 +14,7 @@
         </th>
         <template v-for="(ticker, idx) in portState.tickers">
           <td v-bind:class="ticker['kind'].toLowerCase()" :key="idx">
-            {{ get_shares(ticker) }}
+            <input id="edit-text" :value="get_shares(ticker)" />
           </td>
         </template>
       </tr>
@@ -49,6 +49,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+#edit-text {
+  max-width: 40px;
+  text-align: center;
+}
 #buy-next {
   margin: 10px 0;
 }

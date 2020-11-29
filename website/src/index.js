@@ -4,8 +4,9 @@ import App from "./App.vue";
 import Login from "./components/login-view/index.vue";
 import Signup from "./components/signup-view/index.vue";
 import Portfolio from "./components/portfolio-view/index.vue";
+import PortfolioEdit from "./components/portfolio-edit-view/index.vue";
 import Dash from "./components/dash-view/index.vue";
-import PortAdd from "./components/add-portfolio-view/index.vue";
+import PortAdd from "./components/portfolio-add-view/index.vue";
 import PageNotFound from "./components/page-not-found/index.vue";
 import "./../node_modules/bulma/css/bulma.css";
 import Config from "../config";
@@ -45,6 +46,11 @@ const router = new VueRouter({
       name: "portfolio"
     },
     {
+      path: "/portfolio/edit/:id",
+      component: PortfolioEdit,
+      name: "edit-portfolio"
+    },
+    {
       path: "*",
       component: PageNotFound,
       name: "notfound"
@@ -65,14 +71,12 @@ ax.interceptors.response.use(
   },
   function(error) {
     if (error.response == undefined) {
-      console.log("THIS MIGHT BE CORS OR UNKNOWN STUFF");
+      console.log("response THIS MIGHT BE CORS OR UNKNOWN STUFF");
     } else if (401 === error.response.status) {
       router.push({ name: "login" });
-      return Promise.reject(error);
-      // } else if (404 === error.response.status) {
-      //   // FIXME ==========================
-      //   router.push({ name: "dash" });
-      //   return Promise.reject(error);
+      return Promise.reject(error.response);
+    } else if (404 === error.response.status) {
+      return Promise.reject(error.response);
     }
   }
 );

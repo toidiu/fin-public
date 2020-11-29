@@ -42,6 +42,27 @@ pub fn get_port_a_list(
     Ok(warp::reply::json(&port_actual))
 }
 
+pub fn get_portfolio_a_detail(
+    actual_id: i64,
+    user_id: auth::UserId,
+    res_portfolio_backend: Result<
+        impl backend::PortfolioBackend,
+        warp::Rejection,
+    >,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let port_backend = res_portfolio_backend?;
+
+    // actual detail info
+    let port_actual_detail = port_backend
+        .get_port_actual_by_port_id(&user_id, actual_id)
+        .map_err(|err| {
+            error!(LOGGER, "{}: {}", line!(), err);
+            warp::reject::not_found()
+        })?;
+
+    Ok(warp::reply::json(&port_actual_detail))
+}
+
 pub fn get_portfolio_a(
     actual_id: i64,
     _user_id: auth::UserId,

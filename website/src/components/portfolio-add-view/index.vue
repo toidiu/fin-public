@@ -46,10 +46,10 @@ export default Vue.extend({
     };
   },
   mounted() {
-    this.getPortfolioList();
+    this.getPorfolioGoals();
   },
   methods: {
-    getPortfolioList() {
+    getPorfolioGoals() {
       this.clearErrors();
       /* get portfolio list */
       this.isLoading = true;
@@ -64,7 +64,8 @@ export default Vue.extend({
           this.isLoading = false;
         })
         .catch(error => {
-          this.errors.push(error.response);
+          this.errors.push(error.status);
+          this.errors.push(error.statusText);
           this.isLoading = false;
         });
     },
@@ -78,7 +79,8 @@ export default Vue.extend({
           router.push({ name: "dash" });
         })
         .catch(error => {
-          this.errors.push(error.response);
+          this.errors.push(error.status);
+          this.errors.push(error.statusText);
           this.isLoading = false;
         });
     },

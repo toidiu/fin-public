@@ -34,7 +34,10 @@
           @buy-next-event="buyNextHandler"
         />
       </scroll-view>
-      <calc-investment-view @calc-investment-event="calcInvestmentHandler" />
+      <calc-investment-view
+        v-if="portState != null"
+        @calc-investment-event="calcInvestmentHandler"
+      />
     </div>
   </div>
 </template>
@@ -89,7 +92,8 @@ export default Vue.extend({
           this.isLoading = false;
         })
         .catch(error => {
-          this.errors.push(error.response);
+          this.errors.push(error.status);
+          this.errors.push(error.statusText);
           this.isLoading = false;
         });
     },
@@ -116,7 +120,8 @@ export default Vue.extend({
           this.buyNextState = resp.data;
         })
         .catch(error => {
-          this.errors.push(error.response);
+          this.errors.push(error.status);
+          this.errors.push(error.statusText);
           this.isLoading = false;
         });
     },
@@ -141,7 +146,8 @@ export default Vue.extend({
           this.isLoading = false;
         })
         .catch(error => {
-          this.errors.push(error.response);
+          this.errors.push(error.status);
+          this.errors.push(error.statusText);
           this.isLoading = false;
         });
     },

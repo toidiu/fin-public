@@ -33,6 +33,12 @@ pub trait PortfolioBackend {
         user_id: &server::UserId,
     ) -> ResultFin<Vec<server::PortfolioActualDetailResp>>;
 
+    fn get_port_actual_by_port_id(
+        &self,
+        user_id: &server::UserId,
+        port_a_id: i64,
+    ) -> ResultFin<server::PortfolioActualDetailResp>;
+
     fn get_port_actual(
         &self,
         port_a_id: i64,
@@ -214,6 +220,16 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
         self.db
             .get_port_actual_list_by_user_id(user_id)
             .map(|list| list.into_iter().map(|item| item.to_resp()).collect())
+    }
+
+    fn get_port_actual_by_port_id(
+        &self,
+        user_id: &server::UserId,
+        port_a_id: i64,
+    ) -> ResultFin<server::PortfolioActualDetailResp> {
+        self.db
+            .get_port_actual_by_port_id(user_id, port_a_id)
+            .map(|pa| pa.to_resp())
     }
 
     fn get_port_actual(
