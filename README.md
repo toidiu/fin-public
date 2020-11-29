@@ -118,9 +118,13 @@ createdb fin-prod
 - ~clean db, move fake_data migration out of prod path~
 - ~better description for value portfolio~
 - ~custom name for portfolio actual~
-- allow editing portfolio %
+- ~allow editing portfolio %~
 - allow 'deleting' portfolio
 - install psql on infra
-
+- update warp
+- goal portfolio
+  - create own goal portfolio
+  - edit goal portfolio
+  - copy goal portfolio
 
 

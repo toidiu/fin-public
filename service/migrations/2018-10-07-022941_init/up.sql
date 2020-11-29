@@ -2,24 +2,24 @@
 
 CREATE TABLE users (
   id bigserial PRIMARY KEY,
-  email text UNIQUE NOT NULL,
-  password text NOT NULL,
+  email VARCHAR UNIQUE NOT NULL,
+  password VARCHAR NOT NULL,
   CHECK(length(password) >= 6)
 );
 
 -----------
 CREATE TABLE exchanges (
   id serial  PRIMARY KEY,
-  mic text
+  mic VARCHAR
 );
 
 CREATE DOMAIN dom_tic_kind
-  AS text NOT NULL
+  AS VARCHAR NOT NULL
   CONSTRAINT tk_check CHECK (VALUE IN('STOCK', 'BOND'));
 
 CREATE TABLE tickers (
   id bigserial PRIMARY KEY,
-  symbol text NOT NULL,
+  symbol VARCHAR NOT NULL,
   fk_exchange int4 NOT NULL REFERENCES exchanges(id),
   fee float4 NOT NULL,
   kind dom_tic_kind NOT NULL,
@@ -29,8 +29,8 @@ CREATE TABLE tickers (
 -----------
 CREATE TABLE goal_port (
   id bigserial PRIMARY KEY,
-  name text NOT NULL,
-  description text DEFAULT ''
+  name VARCHAR NOT NULL,
+  description VARCHAR DEFAULT ''
 );
 
 CREATE TABLE goal_tic (
@@ -52,8 +52,8 @@ CREATE TABLE actual_port (
   deviation float4 NOT NULL,
   version int4 NOT NULL,
   last_updated timestamptz NOT NULL,
-  name text NOT NULL,
-  description text NOT NULL,
+  name VARCHAR NOT NULL,
+  description VARCHAR NOT NULL,
   UNIQUE(id, fk_port_g_id) -- needed for FK in actual_tic
 );
 
@@ -71,7 +71,7 @@ CREATE TABLE actual_tic (
 
 -----------
 CREATE DOMAIN dom_port_action
-  AS text NOT NULL
+  AS VARCHAR NOT NULL
   CONSTRAINT tk_check CHECK (VALUE IN('TICKER', 'PERCENT'));
 
 CREATE TABLE old_actual_port (

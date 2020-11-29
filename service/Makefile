@@ -26,6 +26,9 @@ migrationRevert:
 migrationList:
 	export DATABASE_URL=${DB_URL}; diesel migration list
 
+# migrationNew:
+# 	export DATABASE_URL=${DB_URL}; diesel migration generate
+
 migrationZZZ_DANGER_RESET_DB_ZZZ: #DANGER!!
 	export DATABASE_URL=${DB_URL}; diesel database reset
 
