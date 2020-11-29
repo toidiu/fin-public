@@ -14,9 +14,11 @@ un-comment out role section in playbook.yml
 
 
 ## backups
-create
+- create
 `pg_dump r_fin > ~/Desktop/out.bak`
-restore
+`pg_dump -h xxx -p 5432 -U xxx r_fin > 2020_nov_29.bak`
+
+- restore
 `psql -h fin-postgres.xxx.us-west-1.rds.amazonaws.com -p 5432 -U xxx r_fin < out.bak`
 
 
@@ -33,8 +35,10 @@ local   all             postgres                                md5
 ```
 `sudo service postgresql restart`
 
+### run migrations without diesel
+```
 psql -U postgres  -d fin-prod -a -f migrations/00000000000000_diesel_initial_setup/up.sql
 psql -U postgres  -d fin-prod -a -f migrations/2018-10-07-022941_init/up.sql
-psql -U postgres  -d fin-prod -a -f migrations/2018-10-07-232226_fake_data/up.sql
-
-
+psql -U postgres  -d fin-prod -a -f migrations/2018-10-07-232226_initial_data/up.sql
+psql -h xxx -p 5432 -U xxx r_fin -f migrations/2020-11-29-201034_add_growth_goal_portfolio/up.sql
+```
