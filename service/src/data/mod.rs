@@ -93,6 +93,13 @@ pub trait FinDb {
         description: &str,
     ) -> ResultFin<db_types::ActualPortData>;
 
+    fn update_port_a_by_id(
+        &self,
+        user_id: &server::UserId,
+        port_a_id: i64,
+        data: server::NewPortActualData,
+    ) -> ResultFin<db_types::ActualPortData>;
+
     //========== GOAL
     fn get_port_goals(&self) -> ResultFin<Vec<db_types::GoalPortData>>;
 
@@ -217,6 +224,55 @@ impl FinDb for PgFinDb {
                 })
             })
             .ok_or(FinError::DatabaseErr)?
+    }
+
+    fn update_port_a_by_id(
+        &self,
+        user_id: &server::UserId,
+        port_a_id: i64,
+        data: server::NewPortActualData,
+    ) -> ResultFin<db_types::ActualPortData> {
+        let stmt_update_port_a = &format!(
+            "UPDATE {}
+            SET name = $3, stock_percent = $4, description = $5
+            WHERE id = $1 AND fk_user_id = $2
+            RETURNING {}",
+            &db_types::ActualPortData::sql_table(),
+            &db_types::ActualPortData::sql_fields()
+        );
+        // update port
+        let rows = &self
+            .conn
+            .query(
+                stmt_update_port_a,
+                &[
+                    // where clause
+                    &port_a_id,
+                    &user_id.get_user_id(),
+                    // updated values
+                    &data.name,
+                    &data.stock_percent,
+                    &data.description,
+                ],
+            )
+            .map_err(|err| {
+                lineError!(self.logger, err);
+                err
+            })?;
+
+        let updated_port = rows
+            .iter()
+            .next()
+            .map(|row| {
+                db_types::ActualPortData::from_postgres_row(row).map_err(
+                    |err| {
+                        lineError!(self.logger, err);
+                        FinError::DatabaseErr
+                    },
+                )
+            })
+            .ok_or(FinError::DatabaseErr)?;
+        updated_port
     }
 
     fn get_port_actual_list_by_user_id(
@@ -1019,6 +1075,34 @@ mod tests {
                 assert_eq!(&t.fk_port_a_id, &res.id);
                 assert_eq!(&t.actual_shares, &0.0);
             }
+        })
+    }
+
+    #[test]
+    fn test_update_port_a_by_id() {
+        let user_id = user_id!(1);
+        let port_a_id = 1;
+        let name = "new name".to_string();
+        let description = "new description".to_string();
+        let per = 10.0;
+        let data = server::NewPortActualData {
+            goal_id: 1,
+            stock_percent: per,
+            name: name.clone(),
+            description: description.clone(),
+        };
+
+        TestHelper::run_test_opt_teardown(false, |db_name| {
+            let db = TestHelper::get_test_db(db_name);
+            let res = db.update_port_a_by_id(&user_id, port_a_id, data);
+
+            assert_eq!(res.is_ok(), true);
+            let res = res.expect("test");
+            assert_eq!(&res.fk_user_id, user_id.get_user_id());
+            assert_eq!(&res.id, &port_a_id);
+            assert_eq!(&res.stock_percent, &per);
+            assert_eq!(&res.name, &name);
+            assert_eq!(&res.description, &description);
         })
     }
 

@@ -55,7 +55,7 @@
 
         <div class="field is-grouped">
           <div class="control">
-            <button class="button is-primary" disabled>Save</button>
+            <button class="button is-primary">Save</button>
           </div>
         </div>
       </div>
@@ -78,6 +78,7 @@ export default Vue.extend({
       data.name = submitEvent.target.elements.name.value;
       data.description = submitEvent.target.elements.description.value;
       data.stockPercent = parseInt(submitEvent.target.elements.stockPer.value);
+      data.goalPortId = parseInt(this.portState.fk_port_g_id);
       this.$emit("edit-portfolio-event", data);
     }
   }

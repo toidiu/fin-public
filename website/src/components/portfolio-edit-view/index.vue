@@ -54,7 +54,7 @@ export default Vue.extend({
       /* get portfolio */
       this.isLoading = true;
       this.$appGlobal.axi
-        .get(`portfolio/actual/detail/${this.actualId}`)
+        .get(`portfolio/actual/${this.actualId}`)
         .then(resp => {
           this.portState = resp.data;
           this.isLoading = false;
@@ -70,7 +70,7 @@ export default Vue.extend({
       this.clearErrors();
       this.isLoading = true;
       this.$appGlobal.axi
-        .post("portfolio/actual", data)
+        .put(`portfolio/actual/edit/${this.actualId}`, data)
         .then(resp => {
           router.push({ name: "dash" });
         })

@@ -6,18 +6,24 @@
         class="col-item column is-one-quarter"
       >
         <div class="tile is-parent is-vertical">
-          <div class="tile is-child">
+          <div class="tile is-child has-text-weight-semibold">
             {{ port.name }}
           </div>
           <div class="tile is-box is-child">
             <p>{{ port.stock_percent }}% stocks</p>
             <p>{{ 100 - port.stock_percent }}% bonds</p>
           </div>
-          <div class="tile is-box is-child">
+          <p class="tile is-box is-child is-size-7">
             {{ port.description }}
-          </div>
+          </p>
         </div>
-        <button id="option" v-on:click="editPortfolio(port.id)">edit</button>
+        <button
+          id="option"
+          class="button is-text"
+          v-on:click="editPortfolio(port.id)"
+        >
+          edit
+        </button>
       </div>
     </template>
 

@@ -86,7 +86,7 @@ export default Vue.extend({
       /* get portfolio */
       this.isLoading = true;
       this.$appGlobal.axi
-        .get(`portfolio/actual/${this.actualId}`)
+        .get(`portfolio/actual/detail/${this.actualId}`)
         .then(resp => {
           this.portState = resp.data;
           this.isLoading = false;

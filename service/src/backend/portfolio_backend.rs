@@ -84,6 +84,13 @@ pub trait PortfolioBackend {
         description: &str,
     ) -> ResultFin<server::PortfolioActualResp>;
 
+    fn update_port_a_by_id(
+        &self,
+        user_id: &server::UserId,
+        actual_id: i64,
+        data: server::NewPortActualData,
+    ) -> ResultFin<server::PortfolioActualResp>;
+
     fn get_buy_next(
         &self,
         user_id: &server::UserId,
@@ -329,6 +336,17 @@ impl<T: data::FinDb> PortfolioBackend for DefaultPortfolioBackend<T> {
             .collect();
 
         Ok(port_a.to_actual_port_resp(&a_tickers))
+    }
+
+    fn update_port_a_by_id(
+        &self,
+        user_id: &server::UserId,
+        actual_id: i64,
+        data: server::NewPortActualData,
+    ) -> ResultFin<server::PortfolioActualResp> {
+        let port_a = self.db.update_port_a_by_id(user_id, actual_id, data)?;
+
+        Ok(port_a.to_actual_port_resp(&vec![]))
     }
 
     fn get_buy_next(

@@ -44,7 +44,7 @@ pub fn start_server() {
         .allow_origin(CONFIG.app.cors_origin.as_str())
         .allow_credentials(true)
         .allow_headers(vec!["content-type"])
-        .allow_methods(vec!["GET", "POST", "DELETE", "OPTIONS"]);
+        .allow_methods(vec!["GET", "POST", "PUT", "DELETE", "OPTIONS"]);
 
     let with_user_backend = {
         warp::any().map(|| match CONNECTION.get() {
@@ -91,6 +91,7 @@ pub fn start_server() {
 
     // PORTFOLIO===============
     let portfolio_path = warp::path("portfolio");
+    // ============ goal
     // GET -> portfolio/goal
     let get_port_g_list = warp::get2()
         .and(portfolio_path)
@@ -98,25 +99,7 @@ pub fn start_server() {
         .and(warp::path::end())
         .and(with_portfolio_backend)
         .and_then(portfolio_server::get_portfolio_g_list);
-    // GET -> portfolio/actual/:id
-    let get_port_a_by_id = warp::get2()
-        .and(portfolio_path)
-        .and(warp::path("actual"))
-        .and(warp::path::param2::<i64>())
-        .and(warp::path::end())
-        .and(with_auth)
-        .and(with_portfolio_backend)
-        .and_then(portfolio_server::get_portfolio_a);
-    // GET -> portfolio/actual/detail?id
-    let get_port_a_detail = warp::get2()
-        .and(portfolio_path)
-        .and(warp::path("actual"))
-        .and(warp::path("detail"))
-        .and(warp::path::param2::<i64>())
-        .and(warp::path::end())
-        .and(with_auth)
-        .and(with_portfolio_backend)
-        .and_then(portfolio_server::get_portfolio_a_detail);
+    // ============ actual
     // GET -> portfolio/actual
     let get_port_a_list = warp::get2()
         .and(portfolio_path)
@@ -134,6 +117,39 @@ pub fn start_server() {
         .and(warp::body::json())
         .and(with_portfolio_backend)
         .and_then(portfolio_server::create_port_a);
+    // GET -> portfolio/actual/:id
+    let get_port_a_detail = warp::get2()
+        .and(portfolio_path)
+        .and(warp::path("actual"))
+        .and(warp::path::param2::<i64>())
+        .and(warp::path::end())
+        .and(with_auth)
+        .and(with_portfolio_backend)
+        .and_then(portfolio_server::get_portfolio_a_detail);
+    // ============ actual detail
+    // GET -> portfolio/actual/detail/:id
+    let get_port_a_by_id = warp::get2()
+        .and(portfolio_path)
+        .and(warp::path("actual"))
+        .and(warp::path("detail"))
+        .and(warp::path::param2::<i64>())
+        .and(warp::path::end())
+        .and(with_auth)
+        .and(with_portfolio_backend)
+        .and_then(portfolio_server::get_portfolio_a);
+    // ============ actual edit
+    // PUT -> portfolio/actual/edit/:id
+    let update_port_a_by_id = warp::put2()
+        .and(portfolio_path)
+        .and(warp::path("actual"))
+        .and(warp::path("edit"))
+        .and(warp::path::param2::<i64>())
+        .and(warp::path::end())
+        .and(with_auth)
+        .and(warp::body::json())
+        .and(with_portfolio_backend)
+        .and_then(portfolio_server::update_port_a_by_id);
+    // ============ actual buy
     // GET -> portfolio/actual/buy/?goal_id=1&amount=1
     let get_buy_next = warp::get2()
         .and(portfolio_path)
@@ -153,11 +169,13 @@ pub fn start_server() {
         .and(warp::body::json())
         .and(with_portfolio_backend)
         .and_then(portfolio_server::post_buy_next);
+
     let port_api = get_port_g_list
         .or(get_port_a_by_id)
         .or(get_port_a_detail)
         .or(get_port_a_list)
         .or(create_port_a)
+        .or(update_port_a_by_id)
         .or(get_buy_next)
         .or(post_buy_next);
 

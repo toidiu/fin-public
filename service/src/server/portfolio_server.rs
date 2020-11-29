@@ -144,6 +144,33 @@ pub fn create_port_a(
     ))
 }
 
+pub fn update_port_a_by_id(
+    actual_id: i64,
+    user_id: auth::UserId,
+    data: server::NewPortActualData,
+    res_portfolio_backend: Result<
+        impl backend::PortfolioBackend,
+        warp::Rejection,
+    >,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let port_backend = res_portfolio_backend?;
+    let resp = port_backend
+        .update_port_a_by_id(&user_id, actual_id, data)
+        .map_err(|err| {
+            error!(LOGGER, "{}: {}", line!(), err);
+            warp::reject::custom(FinError::ServerErr)
+        })?;
+
+    let reply = serde_json::to_string(&resp).map_err(|err| {
+        error!(LOGGER, "{}: {}", line!(), err);
+        warp::reject::custom(err)
+    })?;
+    Ok(warp::reply::with_status(
+        reply,
+        warp::http::StatusCode::CREATED,
+    ))
+}
+
 pub fn get_buy_next(
     user_id: auth::UserId,
     data: server::BuyNextQuery,
