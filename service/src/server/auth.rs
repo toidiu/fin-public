@@ -40,7 +40,7 @@ pub fn parse_sess(sess: &str) -> ResultFin<UserId> {
         SECRET_KEY.to_vec(),
     )
     .map_err(|err| {
-        error!(LOGGER, "{}: {}", line!(), err);
+        lineInfo!(LOGGER, format!("{:?}", &err));
         FinError::BadRequestErr
     });
 
@@ -48,7 +48,7 @@ pub fn parse_sess(sess: &str) -> ResultFin<UserId> {
         serde_json::from_value(verified_token)
             .map(|sess: Sess| sess.user_id)
             .map_err(|err| {
-                error!(LOGGER, "{}: {}", line!(), err);
+                lineInfo!(LOGGER, format!("{:?}", &err));
                 FinError::BadRequestErr
             })
     })

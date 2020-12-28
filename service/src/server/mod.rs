@@ -55,7 +55,10 @@ pub fn start_server() {
                 )))
             }
             Err(err) => {
-                error!(LOGGER, "{}: {}", line!(), err);
+                lineError!(
+                    LOGGER,
+                    format!("error getting connection pool {:?}", &err)
+                );
                 Err(warp::reject::custom(FinError::DatabaseErr))
             }
         })
@@ -73,7 +76,10 @@ pub fn start_server() {
                 (*LOGGER).clone(),
             )),
             Err(err) => {
-                error!(LOGGER, "{}: {}", line!(), err);
+                lineError!(
+                    LOGGER,
+                    format!("error getting connection pool {:?}", &err)
+                );
                 Err(warp::reject::custom(FinError::DatabaseErr))
             }
         })
@@ -220,6 +226,7 @@ fn recover_error(err: Rejection) -> Result<impl warp::Reply, warp::Rejection> {
         let json = warp::reply::json(&err.to_user_msg());
         Ok(warp::reply::with_status(json, status_code))
     } else {
+        lineError!(LOGGER, format!("Uncaught error, returning 404 {:?}", &err));
         let status_code = StatusCode::NOT_FOUND;
         let json = warp::reply::json(&FinError::NotFoundErr.to_user_msg());
         Ok(warp::reply::with_status(json, status_code))

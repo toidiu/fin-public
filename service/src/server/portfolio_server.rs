@@ -19,7 +19,7 @@ pub fn get_portfolio_g_list(
 ) -> Result<impl warp::Reply, warp::Rejection> {
     let port_backend = res_portfolio_backend?;
     let port_goal = port_backend.get_port_goals().map_err(|err| {
-        error!(LOGGER, "{}: {}", line!(), err);
+        lineInfo!(LOGGER, format!("{:?}", &err));
         warp::reject::custom(err)
     })?;
     Ok(warp::reply::json(&port_goal))
@@ -36,7 +36,10 @@ pub fn get_port_a_list(
     let port_actual = port_backend
         .get_port_actual_list_by_user_id(&user_id)
         .map_err(|err| {
-            error!(LOGGER, "{}: {}. user_id: {:?}", line!(), err, &user_id);
+            lineInfo!(
+                LOGGER,
+                format!("user_id: {:?}, err: {:?}", &user_id, &err)
+            );
             warp::reject::custom(err)
         })?;
     Ok(warp::reply::json(&port_actual))
@@ -56,7 +59,7 @@ pub fn get_portfolio_a_detail(
     let port_actual_detail = port_backend
         .get_port_actual_by_port_id(&user_id, actual_id)
         .map_err(|err| {
-            error!(LOGGER, "{}: {}", line!(), err);
+            lineInfo!(LOGGER, format!("{:?}", &err));
             warp::reject::not_found()
         })?;
 
@@ -77,7 +80,7 @@ pub fn get_portfolio_a(
     let port_actual = port_backend
         .get_port_actual_and_tickers(actual_id)
         .map_err(|err| {
-            error!(LOGGER, "{}: {}", line!(), err);
+            lineInfo!(LOGGER, format!("{:?}", &err));
             warp::reject::not_found()
         })?;
 
@@ -100,7 +103,7 @@ pub fn get_portfolio_a(
             &port_actual.stock_percent,
         )
         .map_err(|err| {
-            error!(LOGGER, "{}: {}", line!(), err);
+            lineInfo!(LOGGER, format!("{:?}", &err));
             warp::reject::custom(err)
         })?;
 
@@ -130,12 +133,12 @@ pub fn create_port_a(
             &data.description,
         )
         .map_err(|err| {
-            error!(LOGGER, "{}: {}", line!(), err);
+            lineInfo!(LOGGER, format!("{:?}", &err));
             warp::reject::custom(FinError::ServerErr)
         })?;
 
     let reply = serde_json::to_string(&resp).map_err(|err| {
-        error!(LOGGER, "{}: {}", line!(), err);
+        lineInfo!(LOGGER, format!("{:?}", &err));
         warp::reject::custom(err)
     })?;
     Ok(warp::reply::with_status(
@@ -157,12 +160,12 @@ pub fn update_port_a_by_id(
     let resp = port_backend
         .update_port_a_by_id(&user_id, actual_id, data)
         .map_err(|err| {
-            error!(LOGGER, "{}: {}", line!(), err);
+            lineInfo!(LOGGER, format!("{:?}", &err));
             warp::reject::custom(FinError::ServerErr)
         })?;
 
     let reply = serde_json::to_string(&resp).map_err(|err| {
-        error!(LOGGER, "{}: {}", line!(), err);
+        lineInfo!(LOGGER, format!("{:?}", &err));
         warp::reject::custom(err)
     })?;
     Ok(warp::reply::with_status(
@@ -189,7 +192,7 @@ pub fn get_buy_next(
             data.amount,
         )
         .map_err(|err| {
-            error!(LOGGER, "{}: {}", line!(), err);
+            lineInfo!(LOGGER, format!("{:?}", &err));
             warp::reject::custom(err)
         })?;
     let resp = server::BuyNextResp::from_data(
@@ -219,13 +222,13 @@ pub(super) fn post_buy_next(
 
     let resp: server::PortfolioStateResp = port
         .map_err(|err| {
-            error!(LOGGER, "{}: {}", line!(), err);
+            lineInfo!(LOGGER, format!("{:?}", &err));
             warp::reject::custom(FinError::ServerErr)
         })?
         .into();
 
     let reply = serde_json::to_string(&resp).map_err(|err| {
-        error!(LOGGER, "{}: {}", line!(), err);
+        lineInfo!(LOGGER, format!("{:?}", &err));
         warp::reject::custom(err)
     })?;
     Ok(warp::reply::with_status(
