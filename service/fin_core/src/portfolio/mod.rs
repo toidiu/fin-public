@@ -4,7 +4,7 @@ mod actual;
 mod goal;
 mod meta;
 mod state;
-mod test_helper;
+mod test_helper_meta;
 mod ticker;
 
 pub use self::{

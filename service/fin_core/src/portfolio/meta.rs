@@ -182,7 +182,7 @@ impl PortfolioMeta {
         map
     }
 
-    pub(super) fn get_ticker(&self, id: &TickerId) -> &TickerMeta {
+    pub fn get_ticker(&self, id: &TickerId) -> &TickerMeta {
         self.tickers_meta
             .get(&id)
             .expect(&format!("add ticker to db: {:?}", &id))
@@ -231,7 +231,7 @@ impl TickerMeta {
 #[cfg(test)]
 mod tests {
 
-    use super::super::test_helper::TestHelper;
+    use super::super::test_helper_meta::TestHelperMeta;
     use super::*;
 
     #[test]
@@ -251,9 +251,9 @@ mod tests {
 
     #[test]
     fn test_calc_value() {
-        let mut pm = TestHelper::get_port_meta_value();
-        let tickers = TestHelper::get_tickers();
-        let port_actual = TestHelper::get_actual_port();
+        let mut pm = TestHelperMeta::get_port_meta_value();
+        let tickers = TestHelperMeta::get_tickers();
+        let port_actual = TestHelperMeta::get_actual_port();
         pm.calc_value(&tickers, &port_actual);
 
         assert_eq!(pm.stock_value, 70.0);
@@ -274,7 +274,7 @@ mod tests {
 
     #[test]
     fn test_calc_percent() {
-        let mut pm = TestHelper::get_port_meta_per();
+        let mut pm = TestHelperMeta::get_port_meta_per();
         pm.calc_percent();
         assert_eq!(pm.stock_percent, 40.0);
         assert_eq!(
@@ -302,7 +302,7 @@ mod tests {
 
     #[test]
     fn test_calc_percent_dont_divide_by_zero() {
-        let mut pm = TestHelper::get_port_meta_per();
+        let mut pm = TestHelperMeta::get_port_meta_per();
         pm.total_value = 0.0;
         pm.calc_percent();
         assert_eq!(pm.stock_percent, 0.0);
@@ -331,10 +331,10 @@ mod tests {
 
     #[test]
     fn test_calc_action() {
-        let goal: PortfolioGoal = TestHelper::get_port_goal();
+        let goal: PortfolioGoal = TestHelperMeta::get_port_goal();
         let stock_percent = 90.0;
         let deviation_percent = 1.5;
-        let mut pm = TestHelper::get_port_meta_action();
+        let mut pm = TestHelperMeta::get_port_meta_action();
 
         pm.calc_action(&goal, &80.0, &deviation_percent);
         assert_eq!(pm.portfolio_action, PortfolioAction::BuyStock);
@@ -360,7 +360,7 @@ mod tests {
 
     #[test]
     fn test_calc_total_value() {
-        let mut pm = TestHelper::get_port_meta_total_val();
+        let mut pm = TestHelperMeta::get_port_meta_total_val();
         pm.calc_total_value();
         assert_eq!(pm.total_value, 321.0);
     }
@@ -377,7 +377,7 @@ mod tests {
 
     #[test]
     fn test_calc_ticker_action() {
-        let mut tm = TestHelper::get_ticker_meta();
+        let mut tm = TestHelperMeta::get_ticker_meta();
         tm.calc_ticker_action(4.0, 0.5);
         assert_eq!(tm.action, TickerAction::Sell);
         tm.calc_ticker_action(4.0, 1.5);
@@ -391,7 +391,7 @@ mod tests {
 
     #[test]
     fn test_calc_ticker_action_small_percent() {
-        let mut zero_tm = TestHelper::get_ticker_meta_zero_percent();
+        let mut zero_tm = TestHelperMeta::get_ticker_meta_zero_percent();
         zero_tm.calc_ticker_action(0.6, 1.5);
         assert_eq!(zero_tm.action, TickerAction::Buy);
     }

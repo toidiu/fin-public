@@ -43,7 +43,7 @@ impl PortfolioActual {
 // immutable
 // **************************************
 impl PortfolioActual {
-    pub(crate) fn new(
+    pub fn new(
         id: i64,
         fk_user_id: i64,
         fk_port_g_id: i64,
@@ -69,7 +69,7 @@ impl PortfolioActual {
         }
     }
 
-    pub(super) fn get_ticker_a(&self, id: &TickerId) -> &TickerActual {
+    pub fn get_ticker_a(&self, id: &TickerId) -> &TickerActual {
         self.tickers_actual
             .get(&id)
             .expect(&format!("add ticker to db: {:?}", &id))
@@ -90,7 +90,7 @@ pub struct TickerActual {
 }
 
 impl TickerActual {
-    pub(crate) fn new(
+    pub fn new(
         id: i64,
         port_goal_id: i64,
         port_actual_id: i64,
@@ -106,7 +106,7 @@ impl TickerActual {
         }
     }
 
-    pub(crate) fn get_ticker_id(&self) -> i64 {
+    pub fn get_ticker_id(&self) -> i64 {
         self.ticker_id
     }
 }

@@ -1,0 +1,22 @@
+[package]
+name = "fin_core"
+version = "0.1.0"
+authors = ["toidiu <apoorv@toidiu.com>"]
+description = "Server for fin, a financial calculator."
+edition = '2018'
+publish = false
+
+[dependencies]
+chrono = { version = "~0.4", features = ["serde"] }
+slog = "~2.4"
+lazy_static = "~1.3"
+serde = "~1.0"
+serde_derive = "~1.0"
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "my_bench"
+harness = false
+

@@ -1,11 +1,13 @@
 mod db_types;
-mod test_helper;
+mod test_helper_db;
 
 use crate::backend;
-use crate::errors::{FinError, ResultFin};
-use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
 use crate::server;
 use chrono::prelude::*;
+use fin_core::portfolio::{
+    self, InvestmentKind, Ticker, TickerActual, TickerId, TickerSymbol,
+};
+use fin_error::{FinError, ResultFin};
 use postgres::Connection;
 use std::collections::HashMap;
 
@@ -77,8 +79,8 @@ pub trait FinDb {
         user_id: &server::UserId,
         current_port_version: &i32,
         updated_tsz: &DateTime<Utc>,
-        init_tickers_actual: &Vec<&portfolio::TickerActual>,
-        updated_tickers_actual: &Vec<&portfolio::TickerActual>,
+        init_tickers_actual: &Vec<&TickerActual>,
+        updated_tickers_actual: &Vec<&TickerActual>,
         init_port: &serde_json::Value,
         new_port: &serde_json::Value,
         actions: &serde_json::Value,
@@ -405,8 +407,8 @@ impl FinDb for PgFinDb {
         user_id: &server::UserId,
         current_port_version: &i32,
         updated_tsz: &DateTime<Utc>,
-        init_tickers_actual: &Vec<&portfolio::TickerActual>,
-        updated_tickers_actual: &Vec<&portfolio::TickerActual>,
+        init_tickers_actual: &Vec<&TickerActual>,
+        updated_tickers_actual: &Vec<&TickerActual>,
         init_port_data: &serde_json::Value,
         new_port_data: &serde_json::Value,
         actions_data: &serde_json::Value,
@@ -759,14 +761,13 @@ impl FinDb for PgFinDb {
 
 #[cfg(test)]
 mod tests {
-
-    use super::test_helper::TestHelper;
+    use super::test_helper_db::TestHelperDb;
     use super::*;
 
     #[test]
     fn test_get_user() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_user("apoorv@toidiu.com");
             assert_eq!(res.is_ok(), true);
             assert_eq!(res.expect("test").email, "apoorv@toidiu.com");
@@ -775,8 +776,8 @@ mod tests {
 
     #[test]
     fn test_get_user_with_pass() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_user_with_pass("apoorv@toidiu.com");
             assert_eq!(res.is_ok(), true);
             assert_eq!(res.expect("test").email, "apoorv@toidiu.com");
@@ -785,8 +786,8 @@ mod tests {
 
     #[test]
     fn test_does_user_exist() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.does_user_exist("apoorv@toidiu.com");
             assert_eq!(res.is_ok(), true);
             assert_eq!(res.expect("test"), true);
@@ -799,8 +800,8 @@ mod tests {
 
     #[test]
     fn test_create_user() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.create_user("1@toidiu.com", "123456");
             assert_eq!(res.is_ok(), true);
             assert_eq!(res.expect("test").email, "1@toidiu.com");
@@ -813,8 +814,8 @@ mod tests {
 
     #[test]
     fn test_get_port_actual_list_by_user_id() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_port_actual_list_by_user_id(&user_id!(1));
 
             assert_eq!(res.is_ok(), true);
@@ -831,8 +832,8 @@ mod tests {
 
     #[test]
     fn test_get_port_actual_list_by_user_id_sql_join_stmt() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_port_actual_list_by_user_id(&user_id!(2));
 
             assert_eq!(res.is_ok(), true);
@@ -846,8 +847,8 @@ mod tests {
 
     #[test]
     fn test_get_port_actual_by_port_id() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_port_actual_by_port_id(&user_id!(2), 3);
 
             assert_eq!(res.is_ok(), true);
@@ -862,8 +863,8 @@ mod tests {
 
     #[test]
     fn test_get_port_actual() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_port_actual(1);
 
             assert_eq!(res.is_ok(), true);
@@ -875,8 +876,8 @@ mod tests {
 
     #[test]
     fn test_get_ticker_actual() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_actual_tickers(1, 1);
 
             assert_eq!(res.is_ok(), true);
@@ -890,8 +891,8 @@ mod tests {
 
     #[test]
     fn test_update_tickers_actual() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
 
             let old_time = "2014-11-28T12:00:09Z"
                 .parse::<DateTime<Utc>>()
@@ -903,10 +904,9 @@ mod tests {
             let curr_version = 1;
             let new_version = curr_version + 1;
 
-            let init_tic = portfolio::TickerActual::new(1, 1, 1, 1, 0.0);
+            let init_tic = TickerActual::new(1, 1, 1, 1, 0.0);
 
-            let updated_tic =
-                portfolio::TickerActual::new(1, 1, 1, 1, new_shares);
+            let updated_tic = TickerActual::new(1, 1, 1, 1, new_shares);
 
             let res = db.update_tickers_actual(
                 &user_id!(1),
@@ -931,8 +931,8 @@ mod tests {
 
     #[test]
     fn test_update_tickers_actual_id_2() {
-        TestHelper::run_test_opt_teardown(true, |db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test_opt_teardown(true, |db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
 
             let user_id = &user_id!(1);
             let port_g_id = 1;
@@ -950,7 +950,7 @@ mod tests {
             let new_shares = 100.0;
             let tic_unique_id = 12;
             let ticker_id = 1;
-            let init_tic = portfolio::TickerActual::new(
+            let init_tic = TickerActual::new(
                 tic_unique_id,
                 port_g_id,
                 port_a_id,
@@ -958,7 +958,7 @@ mod tests {
                 0.0,
             );
 
-            let updated_tic = portfolio::TickerActual::new(
+            let updated_tic = TickerActual::new(
                 tic_unique_id,
                 port_g_id,
                 port_a_id,
@@ -992,14 +992,14 @@ mod tests {
             let new_shares_2 = 30.0;
             let ticker_id_2 = 2;
             let tic_unique_id_2 = 13;
-            let init_tic_2 = portfolio::TickerActual::new(
+            let init_tic_2 = TickerActual::new(
                 tic_unique_id_2,
                 port_g_id,
                 port_a_id,
                 ticker_id_2,
                 0.0,
             );
-            let updated_tic_2 = portfolio::TickerActual::new(
+            let updated_tic_2 = TickerActual::new(
                 tic_unique_id_2,
                 port_g_id,
                 port_a_id,
@@ -1035,8 +1035,8 @@ mod tests {
         let name = "My Portfolio";
         let description = "my wealth portfolio";
 
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.create_portfolio_actual(
                 &user_id,
                 port_g_id,
@@ -1092,8 +1092,8 @@ mod tests {
             description: description.clone(),
         };
 
-        TestHelper::run_test_opt_teardown(false, |db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test_opt_teardown(true, |db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.update_port_a_by_id(&user_id, port_a_id, data);
 
             assert_eq!(res.is_ok(), true);
@@ -1108,8 +1108,8 @@ mod tests {
 
     #[test]
     fn test_get_port_goals() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_port_goals();
 
             assert_eq!(res.is_ok(), true);
@@ -1118,8 +1118,8 @@ mod tests {
 
     #[test]
     fn test_get_port_goal() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_port_goal(1);
             assert_eq!(res.is_ok(), true);
         })
@@ -1127,8 +1127,8 @@ mod tests {
 
     #[test]
     fn test_get_ticker_goal() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_ticker_goal_by_id(1);
 
             assert_eq!(res.is_ok(), true);
@@ -1137,8 +1137,8 @@ mod tests {
 
     #[test]
     fn test_get_ticker_goal_detailed() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_ticker_goal_detailed(1);
 
             assert_eq!(res.is_ok(), true);
@@ -1147,8 +1147,8 @@ mod tests {
 
     #[test]
     fn test_get_tickers_by_ids() {
-        TestHelper::run_test(|db_name| {
-            let db = TestHelper::get_test_db(db_name);
+        TestHelperDb::run_test(|db_name| {
+            let db = TestHelperDb::get_test_db(db_name);
             let res = db.get_tickers_by_ids(&vec![1, 2]);
 
             assert_eq!(res.is_ok(), true);

@@ -1,0 +1,15 @@
+[package]
+name = "fin_error"
+version = "0.1.0"
+authors = ["toidiu <apoorv@toidiu.com>"]
+description = "Server for fin, a financial calculator."
+edition = '2018'
+publish = false
+
+[dependencies]
+postgres = { version = "~0.15" }
+postgres-mapper = { version = "~0.1", features = ["postgres-support"] }
+
+serde = "~1.0"
+serde_derive = "~1.0"
+

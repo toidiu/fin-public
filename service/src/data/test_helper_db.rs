@@ -15,9 +15,10 @@ const CLUSTER_URI: &str = "postgres://postgres@localhost:5432";
 lazy_static! {
     static ref COUNTER: Arc<Mutex<u8>> = Arc::new(Mutex::new(1));
 }
-pub struct TestHelper {}
 
-impl TestHelper {
+pub struct TestHelperDb {}
+
+impl TestHelperDb {
     pub fn get_test_db(db_name: &str) -> PgFinDb {
         let r2 = {
             let manager = PostgresConnectionManager::new(

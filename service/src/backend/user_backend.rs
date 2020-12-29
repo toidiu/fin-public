@@ -1,5 +1,5 @@
 use crate::data;
-use crate::errors::*;
+use fin_error::*;
 
 pub trait UserBackend {
     fn get_user(&self, email: &String) -> ResultFin<data::UserData>;

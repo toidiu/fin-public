@@ -6,9 +6,9 @@ use crate::std_ext::*;
 use chrono::prelude::*;
 use std::collections::HashMap;
 
-pub struct TestHelper {}
+pub struct TestHelperMeta {}
 
-impl TestHelper {
+impl TestHelperMeta {
     pub fn get_port_goal() -> PortfolioGoal {
         PortfolioGoal::new(
             1,

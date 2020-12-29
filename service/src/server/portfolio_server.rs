@@ -1,9 +1,9 @@
 use super::auth;
 use crate::backend;
-use crate::errors::FinError;
 use crate::global::ROOT;
-use crate::portfolio::{self, Ticker, TickerId};
 use crate::server;
+use fin_core::portfolio::{self, Ticker, TickerId};
+use fin_error::FinError;
 use std::collections::HashMap;
 
 lazy_static! {

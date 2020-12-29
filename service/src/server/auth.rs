@@ -2,8 +2,8 @@ use crate::data;
 use crate::global::{CONFIG, ROOT};
 use http::{self, Response, StatusCode};
 
-use crate::errors::{self, FinError, ResultFin};
 use chrono::prelude::*;
+use fin_error::{self, FinError, ResultFin};
 
 pub const SESS_COOKIE_NAME: &str = "sess";
 

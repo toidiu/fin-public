@@ -1,39 +1,35 @@
 // Helper macros to make life easier.
 use log;
 
+#[macro_export]
 macro_rules! lineError(
     ($logger:expr, $msg:expr) => (
         error!($logger, "line: {} - {}", line!(), $msg);
     )
 );
 
+#[macro_export]
 macro_rules! lineInfo(
     ($logger:expr, $msg:expr) => (
         info!($logger, "line: {} - {}", line!(), $msg);
     )
 );
 
-macro_rules! matches(
-    ($e:expr, $p:pat) => (
-        match $e {
-            $p => true,
-            _ => false
-        }
-    )
-);
-
+#[macro_export]
 macro_rules! tic_id(
     ($s:expr) => (
         TickerId::new($s)
     )
 );
 
+#[macro_export]
 macro_rules! symbol(
     ($s:expr) => (
         TickerSymbol($s.to_owned())
     )
 );
 
+#[macro_export]
 macro_rules! user_id(
     ($s:expr) => (
         server::UserId::new($s)

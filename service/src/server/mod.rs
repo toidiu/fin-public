@@ -1,7 +1,7 @@
 use crate::backend;
 use crate::data;
-use crate::errors::{FinError, UserErrMessage};
 use crate::global::{CONFIG, ROOT};
+use fin_error::{FinError, UserErrMessage};
 use r2d2_postgres::{PostgresConnectionManager, TlsMode};
 
 use http::StatusCode;
@@ -203,11 +203,15 @@ pub fn start_server() {
         .and(warp::body::json())
         .and(with_user_backend)
         .and_then(user_server::signup);
-
     let user_api = post_login.or(post_logout).or(post_signup);
 
+    // HEALTH===============
     // combine apis
-    let api = port_api.or(user_api);
+    let health = warp::get2()
+        .and(warp::path::end())
+        .map(|| "fin up");
+
+    let api = port_api.or(user_api).or(health);
 
     let routes = api.recover(recover_error).with(with_cors);
     warp::serve(routes).run(([127, 0, 0, 1], CONFIG.app.port));

@@ -1,6 +1,8 @@
-use crate::portfolio::{self, InvestmentKind, Ticker, TickerId, TickerSymbol};
 use crate::server;
 use chrono::prelude::*;
+use fin_core::portfolio::{
+    self, InvestmentKind, Ticker, TickerActual, TickerId, TickerSymbol,
+};
 use std::borrow::{Cow, ToOwned};
 use std::collections::HashMap;
 
@@ -176,7 +178,7 @@ pub struct ActualPortData {
 impl ActualPortData {
     pub fn to_actual_port(
         self,
-        tickers_actual: &HashMap<TickerId, portfolio::TickerActual>,
+        tickers_actual: &HashMap<TickerId, TickerActual>,
     ) -> portfolio::PortfolioActual {
         portfolio::PortfolioActual::new(
             self.id,
@@ -194,7 +196,7 @@ impl ActualPortData {
 
     pub fn to_actual_port_resp(
         self,
-        tickers_actual: &Vec<portfolio::TickerActual>,
+        tickers_actual: &Vec<TickerActual>,
     ) -> server::PortfolioActualResp {
         server::PortfolioActualResp {
             id: self.id,
@@ -219,9 +221,9 @@ pub struct ActualTickerData {
     pub actual_shares: f64,
 }
 
-impl From<ActualTickerData> for portfolio::TickerActual {
+impl From<ActualTickerData> for TickerActual {
     fn from(item: ActualTickerData) -> Self {
-        portfolio::TickerActual::new(
+        TickerActual::new(
             item.id,
             item.fk_port_g_id,
             item.fk_port_a_id,

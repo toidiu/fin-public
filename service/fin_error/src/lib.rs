@@ -1,7 +1,10 @@
-use http::StatusCode;
+#![allow(unused)]
+
 use postgres::Error as PostgresError;
 use std::error::Error as StdError;
 use std::fmt::{Display, Formatter, Result as FmtResult};
+#[macro_use]
+extern crate serde_derive;
 
 pub type ResultFin<T> = Result<T, FinError>;
 

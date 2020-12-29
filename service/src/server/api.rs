@@ -1,7 +1,10 @@
-use crate::algo::{Action, BuyNext};
 use crate::data;
-use crate::portfolio::{self, InvestmentKind, TickerId, TickerSymbol};
 use chrono::prelude::*;
+use fin_core::algo::Action;
+use fin_core::portfolio::{
+    InvestmentKind, PortfolioState, TickerActual, TickerGoalDetailed, TickerId,
+    TickerSymbol,
+};
 use std::collections::HashMap;
 
 // ============ PortfolioState
@@ -14,6 +17,49 @@ pub struct PortfolioStateResp {
     pub actual_stock_percent: f32,
     pub total_value: f64,
     pub deviation_percent: f32,
+}
+
+/// We are implementing Into rather than From because we are
+/// accessing private fields. We could expose them but that
+/// increases the surface area of the api.
+impl Into<PortfolioStateResp> for PortfolioState {
+    // todo test!!
+    fn into(self) -> PortfolioStateResp {
+        let mut tickers: Vec<TickerResp> = self
+            .goal
+            .tickers_goal
+            .iter()
+            .map(|x| {
+                let ticker = self.get_ticker(x.0);
+                let tg = self.goal.get_ticker_g(x.0);
+                let tm = self.meta.get_ticker(x.0);
+                let ta = self.actual.get_ticker_a(x.0);
+
+                TickerResp {
+                    id: x.0.clone(),
+                    symbol: ticker.symbol.clone(),
+                    kind: ticker.get_kind().clone(),
+                    fee: ticker.fee,
+                    goal_percent: tg.goal_percent,
+                    actual_percent: tm.ticker_percent,
+                    actual_shares: ta.actual_shares,
+                    actual_value: tm.ticker_value,
+                    price: ticker.price,
+                    order: tg.get_order(),
+                }
+            })
+            .collect();
+        tickers.sort_by(|a, b| a.order.cmp(&b.order));
+        PortfolioStateResp {
+            name: self.goal.name,
+            goal_id: self.goal.id,
+            tickers,
+            goal_stock_percent: self.actual.stock_percent,
+            actual_stock_percent: self.meta.stock_percent,
+            total_value: self.meta.total_value,
+            deviation_percent: self.actual.deviation_percent,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -109,13 +155,13 @@ pub struct PortfolioGoalDetailResp {
     pub id: i64,
     pub name: String,
     pub description: Option<String>,
-    pub tickers_goal: HashMap<TickerId, portfolio::TickerGoalDetailed>,
+    pub tickers_goal: HashMap<TickerId, TickerGoalDetailed>,
 }
 
 impl PortfolioGoalDetailResp {
     pub fn new(
         data: data::GoalPortData,
-        tickers_goal: HashMap<TickerId, portfolio::TickerGoalDetailed>,
+        tickers_goal: HashMap<TickerId, TickerGoalDetailed>,
     ) -> Self {
         PortfolioGoalDetailResp {
             id: data.id,
@@ -135,7 +181,7 @@ pub struct PortfolioActualResp {
     pub deviation: f32,
     pub version: i32,
     pub last_updated: DateTime<Utc>,
-    pub tickers_actual: Vec<portfolio::TickerActual>,
+    pub tickers_actual: Vec<TickerActual>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

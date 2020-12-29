@@ -15,17 +15,15 @@ extern crate slog;
 
 #[macro_use]
 extern crate postgres_mapper_derive;
-extern crate paseto;
 
 #[macro_use]
-mod std_ext;
-mod errors;
+extern crate fin_core;
+
 mod global;
 
-// has deps
-mod algo;
-mod backend;
-mod data;
-mod portfolio;
+// benchmark using criterion
+pub mod backend;
 
+// has deps
+mod data;
 pub mod server;
