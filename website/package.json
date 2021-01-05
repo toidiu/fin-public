@@ -5,7 +5,7 @@
   "author": "apoorv@toidiu.com",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "bulma": "^0.7.5",
     "vue": "^2.6.12",
     "vue-hot-reload-api": "^2.3.4",
