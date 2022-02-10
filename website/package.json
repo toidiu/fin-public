@@ -19,7 +19,7 @@
   "engineStrict": true,
   "devDependencies": {
     "@vue/component-compiler-utils": "^2.6.0",
-    "node-sass": "^4.14.1",
+    "node-sass": "^7.0.0",
     "parcel-bundler": "^1.12.4",
     "sass": "^1.29.0",
     "typescript": "^3.9.7",
